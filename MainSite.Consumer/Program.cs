@@ -35,8 +35,7 @@ namespace MainSite.Consumer
                     {
                         #region Initialize app settings
 
-                        var loggerSettings = context.Configuration.GetSection("LoggerSettings").Get<LoggerSettings>()
-                            ?? throw new InternalServerErrorException("PARSE_SETTINGS", "Can't parse LoggerSettings section");
+                        var loggerSettings = context.Configuration.GetSection("LoggerSettings").Get<LoggerSettings>() ?? new LoggerSettings();
 
                         #endregion
 
