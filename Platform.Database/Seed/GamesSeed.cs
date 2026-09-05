@@ -17,7 +17,7 @@ public sealed class GamesSeed : KeyTableSeed<GamersCommunityDbContext, Game>
         new()
         {
             Id = 1,
-            Title = "world_of_warcraft",
+            Title = "World Of Warcraft",
             UrlValue = "/world-of-warcraft",
             Picture = "world-of-warcraft",
             IdType = 1,
