@@ -7,17 +7,10 @@
     <Nullable>enable</Nullable>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
-    <CoreProjectPath>..\..\GamersCommunity.Core\GamersCommunity.Core\GamersCommunity.Core.csproj</CoreProjectPath>
   </PropertyGroup>
 
-  <ItemGroup Condition="Exists('$(CoreProjectPath)')">
-    <ProjectReference Include="$(CoreProjectPath)" />
-  </ItemGroup>
-  <ItemGroup Condition="!Exists('$(CoreProjectPath)')">
-    <PackageReference Include="GamersCommunity.Core" Version="9.4.0" />
-  </ItemGroup>
-
   <ItemGroup>
+    <PackageReference Include="GamersCommunity.Core" Version="9.4.0" />
     <PackageReference Include="GamersCommunity.Core.Logging" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
