@@ -1,0 +1,31 @@
+<nb-auth-block>
+    <nb-card>
+        <nb-card-header>
+            <nb-icon icon="lock-outline"></nb-icon>
+            <span i18n="@@login.title">Login</span>
+        </nb-card-header>
+
+        <nb-card-body class="login-actions">
+            <button (click)="login()" status="primary" i18n="@@login.action.login" nbButton fullWidth>
+                Log in
+            </button>
+            <button
+                (click)="signupWithGoogle()"
+                status="basic"
+                i18n="@@login.action.google"
+                nbButton
+                fullWidth
+                outline
+            >
+                Continue with Google
+            </button>
+        </nb-card-body>
+
+        <nb-card-footer>
+            <span i18n="@@login.anyAccount">Any account?</span>
+            <button (click)="signup()" status="primary" i18n="@@login.action.signup" nbButton ghost>
+                Sign up
+            </button>
+        </nb-card-footer>
+    </nb-card>
+</nb-auth-block>

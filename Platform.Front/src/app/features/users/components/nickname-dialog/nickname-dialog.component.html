@@ -1,0 +1,46 @@
+<nb-card size="small">
+    <nb-card-header class="text-center">
+        <strong i18n="@@users.nicknameDialog.header">Choose your nickname</strong>
+    </nb-card-header>
+
+    <nb-card-body>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="form-group">
+                <input
+                    i18n-placeholder="@@users.nicknameDialog.placeholder"
+                    placeholder="Nickname"
+                    formControlName="nickname"
+                    maxlength="50"
+                    nbInput
+                    fullWidth
+                />
+                <p class="error">
+                    @if (form.controls.nickname.hasError("required")) {
+                        <ng-template i18n="@@error.nicknameDialog.nicknameRequired">Nickname is required.</ng-template>
+                    } @else if (form.controls.nickname.hasError("maxlength")) {
+                        <ng-template i18n="@@error.nicknameDialog.nicknameMaxLength">
+                            Maximum 50 characters.
+                        </ng-template>
+                    } @else if (form.controls.nickname.hasError("pattern")) {
+                        <ng-template i18n="@@error.nicknameDialog.nicknamePattern">
+                            Only letters, numbers, "_" and "-" are allowed.
+                        </ng-template>
+                    }
+                </p>
+            </div>
+        </form>
+    </nb-card-body>
+
+    <nb-card-footer class="flex justify-end gap-2">
+        <button (click)="cancel()" i18n="@@users.nicknameDialog.cancel" status="basic" nbButton ghost>Cancel</button>
+        <button
+            [disabled]="form.invalid"
+            (click)="submit()"
+            i18n="@@users.nicknameDialog.confirm"
+            status="primary"
+            nbButton
+        >
+            Confirm
+        </button>
+    </nb-card-footer>
+</nb-card>

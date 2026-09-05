@@ -1,0 +1,82 @@
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle at center, #101020 0%, #06060c 100%);
+    overflow: hidden;
+    color: nb-theme(text-basic-color);
+    z-index: 1040;
+}
+
+.logo-zone {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h1 {
+        font-family: "Orbitron", sans-serif;
+        font-size: 2.5rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #66aaff;
+        text-shadow: 0 0 15px rgba(102, 170, 255, 0.6);
+    }
+
+    .logo {
+        height: 20vh;
+        margin-bottom: 1rem;
+        animation: pulse 1.8s infinite ease-in-out;
+    }
+}
+
+.loading-zone {
+    text-align: center;
+
+    .loading-text {
+        margin-top: 1rem;
+        font-size: 1.1rem;
+        letter-spacing: 1px;
+        animation: blink 1.2s infinite steps(2, start);
+    }
+}
+
+.glow {
+    position: absolute;
+    width: 200%;
+    height: 100vh;
+    background: linear-gradient(90deg, transparent, #4f9fff44, transparent);
+    animation: moveGlow 5s linear infinite;
+    opacity: 0.3;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        filter: drop-shadow(0 0 10px #66aaff);
+        opacity: 1;
+    }
+    50% {
+        filter: drop-shadow(0 0 30px #66aaff);
+        opacity: 0.7;
+    }
+}
+
+@keyframes blink {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes moveGlow {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}

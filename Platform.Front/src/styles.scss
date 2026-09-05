@@ -1,0 +1,31 @@
+* {
+    font-family: "Orbitron", sans-serif !important;
+}
+
+.ml-sm {
+    margin-left: 1rem;
+}
+
+.flex-end {
+    justify-content: flex-end;
+}
+
+input {
+    margin: 0 0 1rem 0;
+}
+
+nb-card-header > * {
+    margin: 0 0.5rem;
+}
+
+.splash-msg-color-base {
+    color: #9aa7ff !important;
+}
+
+.splash-msg-color-warning {
+    color: #ffc79a !important;
+}
+
+.splash-msg-color-error {
+    color: #ff9a9a !important;
+}

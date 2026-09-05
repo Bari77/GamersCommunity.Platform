@@ -1,0 +1,16 @@
+:host {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+}
+
+a {
+    margin-left: 0.75rem;
+    cursor: pointer;
+}
+
+.login-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}

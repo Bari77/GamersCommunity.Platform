@@ -3,3 +3,8 @@
 **/obj/*
 **/*.user
 **/appsettings.json
+
+# Platform.Front (Angular)
+**/node_modules/
+**/dist/
+**/.angular/

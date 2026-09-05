@@ -1,0 +1,103 @@
+.profile-page {
+    max-width: 40rem;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+}
+
+.preview {
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    background: radial-gradient(circle at 50% 50%, #202033, #0a0a12);
+    box-shadow:
+        inset 0 4px 8px rgba(0, 0, 0, 0.55),
+        0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.nickname {
+    font-size: 1.25rem;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mail {
+    opacity: 0.7;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.section-title {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.avatar-option {
+    appearance: none;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+    aspect-ratio: 1;
+    overflow: hidden;
+    transition:
+        border-color 0.15s ease,
+        transform 0.15s ease;
+
+    img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+        background: radial-gradient(circle at 50% 50%, #202033, #0a0a12);
+    }
+
+    &:hover {
+        transform: scale(1.04);
+    }
+
+    &.selected {
+        border-color: var(--button-filled-primary-background-color, #3366ff);
+    }
+}
+
+.actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.loading {
+    min-height: 6rem;
+}
+
+@media (max-width: 480px) {
+    .avatar-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}

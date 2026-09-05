@@ -1,0 +1,16 @@
+<nb-auth-block>
+    <nb-card>
+        <nb-card-header>
+            <span i18n="@@logout.title">Logout</span>
+        </nb-card-header>
+
+        <nb-card-body
+            [nbSpinner]="usersStore.loading()"
+            nbSpinnerMessage="Logout, see you next time"
+            i18n-nbSpinnerMessage="@@logout.message"
+        >
+            <br />
+            <br />
+        </nb-card-body>
+    </nb-card>
+</nb-auth-block>

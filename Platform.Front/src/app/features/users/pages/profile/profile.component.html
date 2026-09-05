@@ -1,0 +1,49 @@
+<div class="profile-page">
+    <nb-card>
+        <nb-card-header i18n="@@users.profile.title">Profile</nb-card-header>
+        <nb-card-body>
+            @if (usersStore.user(); as user) {
+                <div class="profile-summary">
+                    <img class="preview" [src]="previewUrl()" [alt]="user.nickname" />
+                    <div class="identity">
+                        <div class="nickname">{{ usersStore.fullNickname() }}</div>
+                        @if (user.mail) {
+                            <div class="mail">{{ user.mail }}</div>
+                        }
+                    </div>
+                </div>
+
+                <h3 class="section-title" i18n="@@users.profile.avatarSection">Choose your avatar</h3>
+                <div class="avatar-grid" role="listbox" aria-label="Avatars">
+                    @for (id of avatarIds; track id) {
+                        <button
+                            type="button"
+                            class="avatar-option"
+                            [class.selected]="isSelected(id)"
+                            (click)="selectAvatar(id)"
+                            role="option"
+                            [attr.aria-selected]="isSelected(id)"
+                        >
+                            <img [src]="usersStore.avatarUrlForId(id)" [alt]="'Avatar ' + id" />
+                        </button>
+                    }
+                </div>
+
+                <div class="actions">
+                    <button
+                        nbButton
+                        status="primary"
+                        [disabled]="selectedId() === null || saving()"
+                        [nbSpinner]="saving()"
+                        (click)="save()"
+                        i18n="@@users.profile.saveAvatar"
+                    >
+                        Save avatar
+                    </button>
+                </div>
+            } @else {
+                <div class="loading" [nbSpinner]="true" i18n="@@users.profile.loading">Loading profile…</div>
+            }
+        </nb-card-body>
+    </nb-card>
+</div>
