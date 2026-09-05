@@ -23,7 +23,6 @@ public static class ReferenceDataSeed
 
         if (totals.HasChanges)
         {
-            await db.SaveChangesAsync(ct);
             logger.LogInformation(
                 "Reference data seed saved: {Inserted} inserted, {Updated} updated, {Unchanged} unchanged",
                 totals.Inserted, totals.Updated, totals.Unchanged);

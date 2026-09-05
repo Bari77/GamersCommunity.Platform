@@ -52,10 +52,51 @@ public abstract class ReferenceTableSeed<TContext, TEntity> : IReferenceTableSee
             }
         }
 
+        if (inserted > 0 || updated > 0)
+            await SaveWithOptionalIdentityInsertAsync(db, inserted > 0, ct);
+
         logger.LogInformation(
             "Seed {Table}: {Inserted} inserted, {Updated} updated, {Unchanged} unchanged",
             TableName, inserted, updated, unchanged);
 
         return new SeedTotals(inserted, updated, unchanged);
+    }
+
+    private async Task SaveWithOptionalIdentityInsertAsync(
+        TContext db,
+        bool identityInsert,
+        CancellationToken ct)
+    {
+        if (!identityInsert)
+        {
+            await db.SaveChangesAsync(ct);
+            return;
+        }
+
+        var entityType = db.Model.FindEntityType(typeof(TEntity))
+            ?? throw new InvalidOperationException($"Entity type {typeof(TEntity).Name} is not mapped.");
+        var table = QuoteIdent(entityType.GetTableName()
+            ?? throw new InvalidOperationException($"Entity type {typeof(TEntity).Name} has no table name."));
+        var schemaName = entityType.GetSchema();
+        var qualified = string.IsNullOrEmpty(schemaName) ? table : QuoteIdent(schemaName) + "." + table;
+
+        await db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            await db.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT " + qualified + " ON", ct);
+            await db.SaveChangesAsync(ct);
+            await db.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT " + qualified + " OFF", ct);
+        }
+        finally
+        {
+            await db.Database.CloseConnectionAsync();
+        }
+    }
+
+    private static string QuoteIdent(string name)
+    {
+        if (name.Length == 0 || name.Any(c => !(char.IsLetterOrDigit(c) || c is '_' or ' ')))
+            throw new InvalidOperationException($"Unsafe SQL identifier: {name}");
+        return "[" + name.Replace("]", "]]") + "]";
     }
 }
