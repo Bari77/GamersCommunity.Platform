@@ -1,15 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MainSite.Database.Context
+namespace MainSite.Database.Context;
+
+/// <summary>
+/// Design-time DbContext configuration (<c>dotnet ef</c> tools).
+/// At runtime, the connection string is injected via DI in <c>MainSite.Consumer</c>.
+/// </summary>
+public partial class GamersCommunityDbContext
 {
-    public partial class GamersCommunityDbContext
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        if (!optionsBuilder.IsConfigured)
         {
-            if (!optionsBuilder.IsConfigured)
-            {
-                optionsBuilder.UseSqlServer("Name=ConnectionStrings:Database");
-            }
+            optionsBuilder.UseSqlServer("Name=ConnectionStrings:Database");
         }
     }
 }

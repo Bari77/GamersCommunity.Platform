@@ -30,7 +30,11 @@ public partial class GamersCommunityDbContext : DbContext
 
     public virtual DbSet<Game> Games { get; set; }
 
+    public virtual DbSet<GameRole> GameRoles { get; set; }
+
     public virtual DbSet<GameType> GameTypes { get; set; }
+
+    public virtual DbSet<GroupRole> GroupRoles { get; set; }
 
     public virtual DbSet<Message> Messages { get; set; }
 
@@ -40,7 +44,15 @@ public partial class GamersCommunityDbContext : DbContext
 
     public virtual DbSet<Right> Rights { get; set; }
 
+    public virtual DbSet<SiteRole> SiteRoles { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
+
+    public virtual DbSet<UserGameRole> UserGameRoles { get; set; }
+
+    public virtual DbSet<UserGroupRole> UserGroupRoles { get; set; }
+
+    public virtual DbSet<UserSiteRole> UserSiteRoles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

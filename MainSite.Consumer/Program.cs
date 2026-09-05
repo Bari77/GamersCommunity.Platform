@@ -5,6 +5,8 @@ using GamersCommunity.Core.Services;
 using MainSite.Consumer.Configuration;
 using MainSite.Consumer.Services.Infra;
 using MainSite.Database.Context;
+using MainSite.Database.Seed;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -54,8 +56,12 @@ namespace MainSite.Consumer
                         services.AddOptions<RabbitMQSettings>().Bind(context.Configuration.GetSection("RabbitMQ")).ValidateOnStart();
                         services.AddOptions<AppSettings>().Bind(context.Configuration.GetSection("AppSettings")).ValidateOnStart();
 
-                        // Register EF Core DbContext
-                        services.AddDbContext<GamersCommunityDbContext>();
+                        services.AddDbContext<GamersCommunityDbContext>((sp, options) =>
+                        {
+                            var connectionString = context.Configuration.GetConnectionString("Database")
+                                ?? throw new InvalidOperationException("Connection string 'Database' is missing.");
+                            options.UseSqlServer(connectionString);
+                        });
 
                         // Register application services
                         services.AddSingleton<Serilog.ILogger>(sp => Log.Logger);
@@ -75,6 +81,8 @@ namespace MainSite.Consumer
 
                 var host = builder.Build();
 
+                await ApplyDatabaseMigrationsAsync(host.Services);
+
                 var environment = host.Services.GetRequiredService<IHostEnvironment>();
 
                 Log.Information("Started in {Environment} environment...", environment.EnvironmentName);
@@ -93,6 +101,18 @@ namespace MainSite.Consumer
             {
                 Log.Information("Stopped ...");
             }
+        }
+
+        private static async Task ApplyDatabaseMigrationsAsync(IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<GamersCommunityDbContext>();
+            await dbContext.Database.MigrateAsync();
+            Log.Information("Database migrations applied.");
+            var seedLogger = scope.ServiceProvider
+                .GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>()
+                .CreateLogger("ReferenceDataSeed");
+            await ReferenceDataSeed.EnsureAsync(dbContext, seedLogger);
         }
     }
 }
