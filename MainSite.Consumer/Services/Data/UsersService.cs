@@ -53,7 +53,11 @@ namespace MainSite.Consumer.Services.Data
                     }
 
                     var info = ConsumerParamParser.ToObject<LoadRequest>(message.Data);
-                    var user = await Context.Users.FirstOrDefaultAsync(f => f.IdKeycloak == info.IdKeycloak, ct);
+                    var idKeycloak = message.Caller?.Subject is { } subject
+                        && Guid.TryParse(subject, out var fromCaller)
+                        ? fromCaller
+                        : info.IdKeycloak;
+                    var user = await Context.Users.FirstOrDefaultAsync(f => f.IdKeycloak == idKeycloak, ct);
 
                     if (user != null)
                     {
@@ -73,7 +77,7 @@ namespace MainSite.Consumer.Services.Data
 
                     user = new()
                     {
-                        IdKeycloak = info.IdKeycloak,
+                        IdKeycloak = idKeycloak,
                         Mail = info.Mail,
                         Nickname = info.Nickname,
                     };
