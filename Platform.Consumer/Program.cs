@@ -1,8 +1,8 @@
-using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Logging;
 using GamersCommunity.Core.Rabbit;
 using GamersCommunity.Core.Services;
 using Platform.Consumer.Configuration;
+using Platform.Consumer.Realtime;
 using Platform.Consumer.Services.Infra;
 using Platform.Database.Context;
 using Platform.Database.Seed;
@@ -63,8 +63,9 @@ namespace Platform.Consumer
                             options.UseSqlServer(connectionString);
                         });
 
-                        // Register application services
                         services.AddSingleton<Serilog.ILogger>(sp => Log.Logger);
+                        services.AddSingleton<IRealtimeEventPublisher, RealtimeEventPublisher>();
+                        services.AddScoped<Platform.Consumer.Notifications.INotificationWriter, Platform.Consumer.Notifications.NotificationWriter>();
 
                         services.Scan(scan => scan
                             .FromAssembliesOf(typeof(AppSettings))

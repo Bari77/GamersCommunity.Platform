@@ -1,0 +1,38 @@
+<section class="user-search gc-enter">
+    <header class="user-search__header">
+        <h1 class="gc-display" i18n="@@users.search.title">Player search</h1>
+        @if (directoryStore.query()) {
+            <p>
+                <span i18n="@@users.search.resultsFor">Results for</span>
+                <strong>{{ directoryStore.query() }}</strong>
+            </p>
+        } @else {
+            <p i18n="@@users.search.hint">Search by nickname or nickname#discriminator.</p>
+        }
+    </header>
+
+    @if (directoryStore.searchLoading()) {
+        <div class="user-search__loading" [nbSpinner]="true" nbSpinnerStatus="primary" i18n="@@users.search.loading">
+            Searching players…
+        </div>
+    } @else if (!directoryStore.query()) {
+        <p class="user-search__empty" i18n="@@users.search.emptyQuery">Enter a term in the header search.</p>
+    } @else if (directoryStore.results.value().length === 0) {
+        <p class="user-search__empty" i18n="@@users.search.empty">No players found.</p>
+    } @else {
+        <ul class="user-search__list">
+            @for (user of directoryStore.results.value(); track user.publicId) {
+                <li>
+                    <a class="user-search__row" [routerLink]="['/users', user.publicId]">
+                        <img class="user-search__avatar" [src]="user.avatarUrl" [alt]="user.nickname" />
+                        <span class="user-search__name">
+                            <span class="nickname">{{ user.nickname }}</span>
+                            <span class="discriminator">#{{ user.discriminator }}</span>
+                        </span>
+                        <span class="user-search__cta" i18n="@@users.search.openProfile">View profile</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</section>

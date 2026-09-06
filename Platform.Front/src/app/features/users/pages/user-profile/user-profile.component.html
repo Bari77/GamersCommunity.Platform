@@ -1,0 +1,148 @@
+<section class="user-profile gc-enter">
+    <a routerLink="/users/search" nbButton ghost status="control" i18n="@@users.profilePublic.back">Back to search</a>
+
+    @if (directoryStore.profileLoading()) {
+        <div class="user-profile__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
+    } @else if (directoryStore.selected.value(); as user) {
+        <div class="user-profile__card">
+            <img class="user-profile__avatar" [src]="user.avatarUrl" [alt]="user.nickname" />
+            <div class="user-profile__identity">
+                <h1 class="gc-display">
+                    <span>{{ user.nickname }}</span>
+                    <span class="discriminator">#{{ user.discriminator }}</span>
+                </h1>
+                @if (isOnline(user.lastConnection)) {
+                    <p class="user-profile__meta user-profile__meta--online">
+                        <span class="user-profile__online-dot" aria-hidden="true"></span>
+                        <span i18n="@@users.profilePublic.online">Online</span>
+                    </p>
+                } @else if (user.lastConnection) {
+                    <p class="user-profile__meta">
+                        <span i18n="@@users.profilePublic.lastSeen">Last seen</span>
+                        {{ user.lastConnection | date: "medium" }}
+                    </p>
+                }
+                @if (usersStore.isLoggedIn() && !isOwnProfile()) {
+                    <p class="user-profile__relation">
+                        @switch (relationKind(user)) {
+                            @case ("accepted") {
+                                <span i18n="@@users.profilePublic.relation.friends">Friends</span>
+                            }
+                            @case ("pendingOutgoing") {
+                                <span i18n="@@users.profilePublic.relation.pendingOutgoing">Friend request sent</span>
+                            }
+                            @case ("pendingIncoming") {
+                                <span i18n="@@users.profilePublic.relation.pendingIncoming">Wants to be your friend</span>
+                            }
+                            @case ("blocked") {
+                                <span i18n="@@users.profilePublic.relation.blocked">Blocked</span>
+                            }
+                            @default {
+                                <span i18n="@@users.profilePublic.relation.none">Not in your friends list</span>
+                            }
+                        }
+                    </p>
+                }
+            </div>
+        </div>
+
+        @if (isOwnProfile()) {
+            <a routerLink="/users/profile" nbButton status="primary" i18n="@@users.profilePublic.editMine">
+                Edit my profile
+            </a>
+        } @else if (usersStore.isLoggedIn()) {
+            <div class="user-profile__actions" [nbSpinner]="friendsStore.actionLoading()">
+                @switch (relationKind(user)) {
+                    @case ("none") {
+                        <button type="button" nbButton status="primary" (click)="addFriend(user)" i18n="@@users.profilePublic.action.add">
+                            Add friend
+                        </button>
+                    }
+                    @case ("refused") {
+                        <button type="button" nbButton status="primary" (click)="addFriend(user)" i18n="@@users.profilePublic.action.add">
+                            Add friend
+                        </button>
+                    }
+                    @case ("pendingOutgoing") {
+                        <button type="button" nbButton disabled status="basic" i18n="@@users.profilePublic.action.waiting">
+                            Request pending
+                        </button>
+                        <button
+                            type="button"
+                            nbButton
+                            ghost
+                            status="danger"
+                            (click)="block(user)"
+                            i18n="@@social.friends.action.block"
+                        >
+                            Block
+                        </button>
+                    }
+                    @case ("pendingIncoming") {
+                        <button
+                            type="button"
+                            nbButton
+                            status="success"
+                            (click)="accept(user)"
+                            i18n="@@social.friends.action.accept"
+                        >
+                            Accept
+                        </button>
+                        <button
+                            type="button"
+                            nbButton
+                            ghost
+                            status="warning"
+                            (click)="refuse(user)"
+                            i18n="@@social.friends.action.refuse"
+                        >
+                            Refuse
+                        </button>
+                        <button
+                            type="button"
+                            nbButton
+                            ghost
+                            status="danger"
+                            (click)="block(user)"
+                            i18n="@@social.friends.action.block"
+                        >
+                            Block
+                        </button>
+                    }
+                    @case ("accepted") {
+                        <button
+                            type="button"
+                            nbButton
+                            status="primary"
+                            (click)="whisper(user)"
+                            i18n="@@social.friends.action.message"
+                        >
+                            Message
+                        </button>
+                        <button
+                            type="button"
+                            nbButton
+                            ghost
+                            status="danger"
+                            (click)="block(user)"
+                            i18n="@@social.friends.action.block"
+                        >
+                            Block
+                        </button>
+                    }
+                    @case ("blocked") {
+                        <button type="button" nbButton disabled status="basic" i18n="@@users.profilePublic.relation.blocked">
+                            Blocked
+                        </button>
+                    }
+                }
+            </div>
+        } @else {
+            <a routerLink="/users/login" nbButton status="primary" i18n="@@users.profilePublic.loginToAdd">
+                Log in to add this player
+            </a>
+        }
+    } @else {
+        <p i18n="@@users.profilePublic.missing">Player not found.</p>
+    }
+</section>

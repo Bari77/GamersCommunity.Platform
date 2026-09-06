@@ -68,6 +68,8 @@ export default withNativeFederation({
         "@angular-architects/native-federation-v4",
         "@softarc/native-federation-orchestrator",
         "source-map-support",
+        "@angular/localize",
+        /^@angular\/localize\//,
         /^@angular-devkit\//,
         /^@schematics\//,
     ],

@@ -43,7 +43,7 @@ export abstract class BaseService {
         return this.http.delete<void>(this.getURL(url));
     }
 
-    private getURL(url: string | null = null): string {
+    protected getURL(url: string | null = null): string {
         const base = new URL(environment.apiUrl);
         const parts = [this.baseUrlService, url].filter(Boolean);
 

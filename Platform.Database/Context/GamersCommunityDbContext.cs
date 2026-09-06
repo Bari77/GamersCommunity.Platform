@@ -38,6 +38,12 @@ public partial class GamersCommunityDbContext : DbContext
 
     public virtual DbSet<Message> Messages { get; set; }
 
+    public virtual DbSet<Notification> Notifications { get; set; }
+
+    public virtual DbSet<Post> Posts { get; set; }
+
+    public virtual DbSet<PostStatus> PostStatuses { get; set; }
+
     public virtual DbSet<Rank> Ranks { get; set; }
 
     public virtual DbSet<RankRight> RankRights { get; set; }
@@ -260,6 +266,7 @@ public partial class GamersCommunityDbContext : DbContext
             entity.Property(e => e.ModificationDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
 
             entity.HasOne(d => d.IdReceiverNavigation).WithMany(p => p.MessageIdReceiverNavigations)
                 .HasForeignKey(d => d.IdReceiver)
@@ -270,6 +277,66 @@ public partial class GamersCommunityDbContext : DbContext
                 .HasForeignKey(d => d.IdSender)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Messages_Sender");
+        });
+
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notification");
+
+            entity.Property(e => e.Body).HasMaxLength(2000);
+            entity.Property(e => e.CreationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Kind).HasMaxLength(64);
+            entity.Property(e => e.LinkUrl).HasMaxLength(500);
+            entity.Property(e => e.ModificationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.PayloadJson).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Title).HasMaxLength(255);
+
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.Notifications)
+                .HasForeignKey(d => d.IdUser)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Notification_User");
+        });
+
+        modelBuilder.Entity<Post>(entity =>
+        {
+            entity.ToTable("Post");
+
+            entity.Property(e => e.Body).HasMaxLength(4000);
+            entity.Property(e => e.CreationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.MediaKind).HasMaxLength(32);
+            entity.Property(e => e.MediaUrl).HasMaxLength(500);
+            entity.Property(e => e.ModificationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.IdAuthorNavigation).WithMany(p => p.Posts)
+                .HasForeignKey(d => d.IdAuthor)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Post_Author");
+
+            entity.HasOne(d => d.IdStatusNavigation).WithMany(p => p.Posts)
+                .HasForeignKey(d => d.IdStatus)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Post_Status");
+        });
+
+        modelBuilder.Entity<PostStatus>(entity =>
+        {
+            entity.ToTable("PostStatus");
+
+            entity.Property(e => e.CreationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Entitled).HasMaxLength(150);
+            entity.Property(e => e.ModificationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Rank>(entity =>

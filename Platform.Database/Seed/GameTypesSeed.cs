@@ -14,6 +14,6 @@ public sealed class GameTypesSeed : KeyTableSeed<GamersCommunityDbContext, GameT
 
     protected override IReadOnlyList<GameType> Rows { get; } =
     [
-        new() { Id = 1, Entitled = "mmorpg", CreationDate = SeedDates.Utc, ModificationDate = SeedDates.Utc },
+        new() { Id = 1, Entitled = "MMORPG", CreationDate = SeedDates.Utc, ModificationDate = SeedDates.Utc },
     ];
 }

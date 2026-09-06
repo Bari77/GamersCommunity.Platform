@@ -17,4 +17,14 @@ export const usersRoutes: Routes = [
         loadComponent: () => import("./pages/profile/profile.component").then((m) => m.ProfileComponent),
         canActivate: [AuthGuard],
     },
+    {
+        path: "search",
+        loadComponent: () =>
+            import("./pages/user-search/user-search.component").then((m) => m.UserSearchComponent),
+    },
+    {
+        path: ":publicId",
+        loadComponent: () =>
+            import("./pages/user-profile/user-profile.component").then((m) => m.UserProfileComponent),
+    },
 ];

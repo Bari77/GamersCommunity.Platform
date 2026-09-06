@@ -4,7 +4,9 @@ The SQL Server schema is managed by **EF Core migrations** from models in `Model
 
 Reference / AuthZ catalog data lives under `Seed/`: one **class per table** inheriting `ReferenceTableSeed` / `KeyTableSeed`. Classes are **auto-discovered** (no manual list). Override `Order` when FK dependencies require a sequence (e.g. GameTypes → Games → GameRoles). Applied at **runtime** after `MigrateAsync`.
 
-Displayable codes (`Entitled`, `Code`, `Title`, `Name`, …) use **lowercase** snake_case so the front can concatenate them with i18n key prefixes (e.g. `games.` + `world_of_warcraft`).
+**Display labels** shown raw in the UI (`Game.Title`, human `GameType.Entitled`, …) use readable casing (e.g. `World Of Warcraft`, `MMORPG`).
+
+**Technical keys** used as routes, asset slugs, or i18n suffixes (`UrlValue`, `Picture`, status codes such as `pending` / `going`) stay **lowercase** snake_case or kebab-case.
 
 ## Workflow
 
@@ -54,4 +56,4 @@ Do **not** expose sequential `int` primary keys in public URLs for user-owned or
 
 Catalog / reference tables (game types, roles, statuses, …) stay on stable `int` ids.
 
-Entities with `PublicId`: `User`, `Event`, `Message`, `Friend`, `Banned`, `EventsUsersInterest`. Migration: `AddPublicId`.
+Entities with `PublicId`: `User`, `Event`, `Message`, `Friend`, `Banned`, `EventsUsersInterest`, `Post`, `Notification`. Migration: `AddPublicId` (+ later social migrations).

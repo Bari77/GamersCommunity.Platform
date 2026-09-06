@@ -1,0 +1,64 @@
+:host {
+    display: block;
+}
+
+.event-detail {
+    padding: clamp(1.5rem, 4vw, 3rem);
+    max-width: 48rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.85rem;
+
+    &__loading {
+        min-height: 8rem;
+        width: 100%;
+    }
+
+    &__cover {
+        width: 100%;
+        max-height: 18rem;
+        object-fit: cover;
+        border-radius: 0.85rem;
+    }
+
+    h1 {
+        margin: 0;
+    }
+
+    &__dates {
+        margin: 0;
+        color: var(--game-accent);
+    }
+
+    &__desc {
+        margin: 0;
+        white-space: pre-wrap;
+        color: rgb(210 218 240 / 88%);
+    }
+
+    &__hint {
+        margin: 0.5rem 0 0;
+        color: rgb(160 170 200 / 65%);
+        font-size: 0.9rem;
+    }
+
+    &__rsvp {
+        margin-top: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    &__rsvp-label {
+        margin: 0;
+        font-size: 0.9rem;
+        color: rgb(180 190 220 / 80%);
+    }
+
+    &__rsvp-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+}

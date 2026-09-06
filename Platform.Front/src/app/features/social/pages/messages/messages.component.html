@@ -1,0 +1,145 @@
+<section class="messages-page gc-enter">
+    <aside class="messages-page__list">
+        <h1 class="gc-display" i18n="@@social.messages.title">Whispers</h1>
+        <p i18n="@@social.messages.lead">One-to-one whispers with other players.</p>
+
+        @if (!messengerStore.isLive()) {
+            <div
+                class="messages-page__offline"
+                [class.is-connecting]="messengerStore.realtimeStatus() === 'connecting'"
+                role="status"
+            >
+                {{ messengerStore.realtimeOfflineMessage() }}
+            </div>
+        }
+
+        <div class="messages-page__tabs" role="tablist">
+            <button
+                type="button"
+                role="tab"
+                class="messages-page__tab"
+                [class.is-active]="messengerStore.tab() === 'chats'"
+                [attr.aria-selected]="messengerStore.tab() === 'chats'"
+                (click)="messengerStore.setTab('chats')"
+                i18n="@@social.messenger.tab.chats"
+            >
+                Chats
+            </button>
+            <button
+                type="button"
+                role="tab"
+                class="messages-page__tab"
+                [class.is-active]="messengerStore.tab() === 'contacts'"
+                [attr.aria-selected]="messengerStore.tab() === 'contacts'"
+                (click)="messengerStore.setTab('contacts')"
+            >
+                <span i18n="@@social.messenger.tab.contacts">Contacts</span>
+                @if (messengerStore.pendingIncomingCount() > 0) {
+                    <span class="messages-page__badge">{{ messengerStore.pendingIncomingCount() }}</span>
+                }
+            </button>
+        </div>
+
+        @if (messengerStore.tab() === 'chats') {
+            @if (messengerStore.messagesLoading()) {
+                <div class="messages-page__empty" [nbSpinner]="true" i18n="@@social.messages.loading">
+                    Loading whispers…
+                </div>
+            } @else if (messengerStore.conversations().length === 0) {
+                <div class="messages-page__empty" i18n="@@social.messages.emptyList">No whispers yet.</div>
+            } @else {
+                <ul class="messages-page__convos">
+                    @for (chat of messengerStore.conversations(); track chat.peerId) {
+                        <li>
+                            <button
+                                type="button"
+                                class="messages-page__row"
+                                [class.is-active]="messengerStore.selectedPeerId() === chat.peerId"
+                                (click)="messengerStore.selectPeer(chat.peerId)"
+                            >
+                                <span class="messages-page__row-title">{{ chat.label }}</span>
+                                <span class="messages-page__row-preview">{{ chat.lastMessage }}</span>
+                                <time class="messages-page__row-date">{{ chat.lastDate | date: "shortDate" }}</time>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            }
+        } @else {
+            @if (messengerStore.friendsLoading()) {
+                <div class="messages-page__empty" [nbSpinner]="true" i18n="@@social.friends.loading">Loading friends…</div>
+            } @else if (messengerStore.managedContacts().length === 0) {
+                <div class="messages-page__empty" i18n="@@social.messenger.contactsEmpty">No friends or requests yet.</div>
+            } @else {
+                <ul class="messages-page__convos">
+                    @for (contact of messengerStore.managedContacts(); track contact.publicId) {
+                        <li class="messages-page__contact">
+                            <div class="messages-page__row messages-page__row--static">
+                                <span class="messages-page__row-title">{{ contact.peerLabel }}</span>
+                                @if (messengerStore.isIncomingPending(contact)) {
+                                    <span class="messages-page__row-preview" i18n="@@social.friends.section.incoming">Incoming requests</span>
+                                } @else if (messengerStore.isOutgoingPending(contact)) {
+                                    <span class="messages-page__row-preview" i18n="@@friends.status.pending">Pending</span>
+                                } @else if (messengerStore.isAccepted(contact)) {
+                                    <span class="messages-page__row-preview" i18n="@@friends.status.accepted">Accepted</span>
+                                } @else if (messengerStore.isBlocked(contact)) {
+                                    <span class="messages-page__row-preview" i18n="@@friends.status.blocked">Blocked</span>
+                                }
+                            </div>
+                            <div class="messages-page__contact-actions">
+                                @if (messengerStore.isIncomingPending(contact)) {
+                                    <button type="button" nbButton size="tiny" status="success" (click)="messengerStore.accept(contact)" i18n="@@social.friends.action.accept">Accept</button>
+                                    <button type="button" nbButton size="tiny" ghost status="warning" (click)="messengerStore.refuse(contact)" i18n="@@social.friends.action.refuse">Refuse</button>
+                                    <button type="button" nbButton size="tiny" ghost status="danger" (click)="messengerStore.block(contact)" i18n="@@social.friends.action.block">Block</button>
+                                } @else if (messengerStore.isAccepted(contact)) {
+                                    <button type="button" nbButton size="tiny" status="primary" (click)="messengerStore.selectPeer(contact.peerId)" i18n="@@social.friends.action.message">Message</button>
+                                    <button type="button" nbButton size="tiny" ghost status="danger" (click)="messengerStore.block(contact)" i18n="@@social.friends.action.block">Block</button>
+                                } @else if (messengerStore.isOutgoingPending(contact)) {
+                                    <button type="button" nbButton size="tiny" ghost status="danger" (click)="messengerStore.block(contact)" i18n="@@social.friends.action.block">Block</button>
+                                }
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+        }
+    </aside>
+
+    <div class="messages-page__chat" [nbSpinner]="messengerStore.sending()">
+        @if (messengerStore.selectedPeerId() !== null) {
+            <nb-chat [title]="messengerStore.selectedLabel()" size="large">
+                @if (messengerStore.threadMessages().length === 0) {
+                    <nb-chat-message
+                        [message]="messengerStore.placeholderText()"
+                        [date]="now"
+                        [reply]="false"
+                        sender="System"
+                        avatar=""
+                    ></nb-chat-message>
+                } @else {
+                    @for (message of messengerStore.threadMessages(); track message.publicId) {
+                        <nb-chat-message
+                            [message]="message.content"
+                            [date]="message.creationDate"
+                            [reply]="message.idSender === usersStore.user()?.id"
+                            [sender]="message.idSender === usersStore.user()?.id ? youLabel : messengerStore.selectedLabel()"
+                            avatar=""
+                        ></nb-chat-message>
+                    }
+                }
+                @if (messengerStore.isLive()) {
+                    <nb-chat-form
+                        (send)="onSend($event)"
+                        [dropFiles]="false"
+                        i18n-messagePlaceholder="@@social.messenger.compose"
+                        messagePlaceholder="Whisper something…"
+                    ></nb-chat-form>
+                }
+            </nb-chat>
+        } @else {
+            <div class="messages-page__pick" i18n="@@social.messages.pickThread">
+                Select a conversation or a contact to start whispering.
+            </div>
+        }
+    </div>
+</section>

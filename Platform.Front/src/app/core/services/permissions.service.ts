@@ -10,7 +10,7 @@ export class PermissionsService {
 
     private roles = signal<string[]>([]);
 
-    constructor() {
+    public constructor() {
         this.authService.getToken().subscribe((token) => {
             if (!token.isValid()) {
                 this.roles.set([]);

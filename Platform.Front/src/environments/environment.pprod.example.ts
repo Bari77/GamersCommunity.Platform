@@ -3,6 +3,7 @@ import { Environment } from "@core/models/environment.model";
 export const environment: Environment = {
     production: true,
     apiUrl: "",
+    hubUrl: "",
     assetsBaseUrl: "https://host.bariserv.net/GamersCommunity",
     avatarMinId: 1,
     avatarMaxId: 12,

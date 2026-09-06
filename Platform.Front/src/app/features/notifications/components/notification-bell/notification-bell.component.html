@@ -1,0 +1,66 @@
+<button
+    type="button"
+    class="notification-bell__trigger"
+    [nbPopover]="panel"
+    nbPopoverTrigger="click"
+    nbPopoverPlacement="bottom"
+    nbTooltip="Notifications"
+    i18n-nbTooltip="@@core.header.notifications"
+    nbTooltipPlacement="bottom"
+    nbButton
+    ghost
+    status="control"
+    i18n-aria-label="@@core.header.notifications"
+    aria-label="Notifications"
+>
+    <nb-icon icon="bell-outline" pack="eva"></nb-icon>
+    @if (notificationsStore.unreadCount() > 0) {
+        <span class="notification-bell__badge">{{ notificationsStore.unreadCount() }}</span>
+    }
+</button>
+
+<ng-template #panel>
+    <div class="notification-bell__panel">
+        <header class="notification-bell__header">
+            <h2 class="notification-bell__title" i18n="@@notifications.title">Notifications</h2>
+            @if (notificationsStore.unreadCount() > 0) {
+                <button
+                    type="button"
+                    nbButton
+                    ghost
+                    size="tiny"
+                    status="control"
+                    (click)="markAllRead()"
+                    i18n="@@notifications.markAllRead"
+                >
+                    Mark all read
+                </button>
+            }
+        </header>
+
+        @if (notificationsStore.loading() && notificationsStore.items().length === 0) {
+            <p class="notification-bell__empty" i18n="@@notifications.empty">No notifications yet.</p>
+        } @else if (notificationsStore.items().length === 0) {
+            <p class="notification-bell__empty" i18n="@@notifications.empty">No notifications yet.</p>
+        } @else {
+            <ul class="notification-bell__list">
+                @for (item of notificationsStore.items(); track item.publicId) {
+                    <li>
+                        <button
+                            type="button"
+                            class="notification-bell__item"
+                            [class.is-unread]="!item.isRead"
+                            (click)="onItemClick(item)"
+                        >
+                            <span class="notification-bell__item-title">{{ item.title }}</span>
+                            @if (item.body) {
+                                <span class="notification-bell__item-body">{{ item.body }}</span>
+                            }
+                            <time class="notification-bell__item-time">{{ relativeTime(item.creationDate) }}</time>
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</ng-template>

@@ -1,7 +1,9 @@
 using GamersCommunity.Core.Tests;
+using Platform.Consumer.Realtime;
 using Platform.Consumer.Services.Data;
 using Platform.Database.Context;
 using Platform.Database.Models;
+using Serilog;
 
 namespace Platform.Tests.Services.Data
 {
@@ -18,6 +20,12 @@ namespace Platform.Tests.Services.Data
             ModificationDate = DateTime.UtcNow,
         };
 
-        protected override MessagesService CreateService() => new(CreateContext());
+        protected override MessagesService CreateService() =>
+            new(CreateContext(), new NoopRealtimeEventPublisher(), Log.Logger);
+    }
+
+    file sealed class NoopRealtimeEventPublisher : IRealtimeEventPublisher
+    {
+        public Task PublishAsync<T>(T payload, CancellationToken ct = default) => Task.CompletedTask;
     }
 }

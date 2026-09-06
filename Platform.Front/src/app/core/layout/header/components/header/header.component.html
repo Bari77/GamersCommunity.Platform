@@ -1,7 +1,7 @@
 <div class="header-content">
     <div class="left">
         <img
-            (click)="redirect('home')"
+            (click)="redirect('/home')"
             nbTooltip="Home"
             i18n-nbTooltip="@@core.header.home"
             nbTooltipPlacement="bottom"
@@ -15,25 +15,31 @@
             nbTooltip="Search"
             i18n-nbTooltip="@@core.header.search"
             nbTooltipPlacement="bottom"
-            type="rotate-layout"
+            type="modal-zoomin"
         ></nb-search>
         @if (gamesStore.loading()) {
             <app-skeleton width="5.5rem" height="2.5rem" radius="0.25rem" />
         } @else {
             <button
                 [nbPopover]="gamesMenuTemplate"
-                nbPopoverTrigger="hover"
+                nbPopoverTrigger="click"
                 nbPopoverPlacement="bottom"
                 i18n="@@core.header.games"
                 nbButton
+                ghost
+                status="control"
             >
                 Games
             </button>
         }
+        <button type="button" (click)="redirect('/events')" nbButton ghost status="control" i18n="@@core.header.events">
+            Events
+        </button>
     </div>
 
     <div class="right">
         @if (usersStore.isLoggedIn()) {
+            <app-notification-bell></app-notification-bell>
             <div
                 [nbTooltip]="copied() ? 'Copied' : 'Copy'"
                 [nbTooltipStatus]="copied() ? 'success' : 'control'"
@@ -55,7 +61,7 @@
         } @else {
             <button
                 [nbSpinner]="usersStore.redirectLoading() || usersStore.loading()"
-                (click)="redirect('users/login')"
+                (click)="redirect('/users/login')"
                 nbButton
                 ghost
             >
@@ -77,12 +83,12 @@
                 <div class="menu-group-title">{{ group.title }}</div>
 
                 @for (item of group.children; track item.title) {
-                    <div (click)="redirect(item.url!)" class="menu-item" nbButton ghost>
+                    <button type="button" (click)="redirect(item.link || item.url || '/home')" class="menu-item">
                         @if (item.icon) {
-                            <img [src]="item.icon" width="20" height="20" class="menu-icon" />
+                            <img [src]="item.icon" width="20" height="20" class="menu-icon" alt="" />
                         }
                         <span>{{ item.title }}</span>
-                    </div>
+                    </button>
                 }
             </div>
         }

@@ -1,0 +1,87 @@
+:host {
+    display: block;
+}
+
+.events-page {
+    padding: clamp(1.5rem, 4vw, 3rem);
+
+    &__header {
+        margin-bottom: 1.75rem;
+
+        h1 {
+            margin: 0 0 0.35rem;
+        }
+
+        p {
+            margin: 0;
+            color: rgb(180 190 220 / 75%);
+        }
+    }
+
+    &__loading {
+        min-height: 8rem;
+    }
+}
+
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+    gap: 1rem;
+}
+
+.event-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.85rem;
+    background: var(--gc-surface-1);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+
+    &:hover {
+        transform: translateY(-0.15rem);
+        border-color: color-mix(in srgb, var(--game-accent) 50%, transparent);
+    }
+
+    &__cover {
+        width: 100%;
+        height: 9rem;
+        object-fit: cover;
+    }
+
+    &__body {
+        padding: 1rem 1.1rem 1.2rem;
+
+        h2 {
+            margin: 0 0 0.35rem;
+            font-size: 1.15rem;
+        }
+    }
+
+    &__dates {
+        margin: 0 0 0.5rem;
+        font-size: 0.85rem;
+        color: var(--game-accent);
+    }
+
+    &__desc {
+        margin: 0;
+        color: rgb(180 190 220 / 78%);
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+}
+
+.events-empty {
+    padding: 1.25rem;
+    border: 1px dashed rgb(255 255 255 / 12%);
+    border-radius: 0.85rem;
+    color: rgb(180 190 220 / 75%);
+}

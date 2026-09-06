@@ -1,0 +1,120 @@
+:host {
+    display: contents;
+}
+
+.notification-bell__trigger {
+    position: relative;
+    min-width: 2.5rem;
+}
+
+.notification-bell__badge {
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.28rem;
+    border-radius: 999px;
+    background: #e85d4c;
+    color: #fff;
+    font-size: 0.65rem;
+    line-height: 1.05rem;
+    font-weight: 700;
+    text-align: center;
+    pointer-events: none;
+}
+
+.notification-bell__panel {
+    width: min(22rem, 86vw);
+    max-height: min(28rem, 70vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0.85rem;
+    border: 1px solid rgb(255 255 255 / 8%);
+    background: var(--gc-surface-1, #121826);
+    box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 35%);
+    color: #eef3ff;
+}
+
+.notification-bell__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.55rem 0.85rem;
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.notification-bell__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f3f6ff;
+}
+
+.notification-bell__empty {
+    margin: 0;
+    padding: 1.25rem 1rem;
+    color: rgb(160 170 200 / 72%);
+    font-size: 0.88rem;
+    text-align: center;
+}
+
+.notification-bell__list {
+    list-style: none;
+    margin: 0;
+    padding: 0.35rem;
+    overflow: auto;
+}
+
+.notification-bell__item {
+    appearance: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.7rem 0.75rem;
+    border: 0;
+    border-radius: 0.65rem;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+.notification-bell__item:hover {
+    background: color-mix(in srgb, var(--gc-accent, #3dd6c6) 10%, transparent);
+}
+
+.notification-bell__item.is-unread {
+    background: color-mix(in srgb, var(--gc-accent, #3dd6c6) 12%, transparent);
+}
+
+.notification-bell__item.is-unread .notification-bell__item-title {
+    color: #fff;
+}
+
+.notification-bell__item-title {
+    color: #e8eefc;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.notification-bell__item-body {
+    color: rgb(170 180 210 / 78%);
+    font-size: 0.8rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.notification-bell__item-time {
+    color: rgb(140 155 185 / 68%);
+    font-size: 0.72rem;
+}

@@ -79,8 +79,14 @@
 .menu-item {
     display: flex;
     align-items: center;
+    width: 100%;
     padding: 0.4rem 1rem;
+    border: 0;
     border-radius: var(--border-radius);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
     cursor: pointer;
     transition: background 0.15s ease;
 }

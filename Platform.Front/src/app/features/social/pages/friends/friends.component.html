@@ -1,0 +1,158 @@
+<section class="social-page gc-enter">
+    <header class="social-page__header">
+        <h1 class="gc-display" i18n="@@social.friends.title">Friends</h1>
+        <p i18n="@@social.friends.lead">Pending requests, your crew, and blocked players.</p>
+    </header>
+
+    @if (friendsStore.loading()) {
+        <div class="social-page__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
+    } @else {
+        <div class="social-page__sections" [nbSpinner]="friendsStore.actionLoading()" nbSpinnerStatus="basic">
+            <section class="social-section">
+                <h2 class="social-section__title" i18n="@@social.friends.section.incoming">Incoming requests</h2>
+                @if (friendsStore.pendingIncoming().length === 0) {
+                    <p class="social-section__empty" i18n="@@social.friends.empty.incoming">No pending requests.</p>
+                } @else {
+                    <ul class="friend-list">
+                        @for (friend of friendsStore.pendingIncoming(); track friend.publicId) {
+                            <li class="friend-row">
+                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                <div class="friend-row__meta">
+                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <span class="friend-row__status" i18n="@@friends.status.pending">Pending</span>
+                                </div>
+                                <div class="friend-row__actions">
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        status="success"
+                                        (click)="friendsStore.accept(friend)"
+                                        i18n="@@social.friends.action.accept"
+                                    >
+                                        Accept
+                                    </button>
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        ghost
+                                        status="warning"
+                                        (click)="friendsStore.refuse(friend)"
+                                        i18n="@@social.friends.action.refuse"
+                                    >
+                                        Refuse
+                                    </button>
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        ghost
+                                        status="danger"
+                                        (click)="friendsStore.block(friend)"
+                                        i18n="@@social.friends.action.block"
+                                    >
+                                        Block
+                                    </button>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+
+            <section class="social-section">
+                <h2 class="social-section__title" i18n="@@social.friends.section.outgoing">Sent requests</h2>
+                @if (friendsStore.pendingOutgoing().length === 0) {
+                    <p class="social-section__empty" i18n="@@social.friends.empty.outgoing">No outgoing requests.</p>
+                } @else {
+                    <ul class="friend-list">
+                        @for (friend of friendsStore.pendingOutgoing(); track friend.publicId) {
+                            <li class="friend-row">
+                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                <div class="friend-row__meta">
+                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <span class="friend-row__status" i18n="@@friends.status.pending">Pending</span>
+                                </div>
+                                <div class="friend-row__actions">
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        ghost
+                                        status="danger"
+                                        (click)="friendsStore.block(friend)"
+                                        i18n="@@social.friends.action.block"
+                                    >
+                                        Block
+                                    </button>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+
+            <section class="social-section">
+                <h2 class="social-section__title" i18n="@@social.friends.section.accepted">Friends</h2>
+                @if (friendsStore.accepted().length === 0) {
+                    <p class="social-section__empty" i18n="@@social.friends.empty.accepted">No friends yet.</p>
+                } @else {
+                    <ul class="friend-list">
+                        @for (friend of friendsStore.accepted(); track friend.publicId) {
+                            <li class="friend-row">
+                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                <div class="friend-row__meta">
+                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <span class="friend-row__status" i18n="@@friends.status.accepted">Accepted</span>
+                                </div>
+                                <div class="friend-row__actions">
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        status="primary"
+                                        (click)="message(friend)"
+                                        i18n="@@social.friends.action.message"
+                                    >
+                                        Message
+                                    </button>
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        ghost
+                                        status="danger"
+                                        (click)="friendsStore.block(friend)"
+                                        i18n="@@social.friends.action.block"
+                                    >
+                                        Block
+                                    </button>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+
+            <section class="social-section">
+                <h2 class="social-section__title" i18n="@@social.friends.section.blocked">Blocked</h2>
+                @if (friendsStore.blocked().length === 0) {
+                    <p class="social-section__empty" i18n="@@social.friends.empty.blocked">No blocked players.</p>
+                } @else {
+                    <ul class="friend-list">
+                        @for (friend of friendsStore.blocked(); track friend.publicId) {
+                            <li class="friend-row">
+                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                <div class="friend-row__meta">
+                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <span class="friend-row__status" i18n="@@friends.status.blocked">Blocked</span>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        </div>
+    }
+</section>

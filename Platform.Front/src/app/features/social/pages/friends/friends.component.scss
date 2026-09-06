@@ -1,0 +1,121 @@
+:host {
+    display: block;
+}
+
+.social-page {
+    padding: clamp(1.5rem, 4vw, 3rem);
+
+    &__header {
+        margin-bottom: 1.5rem;
+
+        h1 {
+            margin: 0 0 0.35rem;
+        }
+
+        p {
+            margin: 0;
+            color: rgb(180 190 220 / 75%);
+        }
+    }
+
+    &__loading {
+        min-height: 10rem;
+    }
+
+    &__sections {
+        display: grid;
+        gap: 1rem;
+    }
+}
+
+.social-section {
+    padding: 1.1rem 1.25rem;
+    border-radius: 0.85rem;
+    border: 1px solid rgb(255 255 255 / 8%);
+    background: var(--gc-surface-1);
+
+    &__title {
+        margin: 0 0 0.85rem;
+        font-size: 1rem;
+        font-weight: 650;
+        color: #f2f5ff;
+    }
+
+    &__empty {
+        margin: 0;
+        color: rgb(160 170 200 / 68%);
+        font-size: 0.9rem;
+    }
+}
+
+.friend-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.friend-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.35rem;
+    border-radius: 0.7rem;
+
+    &:hover {
+        background: color-mix(in srgb, var(--gc-accent) 8%, transparent);
+    }
+
+    &__avatar {
+        display: grid;
+        place-items: center;
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--gc-accent-2) 28%, var(--gc-surface-2));
+        color: #fff;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    &__meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-width: 0;
+    }
+
+    &__name {
+        color: #f4f7ff;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    &__status {
+        color: rgb(160 170 200 / 72%);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 720px) {
+    .friend-row {
+        grid-template-columns: auto 1fr;
+        align-items: start;
+
+        &__actions {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+        }
+    }
+}

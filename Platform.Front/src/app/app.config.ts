@@ -4,7 +4,7 @@ import {
     provideBrowserGlobalErrorListeners,
     provideZoneChangeDetection,
 } from "@angular/core";
-import { provideRouter } from "@angular/router";
+import { provideRouter, withComponentInputBinding } from "@angular/router";
 
 import { HTTP_INTERCEPTORS, HttpRequest, provideHttpClient, withInterceptors, withInterceptorsFromDi } from "@angular/common/http";
 import { provideAnimations } from "@angular/platform-browser/animations";
@@ -36,6 +36,7 @@ import {
     NbMenuModule,
     NbThemeModule,
     NbToastrModule,
+    NbChatModule,
 } from "@nebular/theme";
 import { environment } from "environments/environment";
 import { appRoutes } from "./app.routes";
@@ -48,7 +49,7 @@ export const appConfig: ApplicationConfig = {
             eventCoalescing: true,
         }),
         provideAnimations(),
-        provideRouter(appRoutes),
+        provideRouter(appRoutes, withComponentInputBinding()),
         provideHttpClient(withInterceptors([errorInterceptor]), withInterceptorsFromDi()),
         importProvidersFrom(
             // Nebular UI
@@ -66,6 +67,7 @@ export const appConfig: ApplicationConfig = {
             NbButtonModule,
             NbInputModule,
             NbIconModule,
+            NbChatModule,
 
             // Nebular Auth
             NbAuthModule.forRoot({

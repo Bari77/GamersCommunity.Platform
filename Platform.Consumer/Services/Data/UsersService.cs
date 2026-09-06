@@ -85,9 +85,93 @@ namespace Platform.Consumer.Services.Data
 
                 case "Update":
                     return JsonSafe.Serialize(await UpdateUserAsync(message, ct));
+
+                case "Search":
+                    return JsonSafe.Serialize(await SearchPublicAsync(message, ct));
+
+                case "Get":
+                    return JsonSafe.Serialize(await GetPublicAsync(message, ct));
+
+                case "Touch":
+                    return JsonSafe.Serialize(await TouchPresenceAsync(message, ct));
             }
 
             return await base.HandleAsync(message, ct);
+        }
+
+        private async Task<PublicUserProfile> TouchPresenceAsync(BusMessage message, CancellationToken ct)
+        {
+            if (message.Caller?.Subject is not { } subject || !Guid.TryParse(subject, out var idKeycloak))
+            {
+                throw new UnauthorizedException("UNAUTHORIZED", "Authenticated caller required");
+            }
+
+            var user = await Context.Users.FirstOrDefaultAsync(u => u.IdKeycloak == idKeycloak, ct)
+                ?? throw new UnauthorizedException("UNAUTHORIZED", "Caller user not found");
+
+            return PublicUserProfile.FromEntity(await LoginAsync(user, ct));
+        }
+
+        private async Task<List<PublicUserProfile>> SearchPublicAsync(BusMessage message, CancellationToken ct)
+        {
+            var query = string.Empty;
+            if (!string.IsNullOrWhiteSpace(message.Data))
+            {
+                var request = ConsumerParamParser.ToObject<UserSearchRequest>(message.Data);
+                query = (request.Query ?? string.Empty).Trim();
+            }
+
+            if (query.Length < 1)
+            {
+                throw new BadRequestException("QUERY_MANDATORY", "Search query mandatory");
+            }
+
+            if (query.Length > 64)
+            {
+                throw new BadRequestException("QUERY_TOO_LONG", "Search query is too long");
+            }
+
+            var hashIndex = query.IndexOf('#');
+            IQueryable<User> users = Context.Users.AsNoTracking();
+
+            if (hashIndex >= 0)
+            {
+                var nickname = query[..hashIndex].Trim();
+                var discriminator = query[(hashIndex + 1)..].Trim();
+
+                if (nickname.Length == 0 && discriminator.Length == 0)
+                {
+                    throw new BadRequestException("QUERY_MANDATORY", "Search query mandatory");
+                }
+
+                if (nickname.Length > 0)
+                {
+                    users = users.Where(u => u.Nickname.StartsWith(nickname));
+                }
+
+                if (discriminator.Length > 0)
+                {
+                    users = users.Where(u => u.Discriminator.StartsWith(discriminator));
+                }
+            }
+            else
+            {
+                users = users.Where(u => u.Nickname.Contains(query));
+            }
+
+            var rows = await users
+                .OrderBy(u => u.Nickname)
+                .ThenBy(u => u.Discriminator)
+                .Take(25)
+                .ToListAsync(ct);
+
+            return rows.Select(PublicUserProfile.FromEntity).ToList();
+        }
+
+        private async Task<PublicUserProfile> GetPublicAsync(BusMessage message, CancellationToken ct)
+        {
+            var entity = await ResolveAsync(message, ct);
+            return PublicUserProfile.FromEntity(entity);
         }
 
         private async Task<User> UpdateUserAsync(BusMessage message, CancellationToken ct)

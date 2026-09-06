@@ -12,7 +12,7 @@ export class GameType {
         return new GameType(
             dto.id,
             dto.entitled,
-            dto.games.map((g) => Game.fromDto(g)),
+            dto.games?.map((g) => Game.fromDto(g)) ?? [],
         );
     }
 }

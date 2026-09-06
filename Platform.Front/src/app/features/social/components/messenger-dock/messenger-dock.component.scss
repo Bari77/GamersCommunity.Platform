@@ -1,0 +1,301 @@
+:host {
+    display: contents;
+}
+
+.messenger-dock {
+    --messenger-z: 1100;
+}
+
+.messenger-dock__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--messenger-z);
+    background: rgb(7 11 20 / 42%);
+}
+
+.messenger-dock__panel {
+    position: fixed;
+    z-index: calc(var(--messenger-z) + 1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0.85rem;
+    border: 1px solid rgb(255 255 255 / 8%);
+    background: var(--gc-surface-1);
+    box-shadow: 0 1rem 2.5rem rgb(0 0 0 / 35%);
+}
+
+.messenger-dock__header {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 3.25rem;
+    padding: 0.5rem 0.55rem 0.5rem 0.9rem;
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.messenger-dock__title {
+    flex: 1;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #f3f6ff;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.messenger-dock__offline {
+    margin: 0;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+    background: color-mix(in srgb, #c45c5c 18%, transparent);
+    color: rgb(255 210 210 / 92%);
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.messenger-dock__offline.is-connecting {
+    background: color-mix(in srgb, var(--gc-accent, #3dd6c6) 16%, transparent);
+    color: rgb(210 240 235 / 92%);
+}
+
+.messenger-dock__tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.35rem;
+    padding: 0.7rem 0.75rem 0;
+}
+
+.messenger-dock__tabs button {
+    appearance: none;
+    border: 0;
+    border-radius: 999px;
+    padding: 0.45rem 0.75rem;
+    background: transparent;
+    color: rgb(180 190 220 / 78%);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.messenger-dock__tabs button.is-active {
+    background: color-mix(in srgb, var(--gc-accent) 16%, transparent);
+    color: #fff;
+}
+
+.messenger-dock__body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.5rem 0.35rem 0.75rem;
+}
+
+.messenger-dock__hint {
+    padding: 1.25rem 1rem;
+    color: rgb(160 170 200 / 72%);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.messenger-dock__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.messenger-dock__row {
+    appearance: none;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.7rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.7rem 0.75rem;
+    border: 0;
+    border-radius: 0.7rem;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+}
+
+.messenger-dock__row:hover {
+    background: color-mix(in srgb, var(--gc-accent) 8%, transparent);
+}
+
+.messenger-dock__avatar {
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--gc-accent-2) 28%, var(--gc-surface-2));
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.messenger-dock__row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.messenger-dock__row-title {
+    color: #f4f7ff;
+    font-weight: 600;
+    font-size: 0.92rem;
+}
+
+.messenger-dock__row-preview {
+    overflow: hidden;
+    color: rgb(170 180 210 / 72%);
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.messenger-dock__row-date {
+    color: rgb(150 160 190 / 65%);
+    font-size: 0.72rem;
+}
+
+.messenger-dock__thread {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+
+    ::ng-deep nb-chat {
+        height: 100%;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+}
+
+.messenger-dock__fab {
+    appearance: none;
+    position: fixed;
+    z-index: calc(var(--messenger-z) + 2);
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin: 0;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--gc-accent) 40%, transparent);
+    border-radius: 999px;
+    background: var(--gc-accent);
+    color: #041018;
+    box-shadow: 0 0.65rem 1.5rem rgb(0 0 0 / 35%);
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+}
+
+.messenger-dock__fab:hover:not(.is-dragging) {
+    transform: translateY(-0.1rem);
+    box-shadow: 0 0.75rem 1.6rem color-mix(in srgb, var(--gc-accent) 28%, transparent);
+}
+
+.messenger-dock__fab.is-dragging {
+    cursor: grabbing;
+    transform: scale(1.04);
+}
+
+.messenger-dock__fab.is-open {
+    background: var(--gc-surface-2);
+    color: #eef3ff;
+    border-color: rgb(255 255 255 / 14%);
+}
+
+.messenger-dock__fab.is-offline:not(.is-open) {
+    background: color-mix(in srgb, #8a909c 70%, #041018);
+    border-color: rgb(255 255 255 / 18%);
+    color: #d7dde8;
+}
+
+.messenger-dock__fab nb-icon {
+    font-size: 1.45rem;
+    pointer-events: none;
+}
+
+.messenger-dock__tabs button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.messenger-dock__badge {
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: #e85d4c;
+    color: #fff;
+    font-size: 0.7rem;
+    line-height: 1.15rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.messenger-dock__contact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.25rem 0.4rem;
+    padding: 0.55rem 0.6rem;
+    border-radius: 0.7rem;
+    border: 1px solid rgb(255 255 255 / 8%);
+    background: rgb(255 255 255 / 3%);
+}
+
+.messenger-dock__contact-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.messenger-dock__row--static {
+    cursor: default;
+    grid-template-columns: auto 1fr;
+    padding: 0;
+}
+
+.messenger-dock__row--static:hover {
+    background: transparent;
+}
+
+.messenger-dock__avatar--img {
+    object-fit: cover;
+    display: block;
+}
+
+.messenger-dock__fab-badge {
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: #e85d4c;
+    color: #fff;
+    font-size: 0.68rem;
+    line-height: 1.15rem;
+    font-weight: 700;
+    text-align: center;
+}

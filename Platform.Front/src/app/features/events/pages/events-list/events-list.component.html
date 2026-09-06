@@ -1,0 +1,33 @@
+<section class="events-page gc-enter">
+    <header class="events-page__header">
+        <h1 class="gc-display" i18n="@@events.list.title">Community events</h1>
+        <p i18n="@@events.list.lead">Site-wide and cross-game gatherings — RSVP from the detail page.</p>
+    </header>
+
+    @if (eventsStore.listLoading()) {
+        <div class="events-page__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
+    } @else if (eventsStore.events.value().length === 0) {
+        <div class="events-empty">
+            <p i18n="@@events.list.empty">No events published yet. Check back soon.</p>
+        </div>
+    } @else {
+        <div class="events-grid">
+            @for (event of eventsStore.events.value(); track event.publicId) {
+                <button type="button" class="event-card" (click)="open(event)">
+                    @if (event.image) {
+                        <img class="event-card__cover" [src]="event.image" [alt]="event.title" />
+                    }
+                    <div class="event-card__body">
+                        <h2 class="gc-display">{{ event.title }}</h2>
+                        <p class="event-card__dates">
+                            {{ event.beginDate | date: "mediumDate" }}
+                            –
+                            {{ event.endDate | date: "mediumDate" }}
+                        </p>
+                        <p class="event-card__desc">{{ event.description }}</p>
+                    </div>
+                </button>
+            }
+        </div>
+    }
+</section>

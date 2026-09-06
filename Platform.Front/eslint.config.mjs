@@ -82,6 +82,21 @@ export default defineConfig([
                 {
                     selector: "default",
                     format: ["camelCase"],
+                    leadingUnderscore: "allow",
+                },
+                {
+                    selector: "variable",
+                    format: ["camelCase", "PascalCase", "UPPER_CASE"],
+                    leadingUnderscore: "allow",
+                },
+                {
+                    selector: "function",
+                    format: ["camelCase"],
+                },
+                {
+                    selector: "parameter",
+                    format: ["camelCase"],
+                    leadingUnderscore: "allow",
                 },
                 {
                     selector: "typeLike",
@@ -89,22 +104,21 @@ export default defineConfig([
                 },
                 {
                     selector: "typeParameter",
-                    format: ["camelCase"],
+                    format: ["PascalCase", "camelCase"],
                     prefix: ["T", "K"],
                 },
                 {
                     selector: "enumMember",
-                    format: ["UPPER_CASE"],
-                },
-                {
-                    selector: ["memberLike", "variableLike"],
-                    types: ["boolean"],
-                    format: ["camelCase"],
+                    format: ["UPPER_CASE", "PascalCase"],
                 },
                 {
                     selector: "classProperty",
-                    format: ["snake_case", "UPPER_CASE"],
-                    modifiers: ["public", "static"],
+                    format: ["camelCase", "PascalCase", "UPPER_CASE"],
+                    leadingUnderscore: "allow",
+                },
+                {
+                    selector: "objectLiteralProperty",
+                    format: null,
                 },
             ],
 

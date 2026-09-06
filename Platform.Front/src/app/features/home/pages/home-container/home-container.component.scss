@@ -1,0 +1,250 @@
+:host {
+    display: block;
+}
+
+.home-hero {
+    position: relative;
+    min-height: 80vh;
+    overflow: hidden;
+    isolation: isolate;
+    background:
+        radial-gradient(ellipse 80% 60% at 70% 40%, color-mix(in srgb, var(--game-accent) 18%, transparent), transparent 55%),
+        linear-gradient(160deg, #0a1020 0%, #121a2e 45%, #0b1522 100%);
+
+    app-game-video {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+    }
+
+    &__veil {
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(120deg, rgb(7 11 20 / 88%) 12%, rgb(7 11 20 / 35%) 55%, rgb(7 11 20 / 72%) 100%),
+            radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--game-accent) 28%, transparent), transparent 45%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    &__content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        min-height: 80vh;
+        padding: clamp(1.5rem, 4vw, 4rem);
+        max-width: 48rem;
+    }
+
+    &__eyebrow {
+        margin: 0;
+        color: var(--game-accent);
+        text-transform: uppercase;
+        font-size: 0.85rem;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        line-height: 1.1;
+        color: #fff;
+    }
+
+    &__lead {
+        margin: 0;
+        max-width: 36rem;
+        color: rgb(220 228 255 / 82%);
+        font-size: 1.05rem;
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+}
+
+.home-cta {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    font: inherit;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+
+    &--primary {
+        background: var(--game-accent);
+        border-color: var(--game-accent);
+        color: #041018;
+
+        &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0.5rem 1.25rem color-mix(in srgb, var(--game-accent) 35%, transparent);
+        }
+    }
+
+    &--ghost {
+        background: transparent;
+        border-color: rgb(255 255 255 / 28%);
+        color: #fff;
+
+        &:hover {
+            border-color: color-mix(in srgb, var(--game-accent) 55%, white);
+            color: var(--game-accent);
+        }
+    }
+}
+
+.home-section {
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.25rem, 4vw, 3rem);
+    border-top: 1px solid rgb(255 255 255 / 6%);
+
+    &__header {
+        margin-bottom: 1.5rem;
+
+        h2 {
+            margin: 0 0 0.35rem;
+            font-size: 1.6rem;
+        }
+
+        p {
+            margin: 0;
+            color: rgb(180 190 220 / 75%);
+        }
+    }
+
+    &--rail {
+        background: linear-gradient(180deg, var(--gc-surface-1), var(--gc-surface-0));
+    }
+}
+
+.home-games {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+}
+
+.game-tile {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.85rem;
+    background:
+        linear-gradient(145deg, rgb(22 32 51 / 95%), rgb(14 21 36 / 95%)),
+        radial-gradient(circle at 0 0, color-mix(in srgb, var(--tile-accent, var(--game-accent)) 18%, transparent), transparent 55%);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-0.2rem) scale(1.01);
+        border-color: color-mix(in srgb, var(--tile-accent, var(--game-accent)) 55%, transparent);
+        box-shadow: 0 0.75rem 1.75rem rgb(0 0 0 / 35%);
+    }
+
+    &__art {
+        width: 3.5rem;
+        height: 3.5rem;
+        object-fit: contain;
+        border-radius: 0.5rem;
+    }
+
+    &__meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        min-width: 0;
+    }
+
+    &__type {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: rgb(170 185 220 / 70%);
+    }
+
+    &__title {
+        font-size: 1.05rem;
+    }
+}
+
+.home-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1.25rem 1.35rem;
+    border-radius: 0.85rem;
+    border: 1px dashed rgb(255 255 255 / 12%);
+    background: rgb(14 21 36 / 65%);
+
+    p {
+        margin: 0;
+        color: rgb(180 190 220 / 75%);
+    }
+}
+
+.home-events-rail {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
+.home-event-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    min-width: 12rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgb(255 255 255 / 8%);
+    border-radius: 0.75rem;
+    background: var(--gc-surface-1);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease;
+
+    &:hover {
+        transform: translateY(-0.1rem);
+        border-color: color-mix(in srgb, var(--game-accent) 45%, transparent);
+    }
+
+    span:last-child {
+        font-size: 0.85rem;
+        color: rgb(180 190 220 / 75%);
+    }
+}
+
+:host ::ng-deep app-game-video video {
+    width: 100%;
+    height: 100%;
+    min-height: 80vh;
+    object-fit: cover;
+}

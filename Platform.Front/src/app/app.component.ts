@@ -4,6 +4,9 @@ import { FooterComponent } from "@core/layout/footer/components/footer/footer.co
 import { HeaderComponent } from "@core/layout/header/components/header/header.component";
 import { LoadingComponent } from "@core/layout/splash/components/loading/loading.component";
 import { LoadingStore } from "@core/stores/loading.store";
+import { MessengerDockComponent } from "@features/social/components/messenger-dock/messenger-dock.component";
+import { MessengerRealtimeService } from "@features/social/services/messenger-realtime.service";
+import { PresenceHeartbeatService } from "@features/users/services/presence-heartbeat.service";
 import { NbAuthOAuth2JWTToken, NbAuthService } from "@nebular/auth";
 import { NbLayoutModule } from "@nebular/theme";
 import { firstValueFrom, interval, map } from "rxjs";
@@ -11,20 +14,24 @@ import { firstValueFrom, interval, map } from "rxjs";
 @Component({
     standalone: true,
     selector: "app",
-    imports: [RouterOutlet, NbLayoutModule, HeaderComponent, FooterComponent, LoadingComponent],
+    imports: [RouterOutlet, NbLayoutModule, HeaderComponent, FooterComponent, LoadingComponent, MessengerDockComponent],
     templateUrl: "./app.component.html",
     styleUrl: "./app.component.scss",
 })
 export class AppComponent {
-    private readonly loadingStore = inject(LoadingStore);
-    private readonly authService = inject(NbAuthService);
-
     public readonly isLoading = computed(() => this.loadingStore.loading());
     public readonly loadingMessage = computed(
         () => this.loadingStore.message() ?? $localize`:@@core.layout.loading.message:Loading...`,
     );
 
-    constructor() {
+    private readonly loadingStore = inject(LoadingStore);
+    private readonly authService = inject(NbAuthService);
+    private readonly messengerRealtime = inject(MessengerRealtimeService);
+    private readonly presenceHeartbeat = inject(PresenceHeartbeatService);
+
+    public constructor() {
+        void this.messengerRealtime;
+        void this.presenceHeartbeat;
         const refreshSkewMs = 120_000;
         interval(30_000).subscribe(async () => {
             const token = await firstValueFrom(

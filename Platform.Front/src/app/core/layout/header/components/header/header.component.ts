@@ -2,6 +2,7 @@ import { Component, inject, model } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { GamesStore } from "@features/games/stores/games.store";
+import { NotificationBellComponent } from "@features/notifications/components/notification-bell/notification-bell.component";
 import { UsersStore } from "@features/users/stores/users.store";
 import {
     NbButtonModule,
@@ -39,6 +40,7 @@ import { SkeletonComponent } from "@shared/components/skeleton/skeleton.componen
         NbPopoverModule,
         AvatarComponent,
         SkeletonComponent,
+        NotificationBellComponent,
     ],
     templateUrl: "./header.component.html",
     styleUrl: "./header.component.scss",
@@ -54,8 +56,12 @@ export class HeaderComponent {
     public copied = model<boolean>(false);
 
     public constructor() {
-        this.searchService.onSearchSubmit().subscribe((data: any) => {
-            console.log(data.term);
+        this.searchService.onSearchSubmit().subscribe((data: { term: string }) => {
+            const term = data.term?.trim() ?? "";
+            if (!term) {
+                return;
+            }
+            void this.router.navigate(["/users/search"], { queryParams: { q: term } });
         });
     }
 
@@ -65,6 +71,7 @@ export class HeaderComponent {
     }
 
     public redirect(url: string): void {
-        this.router.navigate([url]);
+        const path = url.startsWith("/") ? url : `/${url}`;
+        void this.router.navigateByUrl(path);
     }
 }

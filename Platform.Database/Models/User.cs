@@ -37,4 +37,8 @@ public partial class User : IKeyTable
     public virtual ICollection<Message> MessageIdReceiverNavigations { get; set; } = new List<Message>();
 
     public virtual ICollection<Message> MessageIdSenderNavigations { get; set; } = new List<Message>();
+
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
+    public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
 }

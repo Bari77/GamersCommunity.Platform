@@ -18,6 +18,8 @@ public partial class Message : IKeyTable
 
     public int IdReceiver { get; set; }
 
+    public bool IsRead { get; set; }
+
     public virtual User IdReceiverNavigation { get; set; } = null!;
 
     public virtual User IdSenderNavigation { get; set; } = null!;

@@ -41,7 +41,7 @@ export class GamesStore {
             children: type.games.map((game: Game) => ({
                 title: game.title,
                 icon: `${environment.assetsBaseUrl}/Icons/Games/${game.picture}.png`,
-                url: game.urlValue,
+                link: game.urlValue.startsWith("/") ? game.urlValue : `/${game.urlValue}`,
             })),
         }));
     }

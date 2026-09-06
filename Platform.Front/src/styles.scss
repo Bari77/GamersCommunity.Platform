@@ -1,5 +1,46 @@
-* {
-    font-family: "Orbitron", sans-serif !important;
+/* Cosmic overrides — GamersCommunity energy skin */
+:root {
+    --gc-accent: #2ee6a6;
+    --gc-accent-2: #3dd6ff;
+    --gc-surface-0: #070b14;
+    --gc-surface-1: #0e1524;
+    --gc-surface-2: #162033;
+    --game-accent: var(--gc-accent);
+    --gc-font-display: "Orbitron", sans-serif;
+    --gc-font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+    font-family: var(--gc-font-body);
+    background: var(--gc-surface-0);
+    color: #edf1ff;
+}
+
+/* Keep chrome above page content (Nebular search modes can raise scrollable z-index). */
+nb-layout-header.fixed {
+    z-index: 1040;
+}
+
+nb-layout-footer.fixed {
+    z-index: 1040;
+}
+
+/* Soften Nebular default "basic" filled buttons in the chrome. */
+nb-layout-header [nbButton].appearance-filled.status-basic {
+    background-color: transparent;
+    border-color: transparent;
+    color: #edf1ff;
+}
+
+h1,
+h2,
+h3,
+.gc-display {
+    font-family: var(--gc-font-display);
+    letter-spacing: 0.04em;
 }
 
 .ml-sm {
@@ -28,4 +69,45 @@ nb-card-header > * {
 
 .splash-msg-color-error {
     color: #ff9a9a !important;
+}
+
+@keyframes gc-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gc-pulse-accent {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--game-accent) 45%, transparent);
+    }
+    50% {
+        box-shadow: 0 0 0 0.35rem color-mix(in srgb, var(--game-accent) 0%, transparent);
+    }
+}
+
+.gc-enter {
+    animation: gc-fade-up 0.55s ease both;
+}
+
+.gc-enter-delay-1 {
+    animation-delay: 0.08s;
+}
+
+.gc-enter-delay-2 {
+    animation-delay: 0.16s;
+}
+
+.gc-enter-delay-3 {
+    animation-delay: 0.24s;
+}
+
+.gc-pulse-new {
+    animation: gc-pulse-accent 2s ease-in-out infinite;
 }

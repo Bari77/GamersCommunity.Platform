@@ -16,13 +16,20 @@ export const appRoutes: Routes = [
         loadChildren: () => import("./features/home/home.routes").then((r) => r.homeRoutes),
     },
     {
+        path: "events",
+        loadChildren: () => import("./features/events/events.routes").then((r) => r.eventsRoutes),
+    },
+    {
+        path: "social",
+        loadChildren: () => import("./features/social/social.routes").then((r) => r.socialRoutes),
+    },
+    {
         path: "users",
         loadChildren: () => import("./features/users/users.routes").then((r) => r.usersRoutes),
     },
     {
         path: "world-of-warcraft",
-        loadChildren: () =>
-            loadRemoteRoutes("worldOfWarcraft", "./Routes", (m) => m["worldOfWarcraftRoutes"] as Routes),
+        loadChildren: () => loadRemoteRoutes("worldOfWarcraft", "./Routes", "worldOfWarcraftRoutes"),
     },
     {
         path: "offline",
