@@ -1,3 +1,4 @@
+import { parseUtcDate } from "@shared/utils/utc-date.util";
 import { UserDto } from "../dto/user.dto";
 
 export class User {
@@ -20,7 +21,7 @@ export class User {
             dto.discriminator,
             dto.avatarUrl,
             dto.mail,
-            new Date(dto.lastConnection),
+            parseUtcDate(dto.lastConnection),
             dto.idKeycloak,
         );
     }

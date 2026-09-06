@@ -22,7 +22,12 @@
                                     <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
                                 }
                                 <div class="friend-row__meta">
-                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
+                                        <app-user-handle
+                                            [nickname]="friend.peerNickname"
+                                            [discriminator]="friend.peerDiscriminator"
+                                        />
+                                    </a>
                                     <span class="friend-row__status" i18n="@@friends.status.pending">Pending</span>
                                 </div>
                                 <div class="friend-row__actions">
@@ -79,7 +84,12 @@
                                     <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
                                 }
                                 <div class="friend-row__meta">
-                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
+                                        <app-user-handle
+                                            [nickname]="friend.peerNickname"
+                                            [discriminator]="friend.peerDiscriminator"
+                                        />
+                                    </a>
                                     <span class="friend-row__status" i18n="@@friends.status.pending">Pending</span>
                                 </div>
                                 <div class="friend-row__actions">
@@ -115,7 +125,12 @@
                                     <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
                                 }
                                 <div class="friend-row__meta">
-                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
+                                        <app-user-handle
+                                            [nickname]="friend.peerNickname"
+                                            [discriminator]="friend.peerDiscriminator"
+                                        />
+                                    </a>
                                     <span class="friend-row__status" i18n="@@friends.status.accepted">Accepted</span>
                                 </div>
                                 <div class="friend-row__actions">
@@ -128,6 +143,17 @@
                                         i18n="@@social.friends.action.message"
                                     >
                                         Message
+                                    </button>
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        size="small"
+                                        ghost
+                                        status="basic"
+                                        (click)="friendsStore.remove(friend)"
+                                        i18n="@@social.friends.action.remove"
+                                    >
+                                        Remove
                                     </button>
                                     <button
                                         type="button"
@@ -161,7 +187,12 @@
                                     <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
                                 }
                                 <div class="friend-row__meta">
-                                    <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
+                                    <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
+                                        <app-user-handle
+                                            [nickname]="friend.peerNickname"
+                                            [discriminator]="friend.peerDiscriminator"
+                                        />
+                                    </a>
                                     <span class="friend-row__status" i18n="@@friends.status.blocked">Blocked</span>
                                 </div>
                                 <div class="friend-row__actions">

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using GamersCommunity.Core.Rabbit;
 using Microsoft.Extensions.Options;
+using Platform.Consumer.Serialization;
 using RabbitMQ.Client;
 using Serilog;
 
@@ -19,6 +20,7 @@ public sealed class RealtimeEventPublisher(IOptions<RabbitMQSettings> opts, ILog
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        Converters = { new UtcDateTimeJsonConverter() },
     };
 
     private readonly ConnectionFactory _factory = new()

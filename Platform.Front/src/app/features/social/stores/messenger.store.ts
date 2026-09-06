@@ -11,6 +11,9 @@ export type MessengerTab = "chats" | "contacts";
 
 export interface MessengerConversation {
     peerId: number;
+    peerPublicId: string;
+    nickname: string;
+    discriminator: string;
     label: string;
     avatarUrl: string;
     lastMessage: string;
@@ -41,9 +44,13 @@ export class MessengerStore {
             .value()
             .map((message) => {
                 const peerId = message.idSender === me ? message.idReceiver : message.idSender;
+                const identity = this.peerIdentity(peerId);
                 return {
                     peerId,
-                    label: this.peerLabel(peerId),
+                    peerPublicId: identity.publicId,
+                    nickname: identity.nickname,
+                    discriminator: identity.discriminator,
+                    label: identity.label,
                     avatarUrl: this.peerAvatarUrl(peerId),
                     lastMessage: message.content,
                     lastDate: message.creationDate,
@@ -62,7 +69,22 @@ export class MessengerStore {
 
     public readonly selectedLabel = computed(() => {
         const peerId = this.$selectedPeerId();
-        return peerId == null ? "" : this.peerLabel(peerId);
+        return peerId == null ? "" : this.peerIdentity(peerId).label;
+    });
+
+    public readonly selectedNickname = computed(() => {
+        const peerId = this.$selectedPeerId();
+        return peerId == null ? "" : this.peerIdentity(peerId).nickname;
+    });
+
+    public readonly selectedDiscriminator = computed(() => {
+        const peerId = this.$selectedPeerId();
+        return peerId == null ? "" : this.peerIdentity(peerId).discriminator;
+    });
+
+    public readonly selectedPeerPublicId = computed(() => {
+        const peerId = this.$selectedPeerId();
+        return peerId == null ? "" : this.peerIdentity(peerId).publicId;
     });
 
     public readonly selectedPeerAvatarUrl = computed(() => {
@@ -175,7 +197,7 @@ export class MessengerStore {
         return this.messagesStore.loadOlder();
     }
 
-    public async send(content: string): Promise<void> {
+    public async send(content: string, parentMessageId?: number | null): Promise<void> {
         if (!this.canCompose()) {
             return;
         }
@@ -183,7 +205,7 @@ export class MessengerStore {
         if (peerId == null) {
             return;
         }
-        await this.messagesStore.send(peerId, content);
+        await this.messagesStore.send(peerId, content, parentMessageId);
     }
 
     public accept(friend: Friend): Promise<void> {
@@ -196,6 +218,10 @@ export class MessengerStore {
 
     public block(friend: Friend): Promise<void> {
         return this.friendsStore.block(friend);
+    }
+
+    public remove(friend: Friend): Promise<void> {
+        return this.friendsStore.remove(friend);
     }
 
     public unblockSelectedPeer(): Promise<void> {
@@ -241,12 +267,29 @@ export class MessengerStore {
         );
     }
 
-    private peerLabel(peerId: number): string {
+    private peerIdentity(peerId: number): {
+        nickname: string;
+        discriminator: string;
+        publicId: string;
+        label: string;
+    } {
         const friend = this.friendsStore.friends.value().find((f) => f.peerId === peerId);
         if (friend) {
-            return friend.peerLabel;
+            return {
+                nickname: friend.peerNickname,
+                discriminator: friend.peerDiscriminator,
+                publicId: friend.peerPublicId,
+                label: friend.peerLabel,
+            };
         }
-        return $localize`:@@social.messenger.peerLabel:Player #${peerId}:peerId:`;
+
+        const label = $localize`:@@social.messenger.peerLabel:Player #${peerId}:peerId:`;
+        return {
+            nickname: label,
+            discriminator: "",
+            publicId: "",
+            label,
+        };
     }
 
     private peerAvatarUrl(peerId: number): string {

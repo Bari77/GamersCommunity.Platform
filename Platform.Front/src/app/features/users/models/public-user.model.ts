@@ -1,3 +1,4 @@
+import { parseUtcDateOrNull } from "@shared/utils/utc-date.util";
 import { PublicUserDto } from "../dto/public-user.dto";
 
 export class PublicUser {
@@ -21,7 +22,7 @@ export class PublicUser {
             dto.nickname,
             dto.discriminator,
             dto.avatarUrl,
-            dto.lastConnection ? new Date(dto.lastConnection) : null,
+            parseUtcDateOrNull(dto.lastConnection),
         );
     }
 }

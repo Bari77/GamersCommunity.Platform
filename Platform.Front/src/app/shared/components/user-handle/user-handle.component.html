@@ -1,0 +1,6 @@
+<span class="user-handle" [class.user-handle--stacked]="stacked()">
+    <span class="user-handle__nickname">{{ nickname() }}</span>
+    @if (normalizedDiscriminator()) {
+        <span class="user-handle__discriminator">#{{ normalizedDiscriminator() }}</span>
+    }
+</span>

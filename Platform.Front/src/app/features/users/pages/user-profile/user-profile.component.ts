@@ -6,13 +6,14 @@ import { MessengerStore } from "@features/social/stores/messenger.store";
 import { UsersStore } from "@features/users/stores/users.store";
 import { isUserOnline } from "@features/users/utils/presence.util";
 import { NbButtonModule, NbSpinnerModule } from "@nebular/theme";
+import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
 import { PublicUser } from "../../models/public-user.model";
 import { UserDirectoryStore } from "../../stores/user-directory.store";
 
 @Component({
     standalone: true,
     selector: "app-user-profile",
-    imports: [NbButtonModule, NbSpinnerModule, DatePipe, RouterLink],
+    imports: [NbButtonModule, NbSpinnerModule, DatePipe, RouterLink, UserHandleComponent],
     templateUrl: "./user-profile.component.html",
     styleUrl: "./user-profile.component.scss",
 })
@@ -70,6 +71,10 @@ export class UserProfileComponent {
         if (friend) {
             await this.friendsStore.block(friend);
         }
+    }
+
+    public async remove(user: PublicUser): Promise<void> {
+        await this.friendsStore.removePeer(user.id);
     }
 
     public async unblock(user: PublicUser): Promise<void> {

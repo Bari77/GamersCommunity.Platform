@@ -1,6 +1,4 @@
 <section class="user-profile gc-enter">
-    <a routerLink="/users/search" nbButton ghost status="control" i18n="@@users.profilePublic.back">Back to search</a>
-
     @if (directoryStore.profileLoading()) {
         <div class="user-profile__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
     } @else if (directoryStore.selected.value(); as user) {
@@ -8,8 +6,7 @@
             <img class="user-profile__avatar" [src]="user.avatarUrl" [alt]="user.nickname" />
             <div class="user-profile__identity">
                 <h1 class="gc-display">
-                    <span>{{ user.nickname }}</span>
-                    <span class="discriminator">#{{ user.discriminator }}</span>
+                    <app-user-handle [nickname]="user.nickname" [discriminator]="user.discriminator" />
                 </h1>
                 @if (isOnline(user.lastConnection)) {
                     <p class="user-profile__meta user-profile__meta--online">
@@ -124,6 +121,16 @@
                             i18n="@@social.friends.action.message"
                         >
                             Message
+                        </button>
+                        <button
+                            type="button"
+                            nbButton
+                            ghost
+                            status="basic"
+                            (click)="remove(user)"
+                            i18n="@@social.friends.action.remove"
+                        >
+                            Remove
                         </button>
                         <button
                             type="button"

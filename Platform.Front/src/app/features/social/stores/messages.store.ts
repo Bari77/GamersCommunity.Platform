@@ -66,6 +66,7 @@ export class MessagesStore {
         this.$threadPeerId.set(peerId);
         this.$threadLoading.set(true);
         this.$threadHasMore.set(false);
+        this.$threadMessages.set([]);
         try {
             const page = await firstValueFrom(
                 this.messagesService.listThread(peerId, undefined, THREAD_PAGE_SIZE).pipe(
@@ -150,7 +151,7 @@ export class MessagesStore {
         }
     }
 
-    public async send(idReceiver: number, content: string): Promise<void> {
+    public async send(idReceiver: number, content: string, parentMessageId?: number | null): Promise<void> {
         const trimmed = content.trim();
         if (!trimmed || idReceiver <= 0) {
             return;
@@ -158,7 +159,7 @@ export class MessagesStore {
 
         this.$sending.set(true);
         try {
-            await firstValueFrom(this.messagesService.create(idReceiver, trimmed));
+            await firstValueFrom(this.messagesService.create(idReceiver, trimmed, parentMessageId));
         } finally {
             this.$sending.set(false);
         }

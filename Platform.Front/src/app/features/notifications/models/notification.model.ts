@@ -1,3 +1,4 @@
+import { parseUtcDate } from "@shared/utils/utc-date.util";
 import { NotificationDto } from "../dto/notification.dto";
 import { NotificationKind } from "./notification-kinds";
 
@@ -26,7 +27,7 @@ export class AppNotification {
             dto.linkUrl ?? null,
             dto.isRead,
             dto.payloadJson ?? null,
-            new Date(dto.creationDate),
+            parseUtcDate(dto.creationDate),
         );
     }
 

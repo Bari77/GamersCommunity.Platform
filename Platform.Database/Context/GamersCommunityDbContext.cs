@@ -277,6 +277,11 @@ public partial class GamersCommunityDbContext : DbContext
                 .HasForeignKey(d => d.IdSender)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Messages_Sender");
+
+            entity.HasOne(d => d.ParentMessage).WithMany(p => p.Replies)
+                .HasForeignKey(d => d.ParentMessageId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Messages_Parent");
         });
 
         modelBuilder.Entity<Notification>(entity =>

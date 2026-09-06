@@ -38,7 +38,18 @@
                                 messengerStore.selectedLabel().charAt(0)
                             }}</span>
                         }
-                        <h2 class="messenger-dock__title">{{ messengerStore.selectedLabel() }}</h2>
+                        <h2 class="messenger-dock__title">
+                            @if (messengerStore.selectedPeerPublicId(); as publicId) {
+                                <button type="button" class="messenger-dock__peer-link" (click)="openPeerProfile(publicId)">
+                                    <app-user-handle
+                                        [nickname]="messengerStore.selectedNickname()"
+                                        [discriminator]="messengerStore.selectedDiscriminator()"
+                                    />
+                                </button>
+                            } @else {
+                                {{ messengerStore.selectedLabel() }}
+                            }
+                        </h2>
                     } @else {
                         <h2 class="messenger-dock__title gc-display" i18n="@@social.messenger.title">Whispers</h2>
                     }
@@ -67,7 +78,11 @@
                 }
 
                 @if (messengerStore.selectedPeerId() !== null) {
-                    <div class="messenger-dock__thread" [nbSpinner]="messengerStore.messagesLoading()">
+                    <div
+                        class="messenger-dock__thread"
+                        [class.has-reply]="replyingTo() !== null"
+                        [nbSpinner]="messengerStore.messagesLoading()"
+                    >
                         @if (messengerStore.threadBlockState() === 'blockedByMe') {
                             <div class="messenger-dock__block-banner" role="status">
                                 <p i18n="@@social.messenger.blockedByMe">
@@ -92,86 +107,68 @@
                             </div>
                         }
 
-                        <div class="messenger-dock__messages" #messagesScroll (scroll)="onMessagesScroll()">
-                            @if (messengerStore.threadLoadingOlder()) {
-                                <p class="messenger-dock__hint messenger-dock__hint--compact" i18n="@@social.messenger.loadingOlder">
-                                    Loading older whispers…
-                                </p>
+                        @if (messengerStore.threadLoadingOlder()) {
+                            <p class="messenger-dock__hint messenger-dock__hint--compact" i18n="@@social.messenger.loadingOlder">
+                                Loading older whispers…
+                            </p>
+                        }
+
+                        <nb-chat
+                            #whisperChat
+                            class="messenger-dock__chat"
+                            status="basic"
+                            [scrollBottom]="stickToBottom()"
+                            [noMessagesPlaceholder]="messengerStore.placeholderText()"
+                        >
+                            @for (message of messengerStore.threadMessages(); track message.publicId) {
+                                <nb-chat-message
+                                    [type]="message.parentContent ? 'quote' : 'text'"
+                                    [message]="message.content"
+                                    [quote]="messageQuote(message)"
+                                    [reply]="message.idSender === usersStore.user()?.id"
+                                    [sender]="messageSender(message)"
+                                    [date]="message.creationDate"
+                                    dateFormat="short"
+                                    [avatar]="messageAvatar(message)"
+                                    (click)="startReply(message)"
+                                ></nb-chat-message>
                             }
-                            @if (!messengerStore.messagesLoading() && messengerStore.threadMessages().length === 0) {
-                                <p class="messenger-dock__hint">{{ messengerStore.placeholderText() }}</p>
-                            } @else {
-                                @for (message of messengerStore.threadMessages(); track message.publicId) {
-                                    <div
-                                        class="messenger-dock__bubble"
-                                        [class.is-mine]="message.idSender === usersStore.user()?.id"
+                            @if (messengerStore.canCompose()) {
+                                <nb-chat-form
+                                    [dropFiles]="false"
+                                    [messagePlaceholder]="composePlaceholder"
+                                    (send)="onChatSend($event)"
+                                ></nb-chat-form>
+                            }
+                        </nb-chat>
+
+                        @if (messengerStore.canCompose()) {
+                            @if (replyingTo(); as reply) {
+                                <div class="messenger-dock__reply-bar">
+                                    <p class="messenger-dock__reply-preview">
+                                        <span i18n="@@social.messenger.replying">Replying</span>
+                                        — {{ reply.content }}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        nbButton
+                                        ghost
+                                        size="tiny"
+                                        status="control"
+                                        [attr.aria-label]="cancelReplyLabel"
+                                        (click)="cancelReply()"
                                     >
-                                        @if (message.idSender !== usersStore.user()?.id) {
-                                            @if (messengerStore.selectedPeerAvatarUrl()) {
-                                                <img
-                                                    class="messenger-dock__avatar messenger-dock__avatar--img messenger-dock__avatar--bubble"
-                                                    [src]="messengerStore.selectedPeerAvatarUrl()"
-                                                    [alt]="messengerStore.selectedLabel()"
-                                                />
-                                            } @else {
-                                                <span class="messenger-dock__avatar messenger-dock__avatar--bubble" aria-hidden="true">{{
-                                                    messengerStore.selectedLabel().charAt(0)
-                                                }}</span>
-                                            }
-                                        }
-                                        <div class="messenger-dock__bubble-body">
-                                            <span class="messenger-dock__bubble-sender">{{
-                                                message.idSender === usersStore.user()?.id ? youLabel : messengerStore.selectedLabel()
-                                            }}</span>
-                                            <p class="messenger-dock__bubble-text">{{ message.content }}</p>
-                                            <time class="messenger-dock__bubble-date">{{ message.creationDate | date: "short" }}</time>
-                                        </div>
-                                    </div>
-                                }
+                                        <nb-icon icon="close-outline" pack="eva"></nb-icon>
+                                    </button>
+                                </div>
                             }
-                        </div>
+                        }
 
                         @if (pendingBelowCount() > 0) {
                             <button type="button" class="messenger-dock__jump" (click)="jumpToLatest()">
                                 {{ newMessagesLabel }}
                                 <span class="messenger-dock__jump-count">{{ pendingBelowCount() }}</span>
                             </button>
-                        }
-
-                        @if (messengerStore.canCompose()) {
-                            <form class="messenger-dock__compose" (submit)="onComposeSubmit($event)">
-                                <input
-                                    type="text"
-                                    name="whisper"
-                                    [(ngModel)]="draft"
-                                    i18n-placeholder="@@social.messenger.compose"
-                                    placeholder="Whisper something…"
-                                    autocomplete="off"
-                                />
-                                <button
-                                    type="submit"
-                                    nbButton
-                                    status="primary"
-                                    size="small"
-                                    [disabled]="!draft.trim()"
-                                    i18n-aria-label="@@social.messenger.send"
-                                    aria-label="Send"
-                                >
-                                    <nb-icon icon="paper-plane-outline" pack="eva"></nb-icon>
-                                </button>
-                            </form>
-                        } @else if (messengerStore.isLive() && messengerStore.threadBlockState() !== 'none') {
-                            <div class="messenger-dock__compose messenger-dock__compose--disabled" aria-hidden="true">
-                                <input
-                                    type="text"
-                                    disabled
-                                    i18n-placeholder="@@social.messenger.composeDisabled"
-                                    placeholder="Messaging unavailable…"
-                                />
-                                <button type="button" nbButton status="primary" size="small" disabled>
-                                    <nb-icon icon="paper-plane-outline" pack="eva"></nb-icon>
-                                </button>
-                            </div>
                         }
                     </div>
                 } @else {
@@ -225,7 +222,12 @@
                                                     <span class="messenger-dock__avatar" aria-hidden="true">{{ chat.label.charAt(0) }}</span>
                                                 }
                                                 <span class="messenger-dock__row-text">
-                                                    <span class="messenger-dock__row-title">{{ chat.label }}</span>
+                                                    <span class="messenger-dock__row-title">
+                                                        <app-user-handle
+                                                            [nickname]="chat.nickname"
+                                                            [discriminator]="chat.discriminator"
+                                                        />
+                                                    </span>
                                                     <span class="messenger-dock__row-preview">{{ chat.lastMessage }}</span>
                                                 </span>
                                                 <time class="messenger-dock__row-date">{{ chat.lastDate | date: "shortDate" }}</time>
@@ -258,7 +260,25 @@
                                                     }}</span>
                                                 }
                                                 <span class="messenger-dock__row-text">
-                                                    <span class="messenger-dock__row-title">{{ contact.peerLabel }}</span>
+                                                    @if (contact.peerPublicId) {
+                                                        <button
+                                                            type="button"
+                                                            class="messenger-dock__row-title messenger-dock__peer-link"
+                                                            (click)="openPeerProfile(contact.peerPublicId)"
+                                                        >
+                                                            <app-user-handle
+                                                                [nickname]="contact.peerNickname"
+                                                                [discriminator]="contact.peerDiscriminator"
+                                                            />
+                                                        </button>
+                                                    } @else {
+                                                        <span class="messenger-dock__row-title">
+                                                            <app-user-handle
+                                                                [nickname]="contact.peerNickname"
+                                                                [discriminator]="contact.peerDiscriminator"
+                                                            />
+                                                        </span>
+                                                    }
                                                     @if (messengerStore.isIncomingPending(contact)) {
                                                         <span class="messenger-dock__row-preview" i18n="@@social.friends.section.incoming"
                                                             >Incoming requests</span
@@ -328,6 +348,17 @@
                                                         i18n="@@social.friends.action.message"
                                                     >
                                                         Message
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        nbButton
+                                                        size="tiny"
+                                                        ghost
+                                                        status="basic"
+                                                        (click)="messengerStore.remove(contact)"
+                                                        i18n="@@social.friends.action.remove"
+                                                    >
+                                                        Remove
                                                     </button>
                                                     <button
                                                         type="button"

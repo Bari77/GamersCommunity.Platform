@@ -35,6 +35,8 @@ public class FriendsService(
                 return JsonSafe.Serialize(await CreateRequestAsync(message, ct));
             case "UPDATE":
                 return JsonSafe.Serialize(await UpdateRelationAsync(message, ct));
+            case "DELETE":
+                return JsonSafe.Serialize(await RemoveRelationAsync(message, ct));
             default:
                 return await base.HandleAsync(message, ct);
         }
@@ -201,6 +203,37 @@ public class FriendsService(
                 ct);
         }
 
+        return true;
+    }
+
+    private async Task<bool> RemoveRelationAsync(BusMessage message, CancellationToken ct)
+    {
+        var me = await RequireCallerUserIdAsync(message, ct);
+        var friend = message.PublicId is Guid publicId
+            ? await Context.Friends.FirstOrDefaultAsync(f => f.PublicId == publicId, ct)
+            : message.Id is int id
+                ? await Context.Friends.FirstOrDefaultAsync(f => f.Id == id, ct)
+                : null;
+
+        if (friend is null)
+            throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
+
+        if (friend.IdFriendAsking != me && friend.IdFriendReceive != me)
+            throw new ForbiddenException("FORBIDDEN", "Not a participant of this friendship");
+
+        if (friend.IdFriendStatus != StatusAccepted)
+            throw new BadRequestException("INVALID_STATUS", "Only accepted friendships can be removed");
+
+        var peers = await Context.Users.AsNoTracking()
+            .Where(u => u.Id == friend.IdFriendAsking || u.Id == friend.IdFriendReceive)
+            .ToListAsync(ct);
+        var asking = peers.First(u => u.Id == friend.IdFriendAsking);
+        var receiving = peers.First(u => u.Id == friend.IdFriendReceive);
+
+        Context.Friends.Remove(friend);
+        await Context.SaveChangesAsync(ct);
+
+        await PublishFriendUpdatedAsync(asking.IdKeycloak, receiving.IdKeycloak, friend, ct);
         return true;
     }
 

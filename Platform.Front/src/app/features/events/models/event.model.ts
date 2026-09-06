@@ -1,3 +1,4 @@
+import { parseUtcDate } from "@shared/utils/utc-date.util";
 import { EventDto } from "../dto/event.dto";
 
 export class CommunityEvent {
@@ -19,8 +20,8 @@ export class CommunityEvent {
             dto.id,
             dto.publicId,
             dto.title,
-            new Date(dto.beginDate),
-            new Date(dto.endDate),
+            parseUtcDate(dto.beginDate),
+            parseUtcDate(dto.endDate),
             dto.description,
             dto.image ?? null,
             dto.link ?? null,

@@ -1,8 +1,6 @@
-import { DatePipe } from "@angular/common";
 import { Component, ElementRef, inject, viewChild } from "@angular/core";
 import { Router } from "@angular/router";
 import { GameVideoComponent } from "@core/layout/splash/components/game-video/game-video.component";
-import { EventsStore } from "@features/events/stores/events.store";
 import { GamesStore } from "@features/games/stores/games.store";
 import { UsersStore } from "@features/users/stores/users.store";
 import { NbButtonModule, NbIconModule } from "@nebular/theme";
@@ -12,14 +10,13 @@ import { environment } from "environments/environment";
 @Component({
     standalone: true,
     selector: "app-home-container",
-    imports: [GameVideoComponent, NbButtonModule, NbIconModule, SkeletonComponent, DatePipe],
+    imports: [GameVideoComponent, NbButtonModule, NbIconModule, SkeletonComponent],
     templateUrl: "./home-container.component.html",
     styleUrl: "./home-container.component.scss",
 })
 export class HomeContainerComponent {
     public readonly gamesStore = inject(GamesStore);
     public readonly usersStore = inject(UsersStore);
-    public readonly eventsStore = inject(EventsStore);
     private readonly router = inject(Router);
     private readonly gamesSection = viewChild<ElementRef<HTMLElement>>("gamesSection");
 

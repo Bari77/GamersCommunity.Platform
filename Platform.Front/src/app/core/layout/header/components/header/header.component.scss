@@ -44,13 +44,8 @@
     user-select: none;
     margin-right: 0.5rem;
 
-    .nickname {
+    app-user-handle {
         font-size: 1.15rem;
-    }
-
-    .discriminator {
-        font-size: 0.85rem;
-        color: rgb(137 137 227);
     }
 }
 

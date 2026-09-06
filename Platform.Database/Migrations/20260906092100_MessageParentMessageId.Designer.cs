@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Platform.Database.Context;
 
@@ -11,9 +12,11 @@ using Platform.Database.Context;
 namespace Platform.Database.Migrations
 {
     [DbContext(typeof(GamersCommunityDbContext))]
-    partial class GamersCommunityDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260906092100_MessageParentMessageId")]
+    partial class MessageParentMessageId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

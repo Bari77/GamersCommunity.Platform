@@ -26,8 +26,7 @@
                     <a class="user-search__row" [routerLink]="['/users', user.publicId]">
                         <img class="user-search__avatar" [src]="user.avatarUrl" [alt]="user.nickname" />
                         <span class="user-search__name">
-                            <span class="nickname">{{ user.nickname }}</span>
-                            <span class="discriminator">#{{ user.discriminator }}</span>
+                            <app-user-handle [nickname]="user.nickname" [discriminator]="user.discriminator" />
                         </span>
                         <span class="user-search__cta" i18n="@@users.search.openProfile">View profile</span>
                     </a>

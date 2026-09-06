@@ -8,6 +8,9 @@
     --game-accent: var(--gc-accent);
     --gc-font-display: "Orbitron", sans-serif;
     --gc-font-body: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --gc-discriminator: rgb(137 137 227);
+    --gc-card-list-gap: 0.5rem;
+    --gc-card-grid-gap: 1rem;
 }
 
 html,
@@ -49,10 +52,6 @@ h3,
 
 .flex-end {
     justify-content: flex-end;
-}
-
-input {
-    margin: 0 0 1rem 0;
 }
 
 nb-card-header > * {

@@ -158,6 +158,25 @@ export class FriendsStore {
         await this.unblock(friend);
     }
 
+    public remove(friend: Friend): Promise<void> {
+        return this.removePeer(friend.peerId);
+    }
+
+    public async removePeer(peerId: number): Promise<void> {
+        const friend = this.relationWith(peerId);
+        if (!friend || friend.idFriendStatus !== FriendStatusId.Accepted) {
+            return;
+        }
+
+        this.$actionLoading.set(true);
+        try {
+            await firstValueFrom(this.friendsService.remove(friend));
+            this.reload();
+        } finally {
+            this.$actionLoading.set(false);
+        }
+    }
+
     private async setStatus(friend: Friend, status: FriendStatusIdValue): Promise<void> {
         this.$actionLoading.set(true);
         try {

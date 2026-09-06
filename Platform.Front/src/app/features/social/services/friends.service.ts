@@ -28,4 +28,8 @@ export class FriendsService extends BaseService {
             idFriendStatus,
         });
     }
+
+    public remove(friend: Friend): Observable<void> {
+        return this.delete(friend.publicId);
+    }
 }

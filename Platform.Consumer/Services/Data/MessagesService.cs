@@ -4,6 +4,7 @@ using GamersCommunity.Core.Serialization;
 using GamersCommunity.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Platform.Consumer.Realtime;
+using Platform.Consumer.Serialization;
 using Platform.Database.Context;
 using Platform.Database.Models;
 using Serilog;
@@ -79,7 +80,7 @@ public class MessagesService(
             .ToList();
     }
 
-    private async Task<List<Message>> ListThreadAsync(BusMessage message, CancellationToken ct)
+    private async Task<List<MessageThreadDto>> ListThreadAsync(BusMessage message, CancellationToken ct)
     {
         var me = await RequireCallerUserIdAsync(message, ct);
         if (string.IsNullOrEmpty(message.Data))
@@ -114,6 +115,18 @@ public class MessagesService(
             .OrderByDescending(m => m.CreationDate)
             .ThenByDescending(m => m.Id)
             .Take(take)
+            .Select(m => new MessageThreadDto
+            {
+                Id = m.Id,
+                PublicId = m.PublicId,
+                Content = m.Content,
+                IdSender = m.IdSender,
+                IdReceiver = m.IdReceiver,
+                IsRead = m.IsRead,
+                CreationDate = m.CreationDate,
+                ParentMessageId = m.ParentMessageId,
+                ParentContent = m.ParentMessage != null ? m.ParentMessage.Content : null,
+            })
             .ToListAsync(ct);
     }
 
@@ -150,6 +163,8 @@ public class MessagesService(
         if (blocked)
             throw new ForbiddenException("BLOCKED", "Cannot message a blocked player");
 
+        var parent = await ResolveParentAsync(me, request.IdReceiver, request.ParentMessageId, ct);
+
         var now = DateTime.UtcNow;
         var entity = new Message
         {
@@ -158,6 +173,7 @@ public class MessagesService(
             IdSender = me,
             IdReceiver = request.IdReceiver,
             IsRead = false,
+            ParentMessageId = parent?.Id,
             CreationDate = now,
             ModificationDate = now,
         };
@@ -180,7 +196,9 @@ public class MessagesService(
                         IdSender = entity.IdSender,
                         IdReceiver = entity.IdReceiver,
                         IsRead = entity.IsRead,
-                        CreationDate = entity.CreationDate,
+                        CreationDate = UtcDateTimeJsonConverter.AsUtc(entity.CreationDate),
+                        ParentMessageId = entity.ParentMessageId,
+                        ParentContent = parent?.Content,
                     },
                 },
                 ct);
@@ -227,6 +245,28 @@ public class MessagesService(
         return entity;
     }
 
+    private async Task<ParentQuote?> ResolveParentAsync(int me, int peerId, int? parentMessageId, CancellationToken ct)
+    {
+        if (parentMessageId is not > 0)
+            return null;
+
+        var row = await Context.Messages.AsNoTracking()
+            .Where(m => m.Id == parentMessageId.Value)
+            .Select(m => new { m.Id, m.IdSender, m.IdReceiver, m.Content })
+            .FirstOrDefaultAsync(ct);
+
+        if (row is null)
+            throw new NotFoundException("PARENT_NOT_FOUND", "Parent message not found");
+
+        var sameThread =
+            (row.IdSender == me && row.IdReceiver == peerId)
+            || (row.IdSender == peerId && row.IdReceiver == me);
+        if (!sameThread)
+            throw new BadRequestException("INVALID_PARENT", "Parent message is not in this conversation");
+
+        return new ParentQuote(row.Id, row.IdSender, row.IdReceiver, row.Content);
+    }
+
     private async Task<int> RequireCallerUserIdAsync(BusMessage message, CancellationToken ct)
     {
         if (message.Caller?.Subject is not { } subject || !Guid.TryParse(subject, out var idKeycloak))
@@ -248,6 +288,21 @@ public class MessagesService(
         public int PeerId { get; set; }
         public int? BeforeId { get; set; }
         public int? Take { get; set; }
+    }
+
+    private sealed record ParentQuote(int Id, int IdSender, int IdReceiver, string Content);
+
+    private sealed class MessageThreadDto
+    {
+        public int Id { get; set; }
+        public Guid PublicId { get; set; }
+        public string Content { get; set; } = "";
+        public int IdSender { get; set; }
+        public int IdReceiver { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime CreationDate { get; set; }
+        public int? ParentMessageId { get; set; }
+        public string? ParentContent { get; set; }
     }
 
     private sealed class MessageConversationDto

@@ -7,4 +7,6 @@ export interface MessageDto {
     isRead?: boolean;
     creationDate: string;
     unreadCount?: number;
+    parentMessageId?: number | null;
+    parentContent?: string | null;
 }

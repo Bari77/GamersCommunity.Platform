@@ -21,6 +21,7 @@ import {
 } from "@nebular/theme";
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { SkeletonComponent } from "@shared/components/skeleton/skeleton.component";
+import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
 
 @Component({
     standalone: true,
@@ -41,6 +42,7 @@ import { SkeletonComponent } from "@shared/components/skeleton/skeleton.componen
         AvatarComponent,
         SkeletonComponent,
         NotificationBellComponent,
+        UserHandleComponent,
     ],
     templateUrl: "./header.component.html",
     styleUrl: "./header.component.scss",

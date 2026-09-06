@@ -10,8 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GamersCommunity.Core" Version="9.5.1" />
-    <PackageReference Include="GamersCommunity.Core.Logging" Version="9.5.1" />
+    <PackageReference Include="GamersCommunity.Core" Version="9.5.2" />
+    <PackageReference Include="GamersCommunity.Core.Logging" Version="9.5.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

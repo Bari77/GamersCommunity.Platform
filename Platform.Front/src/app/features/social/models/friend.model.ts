@@ -1,3 +1,4 @@
+import { parseUtcDate } from "@shared/utils/utc-date.util";
 import { FriendDto } from "../dto/friend.dto";
 
 export class Friend {
@@ -26,7 +27,7 @@ export class Friend {
             Number(dto.idFriendAsking),
             Number(dto.idFriendReceive),
             Number(dto.idFriendStatus),
-            dto.modificationDate ? new Date(dto.modificationDate) : new Date(0),
+            dto.modificationDate ? parseUtcDate(dto.modificationDate) : new Date(0),
             Number(dto.peerId),
             dto.peerPublicId,
             dto.peerNickname,

@@ -128,16 +128,12 @@
             color: rgb(180 190 220 / 75%);
         }
     }
-
-    &--rail {
-        background: linear-gradient(180deg, var(--gc-surface-1), var(--gc-surface-0));
-    }
 }
 
 .home-games {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: 1rem;
+    gap: var(--gc-card-grid-gap);
 }
 
 .game-tile {
@@ -188,57 +184,6 @@
 
     &__title {
         font-size: 1.05rem;
-    }
-}
-
-.home-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
-    padding: 1.25rem 1.35rem;
-    border-radius: 0.85rem;
-    border: 1px dashed rgb(255 255 255 / 12%);
-    background: rgb(14 21 36 / 65%);
-
-    p {
-        margin: 0;
-        color: rgb(180 190 220 / 75%);
-    }
-}
-
-.home-events-rail {
-    display: flex;
-    gap: 0.75rem;
-    overflow-x: auto;
-    padding-bottom: 0.25rem;
-}
-
-.home-event-chip {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-    min-width: 12rem;
-    padding: 0.9rem 1rem;
-    border: 1px solid rgb(255 255 255 / 8%);
-    border-radius: 0.75rem;
-    background: var(--gc-surface-1);
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease;
-
-    &:hover {
-        transform: translateY(-0.1rem);
-        border-color: color-mix(in srgb, var(--game-accent) 45%, transparent);
-    }
-
-    span:last-child {
-        font-size: 0.85rem;
-        color: rgb(180 190 220 / 75%);
     }
 }
 

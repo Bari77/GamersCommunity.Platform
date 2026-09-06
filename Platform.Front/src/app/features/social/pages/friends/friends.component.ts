@@ -1,6 +1,8 @@
 import { Component, inject } from "@angular/core";
+import { RouterLink } from "@angular/router";
 import { UsersStore } from "@features/users/stores/users.store";
 import { NbButtonModule, NbIconModule, NbSpinnerModule } from "@nebular/theme";
+import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
 import { Friend } from "../../models/friend.model";
 import { FriendsStore } from "../../stores/friends.store";
 import { MessengerStore } from "../../stores/messenger.store";
@@ -8,7 +10,7 @@ import { MessengerStore } from "../../stores/messenger.store";
 @Component({
     standalone: true,
     selector: "app-friends",
-    imports: [NbButtonModule, NbIconModule, NbSpinnerModule],
+    imports: [NbButtonModule, NbIconModule, NbSpinnerModule, UserHandleComponent, RouterLink],
     templateUrl: "./friends.component.html",
     styleUrl: "./friends.component.scss",
 })

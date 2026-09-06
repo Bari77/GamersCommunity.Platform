@@ -1,11 +1,12 @@
 import { Component, computed, inject, signal } from "@angular/core";
 import { UsersStore } from "@features/users/stores/users.store";
 import { NbButtonModule, NbCardModule, NbSpinnerModule } from "@nebular/theme";
+import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
 
 @Component({
     standalone: true,
     selector: "app-profile",
-    imports: [NbCardModule, NbButtonModule, NbSpinnerModule],
+    imports: [NbCardModule, NbButtonModule, NbSpinnerModule, UserHandleComponent],
     templateUrl: "./profile.component.html",
     styleUrls: ["./profile.component.scss"],
 })

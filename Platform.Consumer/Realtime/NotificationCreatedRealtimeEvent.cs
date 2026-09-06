@@ -1,3 +1,5 @@
+using Platform.Consumer.Serialization;
+
 namespace Platform.Consumer.Realtime;
 
 public sealed class NotificationCreatedRealtimeEvent
@@ -31,6 +33,6 @@ public sealed class NotificationRealtimePayload
         LinkUrl = n.LinkUrl,
         IsRead = n.IsRead,
         PayloadJson = n.PayloadJson,
-        CreationDate = n.CreationDate,
+        CreationDate = UtcDateTimeJsonConverter.AsUtc(n.CreationDate),
     };
 }

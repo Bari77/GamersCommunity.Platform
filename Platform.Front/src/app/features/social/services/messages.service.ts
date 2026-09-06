@@ -24,10 +24,11 @@ export class MessagesService extends BaseService {
             .pipe(map((dtos) => dtos.map((dto) => DirectMessage.fromDto(dto))));
     }
 
-    public create(idReceiver: number, content: string): Observable<number> {
+    public create(idReceiver: number, content: string, parentMessageId?: number | null): Observable<number> {
         return this.http.post<number>(this.getURL(), {
             idReceiver,
             content,
+            parentMessageId: parentMessageId ?? null,
         });
     }
 

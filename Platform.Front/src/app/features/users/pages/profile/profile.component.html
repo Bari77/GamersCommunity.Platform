@@ -6,7 +6,9 @@
                 <div class="profile-summary">
                     <img class="preview" [src]="previewUrl()" [alt]="user.nickname" />
                     <div class="identity">
-                        <div class="nickname">{{ usersStore.fullNickname() }}</div>
+                        <div class="nickname">
+                            <app-user-handle [nickname]="user.nickname" [discriminator]="user.discriminator" />
+                        </div>
                         @if (user.mail) {
                             <div class="mail">{{ user.mail }}</div>
                         }

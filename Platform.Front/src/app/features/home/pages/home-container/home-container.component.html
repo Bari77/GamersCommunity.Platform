@@ -8,18 +8,7 @@
             Profiles, guilds, LFG boards and events — one hub for every game you play.
         </p>
         <div class="home-hero__actions">
-            @if (usersStore.isLoggedIn()) {
-                <button
-                    type="button"
-                    class="home-cta home-cta--primary"
-                    (click)="go('/events')"
-                    nbButton
-                    status="primary"
-                    i18n="@@home.hero.cta.events"
-                >
-                    Upcoming events
-                </button>
-            } @else {
+            @if (!usersStore.isLoggedIn()) {
                 <button
                     type="button"
                     class="home-cta home-cta--primary"
@@ -33,11 +22,13 @@
             }
             <button
                 type="button"
-                class="home-cta home-cta--ghost"
+                class="home-cta"
+                [class.home-cta--primary]="usersStore.isLoggedIn()"
+                [class.home-cta--ghost]="!usersStore.isLoggedIn()"
                 (click)="scrollToGames()"
                 nbButton
-                ghost
-                status="control"
+                [status]="usersStore.isLoggedIn() ? 'primary' : 'control'"
+                [ghost]="!usersStore.isLoggedIn()"
                 i18n="@@home.hero.cta.games"
             >
                 Explore games
@@ -84,38 +75,4 @@
             }
         </div>
     }
-</section>
-
-<section class="home-section home-section--rail gc-enter gc-enter-delay-2">
-    <header class="home-section__header">
-        <h2 class="gc-display" i18n="@@home.events.title">Community events</h2>
-        <p i18n="@@home.events.lead">Site-wide meetups and cross-game gatherings.</p>
-    </header>
-    @if (eventsStore.listLoading()) {
-        <app-skeleton width="100%" height="6rem" radius="0.75rem" />
-    } @else if (eventsStore.upcomingEvents().length === 0) {
-        <div class="home-empty">
-            <p i18n="@@home.events.empty">Events will show up here as soon as the calendar fills.</p>
-            <button (click)="go('/events')" nbButton ghost status="primary" i18n="@@home.events.cta">Browse events</button>
-        </div>
-    } @else {
-        <div class="home-events-rail">
-            @for (event of eventsStore.upcomingEvents().slice(0, 5); track event.publicId) {
-                <button type="button" class="home-event-chip" (click)="go('/events/' + event.publicId)">
-                    <span class="gc-display">{{ event.title }}</span>
-                    <span>{{ event.beginDate | date: "mediumDate" }}</span>
-                </button>
-            }
-        </div>
-    }
-</section>
-
-<section class="home-section home-section--rail gc-enter gc-enter-delay-3">
-    <header class="home-section__header">
-        <h2 class="gc-display" i18n="@@home.lfg.title">Hot LFG</h2>
-        <p i18n="@@home.lfg.lead">Looking for group, guild or team — jump into a game hub.</p>
-    </header>
-    <div class="home-empty gc-pulse-new">
-        <p i18n="@@home.lfg.empty">LFG teasers will appear here from each game board.</p>
-    </div>
 </section>

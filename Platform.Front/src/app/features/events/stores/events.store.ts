@@ -24,9 +24,6 @@ export class EventsStore {
 
     public readonly listLoading = computed(() => this.events.isLoading());
     public readonly detailLoading = computed(() => this.selectedEvent.isLoading());
-    public readonly upcomingEvents = computed(() =>
-        this.events.value().filter((event) => event.active && event.endDate >= new Date()),
-    );
 
     private readonly eventsService = inject(EventsService);
     private readonly $selectedPublicId = signal<string | null>(null);

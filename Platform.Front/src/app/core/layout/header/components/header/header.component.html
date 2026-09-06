@@ -61,8 +61,11 @@
                 nbTooltipPlacement="bottom"
                 class="nickname-container"
             >
-                <span class="nickname">{{ usersStore.user()?.nickname! }}</span>
-                <span class="discriminator">{{ usersStore.discriminator() }}</span>
+                <app-user-handle
+                    [stacked]="true"
+                    [nickname]="usersStore.user()?.nickname!"
+                    [discriminator]="usersStore.user()?.discriminator ?? ''"
+                />
             </div>
             <app-avatar
                 [src]="usersStore.user()?.avatarUrl"

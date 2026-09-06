@@ -20,7 +20,13 @@ public partial class Message : IKeyTable
 
     public bool IsRead { get; set; }
 
+    public int? ParentMessageId { get; set; }
+
     public virtual User IdReceiverNavigation { get; set; } = null!;
 
     public virtual User IdSenderNavigation { get; set; } = null!;
+
+    public virtual Message? ParentMessage { get; set; }
+
+    public virtual ICollection<Message> Replies { get; set; } = new List<Message>();
 }
