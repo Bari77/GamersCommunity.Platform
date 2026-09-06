@@ -1,5 +1,4 @@
 export interface MessageDto {
-    id: number;
     publicId: string;
     content: string;
     idSender: number;
@@ -7,6 +6,6 @@ export interface MessageDto {
     isRead?: boolean;
     creationDate: string;
     unreadCount?: number;
-    parentMessageId?: number | null;
+    parentPublicId?: string | null;
     parentContent?: string | null;
 }

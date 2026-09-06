@@ -52,7 +52,9 @@ Assignment tables (`UserSiteRoles`, `UserGameRoles`, `UserGroupRoles`) are empty
 
 Do **not** expose sequential `int` primary keys in public URLs for user-owned or enumerable resources (`User`, events, etc.).
 
-**Retained model:** keep `int Id` as the internal PK (joins, `IKeyTable`, AuthZ FKs, catalog seeds). **`PublicId` (`uniqueidentifier` / `Guid`, unique, `NEWSEQUENTIALID()`)** is on user-owned entities. Index unique via `PublicIdConvention`. Routes and DTOs should use `PublicId`; authorization still required (obscurity is not access control).
+**Retained model:** keep `int Id` as the internal PK (joins, `IKeyTable`, AuthZ FKs, catalog seeds), except **`Message`**, whose primary key is `PublicId` (`uniqueidentifier`) to avoid the 2.1B identity ceiling. `Messages` uses a nonclustered PK on `PublicId` and a clustered index on `(CreationDate, PublicId)`.
+
+**`PublicId`** on other user-owned entities stays a unique `NEWSEQUENTIALID()` alongside `int Id`. Index unique via `PublicIdConvention` (skipped when `PublicId` is already the PK). Routes and DTOs should use `PublicId`; authorization still required (obscurity is not access control).
 
 Catalog / reference tables (game types, roles, statuses, …) stay on stable `int` ids.
 

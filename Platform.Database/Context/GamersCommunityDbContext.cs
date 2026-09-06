@@ -257,7 +257,12 @@ public partial class GamersCommunityDbContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_Message");
+            entity.HasKey(e => e.PublicId)
+                .HasName("PK_Message")
+                .IsClustered(false);
+
+            entity.HasIndex(e => new { e.CreationDate, e.PublicId })
+                .IsClustered();
 
             entity.Property(e => e.Content).HasColumnType("text");
             entity.Property(e => e.CreationDate)
@@ -279,7 +284,7 @@ public partial class GamersCommunityDbContext : DbContext
                 .HasConstraintName("FK_Messages_Sender");
 
             entity.HasOne(d => d.ParentMessage).WithMany(p => p.Replies)
-                .HasForeignKey(d => d.ParentMessageId)
+                .HasForeignKey(d => d.ParentPublicId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Messages_Parent");
         });

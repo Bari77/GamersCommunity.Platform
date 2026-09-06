@@ -14,12 +14,16 @@ internal static class PublicIdConvention
             if (prop is null || prop.PropertyType != typeof(Guid))
                 continue;
 
+            var pk = entityType.FindPrimaryKey();
+            var publicIdIsPrimaryKey = pk?.Properties.Count == 1 && pk.Properties[0].Name == "PublicId";
+
             modelBuilder.Entity(clr, b =>
             {
                 b.Property<Guid>("PublicId")
                     .HasDefaultValueSql("NEWSEQUENTIALID()")
                     .ValueGeneratedOnAdd();
-                b.HasIndex("PublicId").IsUnique();
+                if (!publicIdIsPrimaryKey)
+                    b.HasIndex("PublicId").IsUnique();
             });
         }
     }

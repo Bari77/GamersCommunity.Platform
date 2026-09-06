@@ -3,6 +3,7 @@ using GamersCommunity.Core.Rabbit;
 using GamersCommunity.Core.Services;
 using Platform.Consumer.Configuration;
 using Platform.Consumer.Realtime;
+using Platform.Consumer.Security;
 using Platform.Consumer.Services.Infra;
 using Platform.Database.Context;
 using Platform.Database.Seed;
@@ -55,6 +56,22 @@ namespace Platform.Consumer
                         // Bind configuration sections to strongly-typed settings
                         services.AddOptions<RabbitMQSettings>().Bind(context.Configuration.GetSection("RabbitMQ")).ValidateOnStart();
                         services.AddOptions<AppSettings>().Bind(context.Configuration.GetSection("AppSettings")).ValidateOnStart();
+                        services.AddOptions<MessageEncryptionSettings>()
+                            .Bind(context.Configuration.GetSection(MessageEncryptionSettings.SectionName))
+                            .Validate(s => !string.IsNullOrWhiteSpace(s.Key), "MessageEncryption:Key is required.")
+                            .Validate(s =>
+                            {
+                                try
+                                {
+                                    return Convert.FromBase64String(s.Key).Length == 32;
+                                }
+                                catch (FormatException)
+                                {
+                                    return false;
+                                }
+                            }, "MessageEncryption:Key must be a 32-byte Base64 AES-256 key.")
+                            .ValidateOnStart();
+                        services.AddSingleton<IMessageContentCipher, AesGcmMessageContentCipher>();
 
                         services.AddDbContext<GamersCommunityDbContext>((sp, options) =>
                         {

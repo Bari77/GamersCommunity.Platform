@@ -88,15 +88,15 @@ export class MessagesStore {
             return false;
         }
 
-        const beforeId = current[0]?.id;
-        if (!beforeId) {
+        const beforePublicId = current[0]?.publicId;
+        if (!beforePublicId) {
             return false;
         }
 
         this.$threadLoadingOlder.set(true);
         try {
             const page = await firstValueFrom(
-                this.messagesService.listThread(peerId, beforeId, THREAD_PAGE_SIZE).pipe(
+                this.messagesService.listThread(peerId, beforePublicId, THREAD_PAGE_SIZE).pipe(
                     catchError(() => of([] as DirectMessage[])),
                 ),
             );
@@ -125,7 +125,7 @@ export class MessagesStore {
         }
 
         const current = this.$threadMessages();
-        if (current.some((item) => item.publicId === message.publicId || item.id === message.id)) {
+        if (current.some((item) => item.publicId === message.publicId)) {
             return;
         }
         this.$threadMessages.set([...current, message]);
@@ -151,7 +151,7 @@ export class MessagesStore {
         }
     }
 
-    public async send(idReceiver: number, content: string, parentMessageId?: number | null): Promise<void> {
+    public async send(idReceiver: number, content: string, parentPublicId?: string | null): Promise<void> {
         const trimmed = content.trim();
         if (!trimmed || idReceiver <= 0) {
             return;
@@ -159,7 +159,7 @@ export class MessagesStore {
 
         this.$sending.set(true);
         try {
-            await firstValueFrom(this.messagesService.create(idReceiver, trimmed, parentMessageId));
+            await firstValueFrom(this.messagesService.create(idReceiver, trimmed, parentPublicId));
         } finally {
             this.$sending.set(false);
         }

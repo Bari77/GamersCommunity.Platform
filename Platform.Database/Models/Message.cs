@@ -2,10 +2,8 @@ using GamersCommunity.Core.Database;
 
 namespace Platform.Database.Models;
 
-public partial class Message : IKeyTable
+public partial class Message : IHasPublicId
 {
-    public int Id { get; set; }
-
     public Guid PublicId { get; set; }
 
     public DateTime CreationDate { get; set; }
@@ -20,7 +18,7 @@ public partial class Message : IKeyTable
 
     public bool IsRead { get; set; }
 
-    public int? ParentMessageId { get; set; }
+    public Guid? ParentPublicId { get; set; }
 
     public virtual User IdReceiverNavigation { get; set; } = null!;
 

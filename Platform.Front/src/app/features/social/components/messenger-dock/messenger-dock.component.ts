@@ -193,11 +193,11 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
         if (!content) {
             return;
         }
-        const parentMessageId = this.replyingTo()?.id ?? null;
+        const parentPublicId = this.replyingTo()?.publicId ?? null;
         this.replyingTo.set(null);
         this.stickToBottom.set(true);
         this.pendingBelowCount.set(0);
-        void this.messengerStore.send(content, parentMessageId);
+        void this.messengerStore.send(content, parentPublicId);
         this.scrollToBottom(true);
     }
 
@@ -205,7 +205,7 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
         if (!this.messengerStore.canCompose()) {
             return;
         }
-        this.replyingTo.update((current) => (current?.id === message.id ? null : message));
+        this.replyingTo.update((current) => (current?.publicId === message.publicId ? null : message));
     }
 
     public cancelReply(): void {

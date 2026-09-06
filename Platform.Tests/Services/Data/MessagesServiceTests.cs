@@ -1,27 +1,53 @@
-using GamersCommunity.Core.Tests;
+using GamersCommunity.Core.Exceptions;
+using GamersCommunity.Core.Rabbit;
+using Microsoft.Extensions.Options;
+using Platform.Consumer.Configuration;
 using Platform.Consumer.Realtime;
+using Platform.Consumer.Security;
 using Platform.Consumer.Services.Data;
-using Platform.Database.Context;
-using Platform.Database.Models;
 using Serilog;
 
 namespace Platform.Tests.Services.Data
 {
-    public class MessagesServiceTests : GenericDataServiceTests<GamersCommunityDbContext, MessagesService, Message>, IClassFixture<FakeDataset>
+    public class MessagesServiceTests : IClassFixture<FakeDataset>
     {
-        protected override List<Message> GetFakeData() => [];
+        private readonly FakeDataset _dataset;
 
-        protected override Message GetNewEntity() => new()
+        public MessagesServiceTests(FakeDataset dataset) => _dataset = dataset;
+
+        [Fact]
+        public async Task Action_Handle_Unknown_Action()
         {
-            IdSender = 1,
-            IdReceiver = 2,
-            Content = "New message",
-            CreationDate = DateTime.UtcNow,
-            ModificationDate = DateTime.UtcNow,
-        };
+            var service = CreateService();
+            await Assert.ThrowsAsync<InternalServerErrorException>(() => service.HandleAsync(new BusMessage
+            {
+                Type = GamersCommunity.Core.Enums.BusServiceTypeEnum.DATA,
+                Action = "UnknownAction",
+                Resource = "Messages",
+            }));
+        }
 
-        protected override MessagesService CreateService() =>
-            new(CreateContext(), new NoopRealtimeEventPublisher(), Log.Logger);
+        [Fact]
+        public async Task Get_requires_authenticated_caller()
+        {
+            var service = CreateService();
+            await Assert.ThrowsAsync<UnauthorizedException>(() => service.HandleAsync(new BusMessage
+            {
+                Type = GamersCommunity.Core.Enums.BusServiceTypeEnum.DATA,
+                Action = "Get",
+                Resource = "Messages",
+                PublicId = Guid.NewGuid(),
+            }));
+        }
+
+        private MessagesService CreateService() =>
+            new(_dataset.CreateFakeContext(), new NoopRealtimeEventPublisher(), CreateCipher(), Log.Logger);
+
+        private static IMessageContentCipher CreateCipher() =>
+            new AesGcmMessageContentCipher(Options.Create(new MessageEncryptionSettings
+            {
+                Key = "MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNDU2Nzg5MDA=",
+            }));
     }
 
     file sealed class NoopRealtimeEventPublisher : IRealtimeEventPublisher

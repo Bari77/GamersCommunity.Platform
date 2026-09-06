@@ -197,7 +197,7 @@ export class MessengerStore {
         return this.messagesStore.loadOlder();
     }
 
-    public async send(content: string, parentMessageId?: number | null): Promise<void> {
+    public async send(content: string, parentPublicId?: string | null): Promise<void> {
         if (!this.canCompose()) {
             return;
         }
@@ -205,7 +205,7 @@ export class MessengerStore {
         if (peerId == null) {
             return;
         }
-        await this.messagesStore.send(peerId, content, parentMessageId);
+        await this.messagesStore.send(peerId, content, parentPublicId);
     }
 
     public accept(friend: Friend): Promise<void> {

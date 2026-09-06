@@ -14,21 +14,21 @@ export class MessagesService extends BaseService {
         return this.getAll<MessageDto, DirectMessage>(DirectMessage);
     }
 
-    public listThread(peerId: number, beforeId?: number, take = 20): Observable<DirectMessage[]> {
+    public listThread(peerId: number, beforePublicId?: string, take = 20): Observable<DirectMessage[]> {
         return this.http
             .post<MessageDto[]>(this.getURL("actions/ListThread"), {
                 peerId,
-                beforeId: beforeId ?? null,
+                beforePublicId: beforePublicId ?? null,
                 take,
             })
             .pipe(map((dtos) => dtos.map((dto) => DirectMessage.fromDto(dto))));
     }
 
-    public create(idReceiver: number, content: string, parentMessageId?: number | null): Observable<number> {
-        return this.http.post<number>(this.getURL(), {
+    public create(idReceiver: number, content: string, parentPublicId?: string | null): Observable<string> {
+        return this.http.post<string>(this.getURL(), {
             idReceiver,
             content,
-            parentMessageId: parentMessageId ?? null,
+            parentPublicId: parentPublicId ?? null,
         });
     }
 

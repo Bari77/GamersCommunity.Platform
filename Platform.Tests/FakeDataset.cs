@@ -313,7 +313,7 @@ namespace Platform.Tests
             ctx.Messages.AddRange(
                 new Message
                 {
-                    Id = 1,
+                    PublicId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     IdSender = 1,
                     IdReceiver = 2,
                     Content = "Content A",
@@ -322,7 +322,7 @@ namespace Platform.Tests
                 },
                 new Message
                 {
-                    Id = 2,
+                    PublicId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     IdSender = 2,
                     IdReceiver = 3,
                     Content = "Content B",
