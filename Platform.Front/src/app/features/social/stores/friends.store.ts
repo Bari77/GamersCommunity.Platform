@@ -10,6 +10,8 @@ export type FriendRelationKind =
     | "pendingOutgoing"
     | "pendingIncoming"
     | "accepted"
+    | "blockedByMe"
+    | "blockedByPeer"
     | "blocked"
     | "refused";
 
@@ -108,7 +110,7 @@ export class FriendsStore {
             return "accepted";
         }
         if (friend.idFriendStatus === FriendStatusId.Blocked) {
-            return "blocked";
+            return friend.idFriendAsking === me ? "blockedByMe" : "blockedByPeer";
         }
         if (friend.idFriendStatus === FriendStatusId.Refused) {
             return "refused";
@@ -142,6 +144,18 @@ export class FriendsStore {
 
     public block(friend: Friend): Promise<void> {
         return this.setStatus(friend, FriendStatusId.Blocked);
+    }
+
+    public unblock(friend: Friend): Promise<void> {
+        return this.setStatus(friend, FriendStatusId.Accepted);
+    }
+
+    public async unblockPeer(peerId: number): Promise<void> {
+        const friend = this.relationWith(peerId);
+        if (!friend || friend.idFriendStatus !== FriendStatusId.Blocked) {
+            return;
+        }
+        await this.unblock(friend);
     }
 
     private async setStatus(friend: Friend, status: FriendStatusIdValue): Promise<void> {

@@ -85,14 +85,20 @@ export class MessengerRealtimeService {
 
             this.connection.on("message.created", (payload: MessageDto) => {
                 this.zone.run(() => {
-                    this.messagesStore.upsert(DirectMessage.fromDto(payload));
+                    const message = DirectMessage.fromDto(payload);
+                    this.messagesStore.upsert(message);
+
+                    const me = Number(this.usersStore.user()?.id);
+                    const messenger = this.injector.get(MessengerStore);
+                    if (me && message.idReceiver === me && messenger.selectedPeerId() === message.idSender) {
+                        void this.messagesStore.markThreadRead(message.idSender);
+                    }
                 });
             });
 
-            this.connection.on("friend.updated", (payload: FriendUpdatedPayload) => {
+            this.connection.on("friend.updated", (_payload: FriendUpdatedPayload) => {
                 this.zone.run(() => {
                     this.friendsStore.reload();
-                    this.injector.get(MessengerStore).onFriendUpdated(payload);
                 });
             });
 

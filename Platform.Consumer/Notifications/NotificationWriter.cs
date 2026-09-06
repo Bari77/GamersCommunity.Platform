@@ -18,6 +18,16 @@ public interface INotificationWriter
         string? linkUrl,
         object? payload,
         CancellationToken ct = default);
+
+    Task<Notification?> UpsertUnreadAsync(
+        int idUser,
+        string kind,
+        string peerToken,
+        string title,
+        string? body,
+        string? linkUrl,
+        object payload,
+        CancellationToken ct = default);
 }
 
 public sealed class NotificationWriter(
@@ -51,15 +61,57 @@ public sealed class NotificationWriter(
 
         await context.Notifications.AddAsync(entity, ct);
         await context.SaveChangesAsync(ct);
+        await PublishCreatedAsync(entity, ct);
+        return entity;
+    }
 
+    public async Task<Notification?> UpsertUnreadAsync(
+        int idUser,
+        string kind,
+        string peerToken,
+        string title,
+        string? body,
+        string? linkUrl,
+        object payload,
+        CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var existing = await context.Notifications
+            .Where(n =>
+                n.IdUser == idUser
+                && !n.IsRead
+                && n.Kind == kind
+                && n.PayloadJson != null
+                && n.PayloadJson.Contains(peerToken))
+            .OrderByDescending(n => n.ModificationDate)
+            .FirstOrDefaultAsync(ct);
+
+        if (existing is null)
+        {
+            return await CreateAsync(idUser, kind, title, body, linkUrl, payload, ct);
+        }
+
+        existing.Title = title;
+        existing.Body = body;
+        existing.LinkUrl = linkUrl;
+        existing.PayloadJson = JsonSerializer.Serialize(payload);
+        existing.ModificationDate = now;
+        existing.CreationDate = now;
+        await context.SaveChangesAsync(ct);
+        await PublishCreatedAsync(existing, ct);
+        return existing;
+    }
+
+    private async Task PublishCreatedAsync(Notification entity, CancellationToken ct)
+    {
         var user = await context.Users.AsNoTracking()
-            .Where(u => u.Id == idUser)
+            .Where(u => u.Id == entity.IdUser)
             .Select(u => new { u.IdKeycloak })
             .FirstOrDefaultAsync(ct);
 
         if (user is null)
         {
-            return entity;
+            return;
         }
 
         try
@@ -76,7 +128,5 @@ public sealed class NotificationWriter(
         {
             logger.Warning(ex, "Failed to publish notification.created for {PublicId}.", entity.PublicId);
         }
-
-        return entity;
     }
 }

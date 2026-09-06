@@ -127,10 +127,16 @@ public class FriendsService(
             await notificationWriter.CreateAsync(
                 request.IdFriendReceive,
                 NotificationKinds.FriendRequest,
-                "Friend request",
-                $"{meUser.Nickname}#{meUser.Discriminator} wants to add you",
+                NotificationMessageIds.FriendRequestTitle,
+                NotificationMessageIds.FriendRequestBody,
                 $"/users/{meUser.PublicId}",
-                new { peerId = me, friendshipPublicId = entity.PublicId },
+                new
+                {
+                    peerId = me,
+                    friendshipPublicId = entity.PublicId,
+                    peerNickname = meUser.Nickname,
+                    peerDiscriminator = meUser.Discriminator,
+                },
                 ct);
         }
 
@@ -158,6 +164,14 @@ public class FriendsService(
 
         EnsureAllowedTransition(friend, me, request.IdFriendStatus);
         var previous = friend.IdFriendStatus;
+        var peerId = friend.IdFriendAsking == me ? friend.IdFriendReceive : friend.IdFriendAsking;
+
+        if (request.IdFriendStatus == StatusBlocked)
+        {
+            friend.IdFriendAsking = me;
+            friend.IdFriendReceive = peerId;
+        }
+
         friend.IdFriendStatus = request.IdFriendStatus;
         friend.ModificationDate = DateTime.UtcNow;
         await Context.SaveChangesAsync(ct);
@@ -174,10 +188,16 @@ public class FriendsService(
             await notificationWriter.CreateAsync(
                 friend.IdFriendAsking,
                 NotificationKinds.FriendAccepted,
-                "Friend request accepted",
-                $"{receiving.Nickname}#{receiving.Discriminator} accepted your request",
+                NotificationMessageIds.FriendAcceptedTitle,
+                NotificationMessageIds.FriendAcceptedBody,
                 $"/users/{receiving.PublicId}",
-                new { peerId = friend.IdFriendReceive, friendshipPublicId = friend.PublicId },
+                new
+                {
+                    peerId = friend.IdFriendReceive,
+                    friendshipPublicId = friend.PublicId,
+                    peerNickname = receiving.Nickname,
+                    peerDiscriminator = receiving.Discriminator,
+                },
                 ct);
         }
 
@@ -230,10 +250,12 @@ public class FriendsService(
     {
         var isReceiver = friend.IdFriendReceive == me;
         var isPending = friend.IdFriendStatus == StatusPending;
+        var isBlocker = friend.IdFriendStatus == StatusBlocked && friend.IdFriendAsking == me;
 
         switch (nextStatus)
         {
             case StatusAccepted when isPending && isReceiver:
+            case StatusAccepted when isBlocker:
             case StatusRefused when isPending && isReceiver:
             case StatusBlocked:
                 return;

@@ -72,6 +72,13 @@ export class UserProfileComponent {
         }
     }
 
+    public async unblock(user: PublicUser): Promise<void> {
+        const friend = this.friendsStore.relationWith(user.id);
+        if (friend) {
+            await this.friendsStore.unblock(friend);
+        }
+    }
+
     public whisper(user: PublicUser): void {
         this.messengerStore.openThread(user.id);
     }

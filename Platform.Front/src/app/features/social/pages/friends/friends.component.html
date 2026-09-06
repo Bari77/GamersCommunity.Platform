@@ -16,7 +16,11 @@
                     <ul class="friend-list">
                         @for (friend of friendsStore.pendingIncoming(); track friend.publicId) {
                             <li class="friend-row">
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                @if (friend.peerAvatarUrl) {
+                                    <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                } @else {
+                                    <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                }
                                 <div class="friend-row__meta">
                                     <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
                                     <span class="friend-row__status" i18n="@@friends.status.pending">Pending</span>
@@ -69,7 +73,11 @@
                     <ul class="friend-list">
                         @for (friend of friendsStore.pendingOutgoing(); track friend.publicId) {
                             <li class="friend-row">
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                @if (friend.peerAvatarUrl) {
+                                    <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                } @else {
+                                    <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                }
                                 <div class="friend-row__meta">
                                     <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
                                     <span class="friend-row__status" i18n="@@friends.status.pending">Pending</span>
@@ -101,7 +109,11 @@
                     <ul class="friend-list">
                         @for (friend of friendsStore.accepted(); track friend.publicId) {
                             <li class="friend-row">
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                @if (friend.peerAvatarUrl) {
+                                    <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                } @else {
+                                    <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                }
                                 <div class="friend-row__meta">
                                     <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
                                     <span class="friend-row__status" i18n="@@friends.status.accepted">Accepted</span>
@@ -143,10 +155,28 @@
                     <ul class="friend-list">
                         @for (friend of friendsStore.blocked(); track friend.publicId) {
                             <li class="friend-row">
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friendsStore.peerLabel(friend).charAt(0) }}</span>
+                                @if (friend.peerAvatarUrl) {
+                                    <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                } @else {
+                                    <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                }
                                 <div class="friend-row__meta">
                                     <span class="friend-row__name">{{ friendsStore.peerLabel(friend) }}</span>
                                     <span class="friend-row__status" i18n="@@friends.status.blocked">Blocked</span>
+                                </div>
+                                <div class="friend-row__actions">
+                                    @if (friend.idFriendAsking === usersStore.user()?.id) {
+                                        <button
+                                            type="button"
+                                            nbButton
+                                            size="small"
+                                            status="basic"
+                                            (click)="friendsStore.unblock(friend)"
+                                            i18n="@@social.friends.action.unblock"
+                                        >
+                                            Unblock
+                                        </button>
+                                    }
                                 </div>
                             </li>
                         }

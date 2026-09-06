@@ -3,7 +3,6 @@ using GamersCommunity.Core.Rabbit;
 using GamersCommunity.Core.Serialization;
 using GamersCommunity.Core.Services;
 using Microsoft.EntityFrameworkCore;
-using Platform.Consumer.Notifications;
 using Platform.Consumer.Realtime;
 using Platform.Database.Context;
 using Platform.Database.Models;
@@ -15,16 +14,20 @@ namespace Platform.Consumer.Services.Data;
 public class MessagesService(
     GamersCommunityDbContext context,
     IRealtimeEventPublisher realtimePublisher,
-    INotificationWriter notificationWriter,
     ILogger logger)
     : GenericDataService<GamersCommunityDbContext, Message>(context, "Messages")
 {
+    private const int ThreadPageSize = 20;
+    private const int StatusBlocked = 4;
+
     public override async Task<string> HandleAsync(BusMessage message, CancellationToken ct = default)
     {
         switch (message.Action.ToUpperInvariant())
         {
             case "LIST":
-                return JsonSafe.Serialize(await ListMineAsync(message, ct));
+                return JsonSafe.Serialize(await ListConversationsAsync(message, ct));
+            case "LISTTHREAD":
+                return JsonSafe.Serialize(await ListThreadAsync(message, ct));
             case "CREATE":
                 return JsonSafe.Serialize(await CreateMineAsync(message, ct));
             case "GET":
@@ -36,12 +39,81 @@ public class MessagesService(
         }
     }
 
-    private async Task<List<Message>> ListMineAsync(BusMessage message, CancellationToken ct)
+    private async Task<List<MessageConversationDto>> ListConversationsAsync(BusMessage message, CancellationToken ct)
     {
         var me = await RequireCallerUserIdAsync(message, ct);
-        return await Context.Messages.AsNoTracking()
+        var mine = await Context.Messages.AsNoTracking()
             .Where(m => m.IdSender == me || m.IdReceiver == me)
+            .Select(m => new
+            {
+                m.Id,
+                m.PublicId,
+                m.Content,
+                m.IdSender,
+                m.IdReceiver,
+                m.IsRead,
+                m.CreationDate,
+                PeerId = m.IdSender == me ? m.IdReceiver : m.IdSender,
+            })
+            .ToListAsync(ct);
+
+        return mine
+            .GroupBy(m => m.PeerId)
+            .Select(g =>
+            {
+                var last = g.OrderByDescending(x => x.CreationDate).ThenByDescending(x => x.Id).First();
+                var unread = g.Count(x => x.IdReceiver == me && !x.IsRead);
+                return new MessageConversationDto
+                {
+                    Id = last.Id,
+                    PublicId = last.PublicId,
+                    Content = last.Content,
+                    IdSender = last.IdSender,
+                    IdReceiver = last.IdReceiver,
+                    IsRead = last.IsRead,
+                    CreationDate = last.CreationDate,
+                    UnreadCount = unread,
+                };
+            })
+            .OrderByDescending(x => x.CreationDate)
+            .ToList();
+    }
+
+    private async Task<List<Message>> ListThreadAsync(BusMessage message, CancellationToken ct)
+    {
+        var me = await RequireCallerUserIdAsync(message, ct);
+        if (string.IsNullOrEmpty(message.Data))
+            throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
+
+        var request = ConsumerParamParser.ToObject<ListThreadRequest>(message.Data);
+        if (request.PeerId <= 0)
+            throw new BadRequestException("PEER_MANDATORY", "Peer id mandatory");
+
+        var take = request.Take is > 0 and <= 50 ? request.Take.Value : ThreadPageSize;
+        var query = Context.Messages.AsNoTracking()
+            .Where(m =>
+                (m.IdSender == me && m.IdReceiver == request.PeerId)
+                || (m.IdSender == request.PeerId && m.IdReceiver == me));
+
+        if (request.BeforeId is > 0)
+        {
+            var cursor = await Context.Messages.AsNoTracking()
+                .Where(m => m.Id == request.BeforeId.Value)
+                .Select(m => new { m.Id, m.CreationDate })
+                .FirstOrDefaultAsync(ct);
+
+            if (cursor is null)
+                throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
+
+            query = query.Where(m =>
+                m.CreationDate < cursor.CreationDate
+                || (m.CreationDate == cursor.CreationDate && m.Id < cursor.Id));
+        }
+
+        return await query
             .OrderByDescending(m => m.CreationDate)
+            .ThenByDescending(m => m.Id)
+            .Take(take)
             .ToListAsync(ct);
     }
 
@@ -68,6 +140,15 @@ public class MessagesService(
             ?? throw new UnauthorizedException("UNAUTHORIZED", "Caller user not found");
         var receiver = peers.FirstOrDefault(u => u.Id == request.IdReceiver)
             ?? throw new NotFoundException("RECEIVER_NOT_FOUND", "Receiver not found");
+
+        var blocked = await Context.Friends.AsNoTracking().AnyAsync(
+            f =>
+                f.IdFriendStatus == StatusBlocked
+                && ((f.IdFriendAsking == me && f.IdFriendReceive == request.IdReceiver)
+                    || (f.IdFriendAsking == request.IdReceiver && f.IdFriendReceive == me)),
+            ct);
+        if (blocked)
+            throw new ForbiddenException("BLOCKED", "Cannot message a blocked player");
 
         var now = DateTime.UtcNow;
         var entity = new Message
@@ -109,15 +190,6 @@ public class MessagesService(
             logger.Warning(ex, "Failed to publish message.created realtime event for message {MessageId}.", entity.Id);
         }
 
-        await notificationWriter.CreateAsync(
-            request.IdReceiver,
-            NotificationKinds.Message,
-            "New whisper",
-            $"{sender.Nickname}#{sender.Discriminator}: {Truncate(entity.Content, 120)}",
-            "/social/messages",
-            new { peerId = me, messagePublicId = entity.PublicId },
-            ct);
-
         return entity.Id;
     }
 
@@ -142,22 +214,6 @@ public class MessagesService(
             item.ModificationDate = now;
         }
 
-        var peerToken = $"\"peerId\":{request.PeerId}";
-        var relatedNotifications = await Context.Notifications
-            .Where(n =>
-                n.IdUser == me
-                && !n.IsRead
-                && n.Kind == NotificationKinds.Message
-                && n.PayloadJson != null
-                && n.PayloadJson.Contains(peerToken))
-            .ToListAsync(ct);
-
-        foreach (var notification in relatedNotifications)
-        {
-            notification.IsRead = true;
-            notification.ModificationDate = now;
-        }
-
         await Context.SaveChangesAsync(ct);
         return unread.Count;
     }
@@ -170,9 +226,6 @@ public class MessagesService(
             throw new ForbiddenException("FORBIDDEN", "Not a participant of this conversation");
         return entity;
     }
-
-    private static string Truncate(string value, int max) =>
-        value.Length <= max ? value : value[..(max - 1)] + "…";
 
     private async Task<int> RequireCallerUserIdAsync(BusMessage message, CancellationToken ct)
     {
@@ -188,5 +241,24 @@ public class MessagesService(
     private sealed class MarkThreadReadRequest
     {
         public int PeerId { get; set; }
+    }
+
+    private sealed class ListThreadRequest
+    {
+        public int PeerId { get; set; }
+        public int? BeforeId { get; set; }
+        public int? Take { get; set; }
+    }
+
+    private sealed class MessageConversationDto
+    {
+        public int Id { get; set; }
+        public Guid PublicId { get; set; }
+        public string Content { get; set; } = "";
+        public int IdSender { get; set; }
+        public int IdReceiver { get; set; }
+        public bool IsRead { get; set; }
+        public DateTime CreationDate { get; set; }
+        public int UnreadCount { get; set; }
     }
 }

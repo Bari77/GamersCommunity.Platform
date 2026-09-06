@@ -35,6 +35,18 @@
         <button type="button" (click)="redirect('/events')" nbButton ghost status="control" i18n="@@core.header.events">
             Events
         </button>
+        @if (usersStore.isLoggedIn()) {
+            <button
+                type="button"
+                (click)="redirect('/social/friends')"
+                nbButton
+                ghost
+                status="control"
+                i18n="@@core.header.friends"
+            >
+                Friends
+            </button>
+        }
     </div>
 
     <div class="right">

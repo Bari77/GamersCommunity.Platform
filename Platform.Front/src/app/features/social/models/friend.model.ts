@@ -21,17 +21,17 @@ export class Friend {
 
     public static fromDto(dto: FriendDto): Friend {
         return new Friend(
-            dto.id,
+            Number(dto.id),
             dto.publicId,
-            dto.idFriendAsking,
-            dto.idFriendReceive,
-            dto.idFriendStatus,
+            Number(dto.idFriendAsking),
+            Number(dto.idFriendReceive),
+            Number(dto.idFriendStatus),
             dto.modificationDate ? new Date(dto.modificationDate) : new Date(0),
-            dto.peerId,
+            Number(dto.peerId),
             dto.peerPublicId,
             dto.peerNickname,
             dto.peerDiscriminator,
-            dto.peerAvatarUrl,
+            dto.peerAvatarUrl ?? "",
         );
     }
 }

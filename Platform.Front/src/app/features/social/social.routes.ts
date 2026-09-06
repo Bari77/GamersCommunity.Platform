@@ -8,10 +8,4 @@ export const socialRoutes: Routes = [
             import("./pages/friends/friends.component").then((m) => m.FriendsComponent),
         canActivate: [AuthGuard],
     },
-    {
-        path: "messages",
-        loadComponent: () =>
-            import("./pages/messages/messages.component").then((m) => m.MessagesComponent),
-        canActivate: [AuthGuard],
-    },
 ];

@@ -34,6 +34,12 @@
                             @case ("pendingIncoming") {
                                 <span i18n="@@users.profilePublic.relation.pendingIncoming">Wants to be your friend</span>
                             }
+                            @case ("blockedByMe") {
+                                <span i18n="@@users.profilePublic.relation.blocked">Blocked</span>
+                            }
+                            @case ("blockedByPeer") {
+                                <span i18n="@@users.profilePublic.relation.blocked">Blocked</span>
+                            }
                             @case ("blocked") {
                                 <span i18n="@@users.profilePublic.relation.blocked">Blocked</span>
                             }
@@ -128,6 +134,22 @@
                             i18n="@@social.friends.action.block"
                         >
                             Block
+                        </button>
+                    }
+                    @case ("blockedByMe") {
+                        <button
+                            type="button"
+                            nbButton
+                            status="basic"
+                            (click)="unblock(user)"
+                            i18n="@@social.friends.action.unblock"
+                        >
+                            Unblock
+                        </button>
+                    }
+                    @case ("blockedByPeer") {
+                        <button type="button" nbButton disabled status="basic" i18n="@@users.profilePublic.relation.blocked">
+                            Blocked
                         </button>
                     }
                     @case ("blocked") {

@@ -9,17 +9,19 @@ export class DirectMessage {
         public idReceiver: number,
         public creationDate: Date,
         public isRead: boolean = false,
+        public unreadCount: number = 0,
     ) {}
 
     public static fromDto(dto: MessageDto): DirectMessage {
         return new DirectMessage(
-            dto.id,
-            dto.publicId,
+            Number(dto.id),
+            String(dto.publicId),
             dto.content,
-            dto.idSender,
-            dto.idReceiver,
+            Number(dto.idSender),
+            Number(dto.idReceiver),
             new Date(dto.creationDate),
             dto.isRead ?? false,
+            Number(dto.unreadCount ?? 0),
         );
     }
 
@@ -32,6 +34,20 @@ export class DirectMessage {
             this.idReceiver,
             this.creationDate,
             isRead,
+            isRead ? 0 : this.unreadCount,
+        );
+    }
+
+    public withUnreadCount(unreadCount: number): DirectMessage {
+        return new DirectMessage(
+            this.id,
+            this.publicId,
+            this.content,
+            this.idSender,
+            this.idReceiver,
+            this.creationDate,
+            this.isRead,
+            unreadCount,
         );
     }
 }

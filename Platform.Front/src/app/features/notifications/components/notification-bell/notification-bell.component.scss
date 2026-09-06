@@ -1,5 +1,13 @@
 :host {
-    display: contents;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.notification-bell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
 }
 
 .notification-bell__trigger {
@@ -25,6 +33,8 @@
 }
 
 .notification-bell__panel {
+    position: fixed;
+    z-index: 2000;
     width: min(22rem, 86vw);
     max-height: min(28rem, 70vh);
     display: flex;

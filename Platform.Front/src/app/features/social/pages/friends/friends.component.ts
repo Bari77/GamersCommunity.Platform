@@ -1,8 +1,9 @@
 import { Component, inject } from "@angular/core";
-import { MessengerStore } from "../../stores/messenger.store";
-import { FriendsStore } from "../../stores/friends.store";
-import { Friend } from "../../models/friend.model";
+import { UsersStore } from "@features/users/stores/users.store";
 import { NbButtonModule, NbIconModule, NbSpinnerModule } from "@nebular/theme";
+import { Friend } from "../../models/friend.model";
+import { FriendsStore } from "../../stores/friends.store";
+import { MessengerStore } from "../../stores/messenger.store";
 
 @Component({
     standalone: true,
@@ -13,6 +14,7 @@ import { NbButtonModule, NbIconModule, NbSpinnerModule } from "@nebular/theme";
 })
 export class FriendsComponent {
     public readonly friendsStore = inject(FriendsStore);
+    public readonly usersStore = inject(UsersStore);
     private readonly messengerStore = inject(MessengerStore);
 
     public message(friend: Friend): void {

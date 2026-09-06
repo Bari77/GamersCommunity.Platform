@@ -14,7 +14,7 @@ export class User {
 
     public static fromDto(dto: UserDto): User {
         return new User(
-            dto.id,
+            Number(dto.id),
             dto.publicId,
             dto.nickname,
             dto.discriminator,

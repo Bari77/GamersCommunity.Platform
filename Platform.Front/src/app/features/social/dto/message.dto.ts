@@ -6,4 +6,5 @@ export interface MessageDto {
     idReceiver: number;
     isRead?: boolean;
     creationDate: string;
+    unreadCount?: number;
 }

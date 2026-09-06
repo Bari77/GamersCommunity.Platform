@@ -1,29 +1,45 @@
 import { DatePipe } from "@angular/common";
-import { Component, computed, HostListener, inject, OnInit, signal } from "@angular/core";
+import {
+    Component,
+    computed,
+    effect,
+    ElementRef,
+    HostListener,
+    inject,
+    OnInit,
+    signal,
+    viewChild,
+} from "@angular/core";
+import { FormsModule } from "@angular/forms";
 import { UsersStore } from "@features/users/stores/users.store";
-import { NbButtonModule, NbChatModule, NbIconModule, NbSpinnerModule } from "@nebular/theme";
+import { NbButtonModule, NbIconModule, NbSpinnerModule } from "@nebular/theme";
 import { MessengerStore } from "../../stores/messenger.store";
 
 const FAB_SIZE = 64;
 const FAB_STORAGE_KEY = "gc.messenger.fab";
 const DRAG_THRESHOLD_PX = 6;
+const NEAR_BOTTOM_PX = 72;
+const NEAR_TOP_PX = 48;
 
 @Component({
     standalone: true,
     selector: "app-messenger-dock",
-    imports: [NbButtonModule, NbIconModule, NbChatModule, NbSpinnerModule, DatePipe],
+    imports: [NbButtonModule, NbIconModule, NbSpinnerModule, DatePipe, FormsModule],
     templateUrl: "./messenger-dock.component.html",
     styleUrl: "./messenger-dock.component.scss",
 })
 export class MessengerDockComponent implements OnInit {
     public readonly usersStore = inject(UsersStore);
     public readonly messengerStore = inject(MessengerStore);
-    public readonly now = new Date();
     public readonly youLabel = $localize`:@@social.messenger.you:You`;
+    public readonly newMessagesLabel = $localize`:@@social.messenger.newMessages:New messages`;
+    public draft = "";
 
     public readonly fabX = signal(0);
     public readonly fabY = signal(0);
     public readonly isDragging = signal(false);
+    public readonly pendingBelowCount = signal(0);
+    public readonly stickToBottom = signal(true);
 
     public readonly panelStyle = computed(() => {
         const fabLeft = this.fabX();
@@ -54,12 +70,58 @@ export class MessengerDockComponent implements OnInit {
         };
     });
 
+    private readonly messagesViewport = viewChild<ElementRef<HTMLElement>>("messagesScroll");
     private dragOriginX = 0;
     private dragOriginY = 0;
     private pointerOriginX = 0;
     private pointerOriginY = 0;
     private dragMoved = false;
     private activePointerId: number | null = null;
+    private lastThreadPeerId: number | null = null;
+    private lastTailPublicId: string | null = null;
+    private loadingOlder = false;
+
+    public constructor() {
+        effect(() => {
+            const peerId = this.messengerStore.selectedPeerId();
+            const messages = this.messengerStore.threadMessages();
+            const loading = this.messengerStore.messagesLoading();
+            const tailPublicId = messages.at(-1)?.publicId ?? null;
+
+            if (peerId !== this.lastThreadPeerId) {
+                this.lastThreadPeerId = peerId;
+                this.lastTailPublicId = null;
+                this.pendingBelowCount.set(0);
+                this.stickToBottom.set(true);
+                if (peerId != null && !loading && messages.length > 0) {
+                    this.lastTailPublicId = tailPublicId;
+                    queueMicrotask(() => this.scrollToBottom(false));
+                }
+                return;
+            }
+
+            if (loading || peerId == null) {
+                return;
+            }
+
+            if (tailPublicId == null || tailPublicId === this.lastTailPublicId) {
+                if (messages.length > 0 && this.lastTailPublicId == null) {
+                    this.lastTailPublicId = tailPublicId;
+                    queueMicrotask(() => this.scrollToBottom(false));
+                }
+                return;
+            }
+
+            this.lastTailPublicId = tailPublicId;
+            if (this.stickToBottom()) {
+                this.pendingBelowCount.set(0);
+                queueMicrotask(() => this.scrollToBottom(true));
+                return;
+            }
+
+            this.pendingBelowCount.update((count) => count + 1);
+        });
+    }
 
     @HostListener("window:resize")
     public onResize(): void {
@@ -71,8 +133,41 @@ export class MessengerDockComponent implements OnInit {
         this.restoreFabPosition();
     }
 
-    public onSend(event: { message: string; files: File[] }): void {
-        void this.messengerStore.send(event.message);
+    public onMessagesScroll(): void {
+        const el = this.messagesViewport()?.nativeElement;
+        if (!el) {
+            return;
+        }
+
+        const distanceBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+        const nearBottom = distanceBottom <= NEAR_BOTTOM_PX;
+        this.stickToBottom.set(nearBottom);
+        if (nearBottom) {
+            this.pendingBelowCount.set(0);
+        }
+
+        if (el.scrollTop <= NEAR_TOP_PX) {
+            void this.tryLoadOlder(el);
+        }
+    }
+
+    public jumpToLatest(): void {
+        this.pendingBelowCount.set(0);
+        this.stickToBottom.set(true);
+        this.scrollToBottom(true);
+    }
+
+    public onComposeSubmit(event: Event): void {
+        event.preventDefault();
+        const content = this.draft.trim();
+        if (!content) {
+            return;
+        }
+        this.draft = "";
+        this.stickToBottom.set(true);
+        this.pendingBelowCount.set(0);
+        void this.messengerStore.send(content);
+        queueMicrotask(() => this.scrollToBottom(true));
     }
 
     public onFabPointerDown(event: PointerEvent): void {
@@ -120,6 +215,42 @@ export class MessengerDockComponent implements OnInit {
         }
 
         this.messengerStore.toggle();
+    }
+
+    private async tryLoadOlder(el: HTMLElement): Promise<void> {
+        if (this.loadingOlder || !this.messengerStore.threadHasMore() || this.messengerStore.threadLoadingOlder()) {
+            return;
+        }
+
+        this.loadingOlder = true;
+        const previousHeight = el.scrollHeight;
+        const previousTop = el.scrollTop;
+        try {
+            const loaded = await this.messengerStore.loadOlderMessages();
+            if (!loaded) {
+                return;
+            }
+            queueMicrotask(() => {
+                const next = this.messagesViewport()?.nativeElement;
+                if (!next) {
+                    return;
+                }
+                next.scrollTop = previousTop + (next.scrollHeight - previousHeight);
+            });
+        } finally {
+            this.loadingOlder = false;
+        }
+    }
+
+    private scrollToBottom(smooth: boolean): void {
+        const el = this.messagesViewport()?.nativeElement;
+        if (!el) {
+            return;
+        }
+        el.scrollTo({
+            top: el.scrollHeight,
+            behavior: smooth ? "smooth" : "auto",
+        });
     }
 
     private restoreFabPosition(): void {

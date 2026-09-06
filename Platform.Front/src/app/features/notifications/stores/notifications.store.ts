@@ -37,7 +37,13 @@ export class NotificationsStore {
 
     public upsert(notification: AppNotification): void {
         const current = this.notifications.value();
-        if (current.some((item) => item.publicId === notification.publicId || item.id === notification.id)) {
+        const index = current.findIndex(
+            (item) => item.publicId === notification.publicId || item.id === notification.id,
+        );
+        if (index >= 0) {
+            const next = [...current];
+            next.splice(index, 1);
+            this.notifications.set([notification, ...next]);
             return;
         }
         this.notifications.set([notification, ...current]);
@@ -53,17 +59,5 @@ export class NotificationsStore {
     public async markAllRead(): Promise<void> {
         await firstValueFrom(this.notificationsService.markAllRead());
         this.notifications.set(this.notifications.value().map((item) => item.withRead(true)));
-    }
-
-    public markMessagePeerRead(peerId: number): void {
-        const needle = `"peerId":${peerId}`;
-        this.notifications.set(
-            this.notifications.value().map((item) => {
-                if (item.isRead || item.kind !== "message" || !item.payloadJson?.includes(needle)) {
-                    return item;
-                }
-                return item.withRead(true);
-            }),
-        );
     }
 }
