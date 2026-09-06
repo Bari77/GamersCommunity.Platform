@@ -119,7 +119,7 @@ public sealed class NotificationWriter(
             await realtimePublisher.PublishAsync(
                 new NotificationCreatedRealtimeEvent
                 {
-                    RecipientKeycloak = user.IdKeycloak.ToString(),
+                    RecipientKeycloak = user.IdKeycloak.ToString("D"),
                     Notification = NotificationRealtimePayload.FromEntity(entity),
                 },
                 ct);

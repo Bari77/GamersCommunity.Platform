@@ -1,0 +1,130 @@
+.manage-group {
+    width: min(26rem, 92vw);
+    max-height: 86vh;
+}
+
+.manage-group nb-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 32rem;
+    overflow: auto;
+}
+
+.manage-group__members,
+.manage-group__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgb(255 255 255 / 8%);
+}
+
+.manage-group__member {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.1rem;
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+}
+
+.manage-group__identity {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.manage-group__row {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.5rem 0.1rem;
+    border: 0;
+    border-bottom: 1px solid rgb(255 255 255 / 8%);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.manage-group__row:hover,
+.manage-group__row.is-selected {
+    background: rgb(255 255 255 / 4%);
+}
+
+.manage-group__avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 999px;
+    object-fit: cover;
+}
+
+.manage-group__badge {
+    font-size: 0.68rem;
+    color: var(--gc-accent, #3dd6c6);
+    font-weight: 700;
+}
+
+.manage-group__field,
+.manage-group__subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+}
+
+.manage-group__avatars {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.4rem;
+}
+
+.manage-group__avatar-option {
+    appearance: none;
+    padding: 0;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.manage-group__avatar-option img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.manage-group__avatar-option.is-selected {
+    border-color: var(--gc-accent, #3dd6c6);
+}
+
+.manage-group__empty {
+    color: rgb(170 180 210 / 72%);
+    font-size: 0.82rem;
+}
+
+nb-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.manage-group__warning {
+    margin: 0;
+    line-height: 1.45;
+    color: rgb(230 200 170 / 92%);
+}

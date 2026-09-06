@@ -31,8 +31,6 @@ public class MessagesService(
     {
         switch (message.Action.ToUpperInvariant())
         {
-            case "LIST":
-                return JsonSafe.Serialize(await ListConversationsAsync(message, ct));
             case "LISTTHREAD":
                 return JsonSafe.Serialize(await ListThreadAsync(message, ct));
             case "CREATE":
@@ -46,44 +44,6 @@ public class MessagesService(
         }
     }
 
-    private async Task<List<MessageConversationDto>> ListConversationsAsync(BusMessage message, CancellationToken ct)
-    {
-        var me = await RequireCallerUserIdAsync(message, ct);
-        var mine = await context.Messages.AsNoTracking()
-            .Where(m => m.IdSender == me || m.IdReceiver == me)
-            .Select(m => new
-            {
-                m.PublicId,
-                m.Content,
-                m.IdSender,
-                m.IdReceiver,
-                m.IsRead,
-                m.CreationDate,
-                PeerId = m.IdSender == me ? m.IdReceiver : m.IdSender,
-            })
-            .ToListAsync(ct);
-
-        return mine
-            .GroupBy(m => m.PeerId)
-            .Select(g =>
-            {
-                var last = g.OrderByDescending(x => x.CreationDate).ThenByDescending(x => x.PublicId).First();
-                var unread = g.Count(x => x.IdReceiver == me && !x.IsRead);
-                return new MessageConversationDto
-                {
-                    PublicId = last.PublicId,
-                    Content = cipher.Decrypt(last.Content),
-                    IdSender = last.IdSender,
-                    IdReceiver = last.IdReceiver,
-                    IsRead = last.IsRead,
-                    CreationDate = last.CreationDate,
-                    UnreadCount = unread,
-                };
-            })
-            .OrderByDescending(x => x.CreationDate)
-            .ToList();
-    }
-
     private async Task<List<MessageThreadDto>> ListThreadAsync(BusMessage message, CancellationToken ct)
     {
         var me = await RequireCallerUserIdAsync(message, ct);
@@ -91,14 +51,12 @@ public class MessagesService(
             throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
 
         var request = ConsumerParamParser.ToObject<ListThreadRequest>(message.Data);
-        if (request.PeerId <= 0)
-            throw new BadRequestException("PEER_MANDATORY", "Peer id mandatory");
+        var conversation = await RequireConversationByPublicIdAsync(request.ConversationPublicId, ct);
+        var membership = await RequireMemberAsync(conversation.Id, me, ct);
 
         var take = request.Take is > 0 and <= 50 ? request.Take.Value : ThreadPageSize;
         var query = context.Messages.AsNoTracking()
-            .Where(m =>
-                (m.IdSender == me && m.IdReceiver == request.PeerId)
-                || (m.IdSender == request.PeerId && m.IdReceiver == me));
+            .Where(m => m.IdConversation == conversation.Id && m.CreationDate >= membership.JoinedAt);
 
         if (request.BeforePublicId is { } beforePublicId && beforePublicId != Guid.Empty)
         {
@@ -122,10 +80,13 @@ public class MessagesService(
             .Select(m => new MessageThreadDto
             {
                 PublicId = m.PublicId,
+                ConversationPublicId = conversation.PublicId,
                 Content = m.Content,
                 IdSender = m.IdSender,
-                IdReceiver = m.IdReceiver,
-                IsRead = m.IsRead,
+                SenderPublicId = m.IdSenderNavigation.PublicId,
+                SenderNickname = m.IdSenderNavigation.Nickname,
+                SenderDiscriminator = m.IdSenderNavigation.Discriminator,
+                SenderAvatarUrl = m.IdSenderNavigation.AvatarUrl,
                 CreationDate = m.CreationDate,
                 ParentPublicId = m.ParentPublicId,
                 ParentContent = m.ParentMessage != null ? m.ParentMessage.Content : null,
@@ -151,31 +112,25 @@ public class MessagesService(
         var request = ConsumerParamParser.ToObject<CreateMessageRequest>(message.Data);
         if (string.IsNullOrWhiteSpace(request.Content))
             throw new BadRequestException("CONTENT_MANDATORY", "Content mandatory");
-        if (request.IdReceiver <= 0)
-            throw new BadRequestException("RECEIVER_MANDATORY", "Receiver mandatory");
-        if (request.IdReceiver == me)
-            throw new BadRequestException("INVALID_RECEIVER", "Cannot message yourself");
 
-        var peers = await context.Users.AsNoTracking()
-            .Where(u => u.Id == me || u.Id == request.IdReceiver)
-            .Select(u => new { u.Id, u.IdKeycloak, u.Nickname, u.Discriminator })
-            .ToListAsync(ct);
+        var conversation = await RequireConversationByPublicIdAsync(request.ConversationPublicId, ct);
+        await RequireMemberAsync(conversation.Id, me, ct);
 
-        var sender = peers.FirstOrDefault(u => u.Id == me)
-            ?? throw new UnauthorizedException("UNAUTHORIZED", "Caller user not found");
-        var receiver = peers.FirstOrDefault(u => u.Id == request.IdReceiver)
-            ?? throw new NotFoundException("RECEIVER_NOT_FOUND", "Receiver not found");
+        if (conversation.Kind == ConversationKind.Dm)
+        {
+            var peerId = await context.ConversationMembers.AsNoTracking()
+                .Where(m => m.IdConversation == conversation.Id && m.IdUser != me)
+                .Select(m => m.IdUser)
+                .FirstOrDefaultAsync(ct);
+            if (peerId != 0 && await IsBlockedAsync(me, peerId, ct))
+                throw new ForbiddenException("BLOCKED", "Cannot message a blocked player");
+        }
 
-        var blocked = await context.Friends.AsNoTracking().AnyAsync(
-            f =>
-                f.IdFriendStatus == StatusBlocked
-                && ((f.IdFriendAsking == me && f.IdFriendReceive == request.IdReceiver)
-                    || (f.IdFriendAsking == request.IdReceiver && f.IdFriendReceive == me)),
-            ct);
-        if (blocked)
-            throw new ForbiddenException("BLOCKED", "Cannot message a blocked player");
-
-        var parent = await ResolveParentAsync(me, request.IdReceiver, request.ParentPublicId, ct);
+        var parent = await ResolveParentAsync(conversation.Id, request.ParentPublicId, ct);
+        var sender = await context.Users.AsNoTracking()
+            .Where(u => u.Id == me)
+            .Select(u => new { u.Id, u.PublicId, u.Nickname, u.Discriminator, u.AvatarUrl, u.IdKeycloak })
+            .FirstAsync(ct);
 
         var plaintext = request.Content.Trim();
         var now = DateTime.UtcNow;
@@ -183,9 +138,8 @@ public class MessagesService(
         {
             PublicId = Guid.NewGuid(),
             Content = cipher.Encrypt(plaintext),
+            IdConversation = conversation.Id,
             IdSender = me,
-            IdReceiver = request.IdReceiver,
-            IsRead = false,
             ParentPublicId = parent?.PublicId,
             CreationDate = now,
             ModificationDate = now,
@@ -194,20 +148,29 @@ public class MessagesService(
         await context.Messages.AddAsync(entity, ct);
         await context.SaveChangesAsync(ct);
 
+        var recipientIds = await (
+            from m in context.ConversationMembers.AsNoTracking()
+            join u in context.Users.AsNoTracking() on m.IdUser equals u.Id
+            where m.IdConversation == conversation.Id
+            select u.IdKeycloak).ToListAsync(ct);
+        var recipients = recipientIds.Select(id => id.ToString("D")).ToArray();
+
         try
         {
             await realtimePublisher.PublishAsync(
                 new MessageCreatedRealtimeEvent
                 {
-                    SenderKeycloak = sender.IdKeycloak.ToString(),
-                    ReceiverKeycloak = receiver.IdKeycloak.ToString(),
+                    RecipientKeycloaks = recipients,
                     Message = new MessageRealtimePayload
                     {
                         PublicId = entity.PublicId,
+                        ConversationPublicId = conversation.PublicId,
                         Content = plaintext,
                         IdSender = entity.IdSender,
-                        IdReceiver = entity.IdReceiver,
-                        IsRead = entity.IsRead,
+                        SenderPublicId = sender.PublicId,
+                        SenderNickname = sender.Nickname,
+                        SenderDiscriminator = sender.Discriminator,
+                        SenderAvatarUrl = sender.AvatarUrl,
                         CreationDate = UtcDateTimeJsonConverter.AsUtc(entity.CreationDate),
                         ParentPublicId = entity.ParentPublicId,
                         ParentContent = parent?.Content,
@@ -230,61 +193,94 @@ public class MessagesService(
             throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
 
         var request = ConsumerParamParser.ToObject<MarkThreadReadRequest>(message.Data);
-        if (request.PeerId <= 0)
-            throw new BadRequestException("PEER_MANDATORY", "Peer id mandatory");
+        var conversation = await RequireConversationByPublicIdAsync(request.ConversationPublicId, ct);
+        var membership = await context.ConversationMembers
+            .FirstOrDefaultAsync(m => m.IdConversation == conversation.Id && m.IdUser == me, ct)
+            ?? throw new ForbiddenException("FORBIDDEN", "Not a participant of this conversation");
 
-        var now = DateTime.UtcNow;
-        var unread = await context.Messages
-            .Where(m => m.IdReceiver == me && m.IdSender == request.PeerId && !m.IsRead)
-            .ToListAsync(ct);
-
-        foreach (var item in unread)
-        {
-            item.IsRead = true;
-            item.ModificationDate = now;
-        }
-
+        membership.LastReadAt = DateTime.UtcNow;
+        membership.ModificationDate = membership.LastReadAt.Value;
         await context.SaveChangesAsync(ct);
-        return unread.Count;
+        return 1;
     }
 
-    private async Task<Message> GetMineAsync(BusMessage message, CancellationToken ct)
+    private async Task<MessageThreadDto> GetMineAsync(BusMessage message, CancellationToken ct)
     {
         var me = await RequireCallerUserIdAsync(message, ct);
         if (message.PublicId is not Guid publicId || publicId == Guid.Empty)
             throw new BadRequestException("ID_MANDATORY", "Id mandatory");
 
         var entity = await context.Messages.AsNoTracking()
-            .FirstOrDefaultAsync(m => m.PublicId == publicId, ct)
+            .Where(m => m.PublicId == publicId)
+            .Select(m => new MessageThreadDto
+            {
+                PublicId = m.PublicId,
+                ConversationPublicId = m.IdConversationNavigation.PublicId,
+                Content = m.Content,
+                IdSender = m.IdSender,
+                SenderPublicId = m.IdSenderNavigation.PublicId,
+                SenderNickname = m.IdSenderNavigation.Nickname,
+                SenderDiscriminator = m.IdSenderNavigation.Discriminator,
+                SenderAvatarUrl = m.IdSenderNavigation.AvatarUrl,
+                CreationDate = m.CreationDate,
+                ParentPublicId = m.ParentPublicId,
+                ParentContent = m.ParentMessage != null ? m.ParentMessage.Content : null,
+            })
+            .FirstOrDefaultAsync(ct)
             ?? throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
 
-        if (entity.IdSender != me && entity.IdReceiver != me)
-            throw new ForbiddenException("FORBIDDEN", "Not a participant of this conversation");
+        var conversationId = await context.Messages.AsNoTracking()
+            .Where(m => m.PublicId == publicId)
+            .Select(m => m.IdConversation)
+            .FirstAsync(ct);
+        await RequireMemberAsync(conversationId, me, ct);
         entity.Content = cipher.Decrypt(entity.Content);
+        if (entity.ParentContent is not null)
+            entity.ParentContent = cipher.Decrypt(entity.ParentContent);
         return entity;
     }
 
-    private async Task<ParentQuote?> ResolveParentAsync(int me, int peerId, Guid? parentPublicId, CancellationToken ct)
+    private async Task<ParentQuote?> ResolveParentAsync(int conversationId, Guid? parentPublicId, CancellationToken ct)
     {
         if (parentPublicId is not Guid id || id == Guid.Empty)
             return null;
 
         var row = await context.Messages.AsNoTracking()
             .Where(m => m.PublicId == id)
-            .Select(m => new { m.PublicId, m.IdSender, m.IdReceiver, m.Content })
+            .Select(m => new { m.PublicId, m.IdConversation, m.Content })
             .FirstOrDefaultAsync(ct);
 
         if (row is null)
             throw new NotFoundException("PARENT_NOT_FOUND", "Parent message not found");
-
-        var sameThread =
-            (row.IdSender == me && row.IdReceiver == peerId)
-            || (row.IdSender == peerId && row.IdReceiver == me);
-        if (!sameThread)
+        if (row.IdConversation != conversationId)
             throw new BadRequestException("INVALID_PARENT", "Parent message is not in this conversation");
 
-        return new ParentQuote(row.PublicId, row.IdSender, row.IdReceiver, cipher.Decrypt(row.Content));
+        return new ParentQuote(row.PublicId, cipher.Decrypt(row.Content));
     }
+
+    private async Task<Conversation> RequireConversationByPublicIdAsync(Guid conversationPublicId, CancellationToken ct)
+    {
+        if (conversationPublicId == Guid.Empty)
+            throw new BadRequestException("CONVERSATION_MANDATORY", "Conversation id mandatory");
+
+        return await context.Conversations.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.PublicId == conversationPublicId, ct)
+            ?? throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
+    }
+
+    private async Task<ConversationMember> RequireMemberAsync(int conversationId, int userId, CancellationToken ct)
+    {
+        return await context.ConversationMembers.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.IdConversation == conversationId && m.IdUser == userId, ct)
+            ?? throw new ForbiddenException("FORBIDDEN", "Not a participant of this conversation");
+    }
+
+    private Task<bool> IsBlockedAsync(int a, int b, CancellationToken ct) =>
+        context.Friends.AsNoTracking().AnyAsync(
+            f => f.IdFriendStatus == StatusBlocked
+                && ((f.IdFriendAsking == a && f.IdFriendReceive == b)
+                    || (f.IdFriendAsking == b && f.IdFriendReceive == a)),
+            ct);
 
     private async Task<int> RequireCallerUserIdAsync(BusMessage message, CancellationToken ct)
     {
@@ -299,45 +295,37 @@ public class MessagesService(
 
     private sealed class MarkThreadReadRequest
     {
-        public int PeerId { get; set; }
+        public Guid ConversationPublicId { get; set; }
     }
 
     private sealed class ListThreadRequest
     {
-        public int PeerId { get; set; }
+        public Guid ConversationPublicId { get; set; }
         public Guid? BeforePublicId { get; set; }
         public int? Take { get; set; }
     }
 
     private sealed class CreateMessageRequest
     {
-        public int IdReceiver { get; set; }
+        public Guid ConversationPublicId { get; set; }
         public string Content { get; set; } = "";
         public Guid? ParentPublicId { get; set; }
     }
 
-    private sealed record ParentQuote(Guid PublicId, int IdSender, int IdReceiver, string Content);
+    private sealed record ParentQuote(Guid PublicId, string Content);
 
     private sealed class MessageThreadDto
     {
         public Guid PublicId { get; set; }
+        public Guid ConversationPublicId { get; set; }
         public string Content { get; set; } = "";
         public int IdSender { get; set; }
-        public int IdReceiver { get; set; }
-        public bool IsRead { get; set; }
+        public Guid SenderPublicId { get; set; }
+        public string SenderNickname { get; set; } = "";
+        public string SenderDiscriminator { get; set; } = "";
+        public string SenderAvatarUrl { get; set; } = "";
         public DateTime CreationDate { get; set; }
         public Guid? ParentPublicId { get; set; }
         public string? ParentContent { get; set; }
-    }
-
-    private sealed class MessageConversationDto
-    {
-        public Guid PublicId { get; set; }
-        public string Content { get; set; } = "";
-        public int IdSender { get; set; }
-        public int IdReceiver { get; set; }
-        public bool IsRead { get; set; }
-        public DateTime CreationDate { get; set; }
-        public int UnreadCount { get; set; }
     }
 }

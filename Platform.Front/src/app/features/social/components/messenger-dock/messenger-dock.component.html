@@ -14,7 +14,7 @@
                 [style.height]="panelStyle().height"
             >
                 <header class="messenger-dock__header">
-                    @if (messengerStore.selectedPeerId() !== null) {
+                    @if (messengerStore.selectedConversationPublicId(); as conversationPublicId) {
                         <button
                             type="button"
                             (click)="messengerStore.clearThread()"
@@ -39,7 +39,9 @@
                             }}</span>
                         }
                         <h2 class="messenger-dock__title">
-                            @if (messengerStore.selectedPeerPublicId(); as publicId) {
+                            @if (messengerStore.selectedIsGroup()) {
+                                {{ messengerStore.selectedLabel() }}
+                            } @else if (messengerStore.selectedPeerPublicId(); as publicId) {
                                 <button type="button" class="messenger-dock__peer-link" (click)="openPeerProfile(publicId)">
                                     <app-user-handle
                                         [nickname]="messengerStore.selectedNickname()"
@@ -50,8 +52,40 @@
                                 {{ messengerStore.selectedLabel() }}
                             }
                         </h2>
+                        @if (messengerStore.selectedIsGroup()) {
+                            <button
+                                type="button"
+                                nbButton
+                                ghost
+                                size="small"
+                                status="control"
+                                (click)="openManageGroup()"
+                                nbTooltip="Group members"
+                                i18n-nbTooltip="@@social.messenger.manageGroup.tooltip"
+                                i18n-aria-label="@@social.messenger.manageGroup.tooltip"
+                                aria-label="Group members"
+                            >
+                                <nb-icon icon="people-outline" pack="eva"></nb-icon>
+                            </button>
+                        }
                     } @else {
                         <h2 class="messenger-dock__title gc-display" i18n="@@social.messenger.title">Whispers</h2>
+                        @if (messengerStore.tab() === "chats") {
+                            <button
+                                type="button"
+                                nbButton
+                                ghost
+                                size="small"
+                                status="control"
+                                (click)="openCreateGroup()"
+                                nbTooltip="Create a group"
+                                i18n-nbTooltip="@@social.messenger.createGroup.tooltip"
+                                i18n-aria-label="@@social.messenger.createGroup.tooltip"
+                                aria-label="Create a group"
+                            >
+                                <nb-icon icon="plus-outline" pack="eva"></nb-icon>
+                            </button>
+                        }
                     }
                     <button
                         type="button"
@@ -77,7 +111,7 @@
                     </div>
                 }
 
-                @if (messengerStore.selectedPeerId() !== null) {
+                @if (messengerStore.selectedConversationPublicId()) {
                     <div
                         class="messenger-dock__thread"
                         [class.has-reply]="replyingTo() !== null"
@@ -113,34 +147,61 @@
                             </p>
                         }
 
-                        <nb-chat
-                            #whisperChat
-                            class="messenger-dock__chat"
-                            status="basic"
-                            [scrollBottom]="stickToBottom()"
-                            [noMessagesPlaceholder]="messengerStore.placeholderText()"
-                        >
-                            @for (message of messengerStore.threadMessages(); track message.publicId) {
-                                <nb-chat-message
-                                    [type]="message.parentContent ? 'quote' : 'text'"
-                                    [message]="message.content"
-                                    [quote]="messageQuote(message)"
-                                    [reply]="message.idSender === usersStore.user()?.id"
-                                    [sender]="messageSender(message)"
-                                    [date]="message.creationDate"
-                                    dateFormat="short"
-                                    [avatar]="messageAvatar(message)"
-                                    (click)="startReply(message)"
-                                ></nb-chat-message>
+                        <div #whisperScroll class="messenger-dock__messages">
+                            @if (messengerStore.threadMessages().length === 0 && !messengerStore.messagesLoading()) {
+                                <p class="messenger-dock__empty">{{ messengerStore.placeholderText() }}</p>
                             }
-                            @if (messengerStore.canCompose()) {
+                            @for (message of messengerStore.threadMessages(); track message.publicId) {
+                                <article
+                                    class="messenger-dock__bubble"
+                                    [class.is-mine]="message.idSender === usersStore.user()?.id"
+                                    [class.is-failed]="message.delivery === 'failed'"
+                                    [class.is-pending]="message.delivery === 'pending'"
+                                    (click)="onMessageClick($event, message)"
+                                >
+                                    @if (messageAvatar(message); as avatarUrl) {
+                                        <img class="messenger-dock__bubble-avatar" [src]="avatarUrl" alt="" />
+                                    } @else {
+                                        <span class="messenger-dock__bubble-avatar messenger-dock__bubble-avatar--fallback" aria-hidden="true">{{
+                                            messageHandle(message).charAt(0)
+                                        }}</span>
+                                    }
+                                    <div class="messenger-dock__bubble-body">
+                                        <button type="button" class="sender messenger-dock__bubble-sender">
+                                            {{ messageHandle(message) }}
+                                        </button>
+                                        @if (message.parentContent) {
+                                            <p class="messenger-dock__bubble-quote">{{ messageQuote(message) }}</p>
+                                        }
+                                        <p class="messenger-dock__bubble-text">{{ message.content }}</p>
+                                        @if (message.creationDate.getTime()) {
+                                            <time class="messenger-dock__bubble-date">{{ message.creationDate | date: "short" }}</time>
+                                        }
+                                        @if (message.delivery === "failed") {
+                                            <button
+                                                type="button"
+                                                class="messenger-dock__retry"
+                                                nbButton
+                                                size="tiny"
+                                                status="danger"
+                                                (click)="retryMessage($event, message)"
+                                            >
+                                                {{ retryLabel }}
+                                            </button>
+                                        }
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                        @if (messengerStore.canCompose()) {
+                            <nb-chat class="messenger-dock__chat messenger-dock__chat--composer" status="basic">
                                 <nb-chat-form
                                     [dropFiles]="false"
                                     [messagePlaceholder]="composePlaceholder"
                                     (send)="onChatSend($event)"
                                 ></nb-chat-form>
-                            }
-                        </nb-chat>
+                            </nb-chat>
+                        }
 
                         @if (messengerStore.canCompose()) {
                             @if (replyingTo(); as reply) {
@@ -209,28 +270,41 @@
                                 <div class="messenger-dock__hint" i18n="@@social.messages.emptyList">No whispers yet.</div>
                             } @else {
                                 <ul class="messenger-dock__list">
-                                    @for (chat of messengerStore.conversations(); track chat.peerId) {
+                                    @for (chat of messengerStore.conversations(); track chat.publicId) {
                                         <li>
-                                            <button type="button" (click)="messengerStore.openThread(chat.peerId)" class="messenger-dock__row">
-                                                @if (chat.avatarUrl) {
+                                            <button type="button" (click)="messengerStore.selectConversation(chat.publicId)" class="messenger-dock__row">
+                                                @if (chat.pictureUrl || chat.peerAvatarUrl) {
                                                     <img
                                                         class="messenger-dock__avatar messenger-dock__avatar--img"
-                                                        [src]="chat.avatarUrl"
-                                                        [alt]="chat.label"
+                                                        [src]="chat.pictureUrl || chat.peerAvatarUrl"
+                                                        [alt]="chat.displayTitle"
                                                     />
                                                 } @else {
-                                                    <span class="messenger-dock__avatar" aria-hidden="true">{{ chat.label.charAt(0) }}</span>
+                                                    <span class="messenger-dock__avatar" aria-hidden="true">{{
+                                                        chat.displayTitle.charAt(0)
+                                                    }}</span>
                                                 }
                                                 <span class="messenger-dock__row-text">
                                                     <span class="messenger-dock__row-title">
-                                                        <app-user-handle
-                                                            [nickname]="chat.nickname"
-                                                            [discriminator]="chat.discriminator"
-                                                        />
+                                                        @if (chat.isGroup) {
+                                                            {{ chat.displayTitle }}
+                                                        } @else {
+                                                            <app-user-handle
+                                                                [nickname]="chat.peerNickname || chat.displayTitle"
+                                                                [discriminator]="chat.peerDiscriminator"
+                                                            />
+                                                        }
                                                     </span>
                                                     <span class="messenger-dock__row-preview">{{ chat.lastMessage }}</span>
                                                 </span>
-                                                <time class="messenger-dock__row-date">{{ chat.lastDate | date: "shortDate" }}</time>
+                                                <span class="messenger-dock__row-meta">
+                                                    @if (chat.lastDate) {
+                                                        <time class="messenger-dock__row-date">{{ chat.lastDate | date: "shortDate" }}</time>
+                                                    }
+                                                    @if (chat.unreadCount > 0) {
+                                                        <span class="messenger-dock__badge">{{ chat.unreadCount }}</span>
+                                                    }
+                                                </span>
                                             </button>
                                         </li>
                                     }

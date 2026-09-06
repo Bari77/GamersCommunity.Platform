@@ -57,4 +57,4 @@ Open on microservice `platform`:
 
 ## Out of scope for A
 
-Game posts, LFG board, guild moderation, WoW events — waves B–D.
+Game posts, LFG board, guild moderation, WoW events — waves B–D. Site staff AuthZ / sanctions — [Vague E](./VAGUE_E.md).

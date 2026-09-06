@@ -1,80 +1,115 @@
 import { computed, inject, Injectable, resource, signal } from "@angular/core";
 import { UsersStore } from "@features/users/stores/users.store";
 import { catchError, firstValueFrom, of } from "rxjs";
+import { Conversation } from "../models/conversation.model";
 import { DirectMessage } from "../models/message.model";
+import { ConversationsService } from "../services/conversations.service";
 import { MessagesService } from "../services/messages.service";
 
 const THREAD_PAGE_SIZE = 20;
 
 @Injectable({ providedIn: "root" })
 export class MessagesStore {
-    public readonly messages = resource({
+    public readonly conversations = resource({
         params: () => this.usersStore.isLoggedIn(),
         loader: ({ params: loggedIn }) => {
             if (!loggedIn) {
-                return Promise.resolve([] as DirectMessage[]);
+                return Promise.resolve([] as Conversation[]);
             }
-            return firstValueFrom(this.messagesService.list().pipe(catchError(() => of([] as DirectMessage[]))));
+            return firstValueFrom(this.conversationsService.list().pipe(catchError(() => of([] as Conversation[]))));
         },
-        defaultValue: [] as DirectMessage[],
+        defaultValue: [] as Conversation[],
     });
 
-    public readonly loading = computed(() => this.messages.isLoading());
+    public readonly loading = computed(() => this.conversations.isLoading());
     public readonly sending = computed(() => this.$sending());
-    public readonly isEmpty = computed(() => this.messages.value().length === 0);
+    public readonly isEmpty = computed(() => this.conversations.value().length === 0);
     public readonly unreadCount = computed(() =>
-        this.messages.value().reduce((sum, message) => sum + (message.unreadCount || 0), 0),
+        this.conversations.value().reduce((sum, conversation) => sum + (conversation.unreadCount || 0), 0),
     );
     public readonly placeholderText = $localize`:@@social.messages.placeholder:Your whispers will appear here.`;
 
     public readonly threadMessages = computed(() => this.$threadMessages());
-    public readonly threadPeerId = computed(() => this.$threadPeerId());
+    public readonly threadConversationPublicId = computed(() => this.$threadConversationPublicId());
     public readonly threadHasMore = computed(() => this.$threadHasMore());
     public readonly threadLoading = computed(() => this.$threadLoading());
     public readonly threadLoadingOlder = computed(() => this.$threadLoadingOlder());
 
     private readonly $sending = signal(false);
     private readonly $threadMessages = signal<DirectMessage[]>([]);
-    private readonly $threadPeerId = signal<number | null>(null);
+    private readonly $threadConversationPublicId = signal<string | null>(null);
     private readonly $threadHasMore = signal(false);
     private readonly $threadLoading = signal(false);
     private readonly $threadLoadingOlder = signal(false);
 
     private readonly messagesService = inject(MessagesService);
+    private readonly conversationsService = inject(ConversationsService);
     private readonly usersStore = inject(UsersStore);
 
     public reload(): void {
         if (!this.usersStore.isLoggedIn()) {
             return;
         }
-        this.messages.reload();
+        this.conversations.reload();
+    }
+
+    public replaceConversation(conversation: Conversation): void {
+        const current = this.conversations.value();
+        const index = current.findIndex((item) => item.publicId === conversation.publicId);
+        if (index < 0) {
+            this.conversations.set([conversation, ...current]);
+            return;
+        }
+
+        const next = [...current];
+        const previous = next[index];
+        next.splice(index, 1);
+        this.conversations.set([
+            conversation.withUnreadCount(conversation.unreadCount || previous.unreadCount),
+            ...next,
+        ]);
+    }
+
+    public removeConversation(publicId: string): void {
+        this.conversations.set(this.conversations.value().filter((item) => item.publicId !== publicId));
+        if (this.$threadConversationPublicId() === publicId) {
+            this.clearThread();
+        }
     }
 
     public clearThread(): void {
-        this.$threadPeerId.set(null);
+        this.$threadConversationPublicId.set(null);
         this.$threadMessages.set([]);
         this.$threadHasMore.set(false);
         this.$threadLoading.set(false);
         this.$threadLoadingOlder.set(false);
     }
 
-    public async loadThread(peerId: number): Promise<void> {
-        if (peerId <= 0) {
+    public async loadThread(conversationPublicId: string): Promise<void> {
+        if (!conversationPublicId) {
             return;
         }
 
-        this.$threadPeerId.set(peerId);
+        const locals = this.$threadConversationPublicId() === conversationPublicId
+            ? this.$threadMessages().filter((message) => message.isLocal)
+            : [];
+
+        this.$threadConversationPublicId.set(conversationPublicId);
         this.$threadLoading.set(true);
         this.$threadHasMore.set(false);
-        this.$threadMessages.set([]);
+        this.$threadMessages.set(locals);
         try {
             const page = await firstValueFrom(
-                this.messagesService.listThread(peerId, undefined, THREAD_PAGE_SIZE).pipe(
+                this.messagesService.listThread(conversationPublicId, undefined, THREAD_PAGE_SIZE).pipe(
                     catchError(() => of([] as DirectMessage[])),
                 ),
             );
+            if (this.$threadConversationPublicId() !== conversationPublicId) {
+                return;
+            }
             const chronological = [...page].reverse();
-            this.$threadMessages.set(chronological);
+            const currentLocals = this.$threadMessages().filter((message) => message.isLocal);
+            this.$threadMessages.set([...chronological, ...this.unmatchedLocals(chronological, currentLocals)]);
             this.$threadHasMore.set(page.length >= THREAD_PAGE_SIZE);
         } finally {
             this.$threadLoading.set(false);
@@ -82,13 +117,13 @@ export class MessagesStore {
     }
 
     public async loadOlder(): Promise<boolean> {
-        const peerId = this.$threadPeerId();
+        const conversationPublicId = this.$threadConversationPublicId();
         const current = this.$threadMessages();
-        if (peerId == null || !this.$threadHasMore() || this.$threadLoadingOlder() || current.length === 0) {
+        if (!conversationPublicId || !this.$threadHasMore() || this.$threadLoadingOlder() || current.length === 0) {
             return false;
         }
 
-        const beforePublicId = current[0]?.publicId;
+        const beforePublicId = current.find((item) => item.delivery === "sent")?.publicId;
         if (!beforePublicId) {
             return false;
         }
@@ -96,9 +131,9 @@ export class MessagesStore {
         this.$threadLoadingOlder.set(true);
         try {
             const page = await firstValueFrom(
-                this.messagesService.listThread(peerId, beforePublicId, THREAD_PAGE_SIZE).pipe(
-                    catchError(() => of([] as DirectMessage[])),
-                ),
+                this.messagesService
+                    .listThread(conversationPublicId, beforePublicId, THREAD_PAGE_SIZE)
+                    .pipe(catchError(() => of([] as DirectMessage[]))),
             );
             if (page.length === 0) {
                 this.$threadHasMore.set(false);
@@ -119,8 +154,7 @@ export class MessagesStore {
     public upsert(message: DirectMessage): void {
         this.upsertConversationPreview(message);
 
-        const threadPeerId = this.$threadPeerId();
-        if (threadPeerId == null || !this.isThreadMessage(message, threadPeerId)) {
+        if (this.$threadConversationPublicId() !== message.conversationPublicId) {
             return;
         }
 
@@ -128,41 +162,120 @@ export class MessagesStore {
         if (current.some((item) => item.publicId === message.publicId)) {
             return;
         }
+
+        const localIndex = current.findIndex(
+            (item) => item.isLocal && item.idSender === message.idSender && item.content === message.content,
+        );
+        if (localIndex >= 0) {
+            const next = [...current];
+            next[localIndex] = message.withDelivery("sent");
+            this.$threadMessages.set(next);
+            return;
+        }
+
         this.$threadMessages.set([...current, message]);
     }
 
-    public async markThreadRead(peerId: number): Promise<void> {
-        const me = Number(this.usersStore.user()?.id);
-        if (!me || peerId <= 0) {
+    public async markThreadRead(conversationPublicId: string): Promise<void> {
+        if (!conversationPublicId) {
             return;
         }
 
-        await firstValueFrom(this.messagesService.markThreadRead(peerId).pipe(catchError(() => of(0))));
+        await firstValueFrom(this.messagesService.markThreadRead(conversationPublicId).pipe(catchError(() => of(0))));
 
-        this.messages.set(
-            this.messages.value().map((message) => {
-                const digestPeer = message.idSender === me ? message.idReceiver : message.idSender;
-                return digestPeer === peerId ? message.withRead(true).withUnreadCount(0) : message;
-            }),
+        this.conversations.set(
+            this.conversations.value().map((conversation) =>
+                conversation.publicId === conversationPublicId ? conversation.withUnreadCount(0) : conversation,
+            ),
         );
-
-        if (this.$threadPeerId() === peerId) {
-            this.$threadMessages.set(this.$threadMessages().map((message) => message.withRead(true)));
-        }
     }
 
-    public async send(idReceiver: number, content: string, parentPublicId?: string | null): Promise<void> {
+    public async send(conversationPublicId: string, content: string, parentPublicId?: string | null): Promise<void> {
         const trimmed = content.trim();
-        if (!trimmed || idReceiver <= 0) {
+        if (!trimmed || !conversationPublicId) {
             return;
         }
 
+        const local = this.buildOutgoing(conversationPublicId, trimmed, parentPublicId, "pending");
+        if (!local) {
+            return;
+        }
+
+        this.appendLocal(local);
+        await this.deliver(local);
+    }
+
+    public async retry(message: DirectMessage): Promise<void> {
+        if (message.delivery !== "failed") {
+            return;
+        }
+        this.replaceInThread(message.publicId, message.withDelivery("pending"));
+        await this.deliver(message.withDelivery("pending"));
+    }
+
+    private async deliver(local: DirectMessage): Promise<void> {
         this.$sending.set(true);
         try {
-            await firstValueFrom(this.messagesService.create(idReceiver, trimmed, parentPublicId));
+            const created = await firstValueFrom(
+                this.messagesService.create(local.conversationPublicId, local.content, local.parentPublicId),
+            );
+            const publicId = MessagesStore.readCreatedPublicId(created);
+            if (!publicId) {
+                this.replaceInThread(local.publicId, local.withDelivery("failed"));
+                return;
+            }
+            this.replaceInThread(local.publicId, local.withPublicId(publicId).withDelivery("sent"));
+        } catch {
+            this.replaceInThread(local.publicId, local.withDelivery("failed"));
         } finally {
             this.$sending.set(false);
         }
+    }
+
+    private buildOutgoing(
+        conversationPublicId: string,
+        content: string,
+        parentPublicId: string | null | undefined,
+        delivery: "pending" | "failed",
+    ): DirectMessage | null {
+        const me = this.usersStore.user();
+        if (!me) {
+            return null;
+        }
+        const parent = parentPublicId
+            ? this.$threadMessages().find((item) => item.publicId === parentPublicId)
+            : undefined;
+        return new DirectMessage(
+            `local:${crypto.randomUUID()}`,
+            conversationPublicId,
+            content,
+            me.id,
+            me.publicId,
+            me.nickname,
+            me.discriminator,
+            me.avatarUrl,
+            new Date(),
+            parentPublicId ?? null,
+            parent?.content ?? null,
+            delivery,
+        );
+    }
+
+    private appendLocal(message: DirectMessage): void {
+        this.$threadMessages.set([...this.$threadMessages(), message]);
+        this.upsertConversationPreview(message);
+    }
+
+    private replaceInThread(publicId: string, next: DirectMessage): void {
+        this.$threadMessages.set(
+            this.$threadMessages().map((item) => (item.publicId === publicId ? next : item)),
+        );
+    }
+
+    private unmatchedLocals(server: DirectMessage[], locals: DirectMessage[]): DirectMessage[] {
+        return locals.filter(
+            (local) => !server.some((item) => item.idSender === local.idSender && item.content === local.content),
+        );
     }
 
     private upsertConversationPreview(message: DirectMessage): void {
@@ -171,19 +284,13 @@ export class MessagesStore {
             return;
         }
 
-        const peerId = message.idSender === me ? message.idReceiver : message.idSender;
-        const current = this.messages.value();
-        const index = current.findIndex((item) => {
-            const itemPeer = item.idSender === me ? item.idReceiver : item.idSender;
-            return itemPeer === peerId;
-        });
-
-        const incomingForMe = message.idReceiver === me && message.idSender === peerId;
-        const viewing = this.$threadPeerId() === peerId;
+        const current = this.conversations.value();
+        const index = current.findIndex((item) => item.publicId === message.conversationPublicId);
+        const incomingForMe = message.idSender !== me;
+        const viewing = this.$threadConversationPublicId() === message.conversationPublicId;
 
         if (index < 0) {
-            const unreadCount = incomingForMe && !viewing ? 1 : 0;
-            this.messages.set([message.withUnreadCount(unreadCount), ...current]);
+            this.conversations.reload();
             return;
         }
 
@@ -197,17 +304,17 @@ export class MessagesStore {
 
         const next = [...current];
         next.splice(index, 1);
-        this.messages.set([message.withUnreadCount(unreadCount), ...next]);
+        this.conversations.set([previous.withPreview(message.content, message.creationDate).withUnreadCount(unreadCount), ...next]);
     }
 
-    private isThreadMessage(message: DirectMessage, peerId: number): boolean {
-        const me = Number(this.usersStore.user()?.id);
-        if (!me) {
-            return false;
+    private static readCreatedPublicId(value: unknown): string {
+        if (typeof value === "string") {
+            const trimmed = value.replace(/^"|"$/g, "").trim();
+            return trimmed && trimmed !== "undefined" ? trimmed : "";
         }
-        return (
-            (message.idSender === me && message.idReceiver === peerId) ||
-            (message.idSender === peerId && message.idReceiver === me)
-        );
+        if (value && typeof value === "object" && "publicId" in value) {
+            return MessagesStore.readCreatedPublicId((value as { publicId: unknown }).publicId);
+        }
+        return "";
     }
 }

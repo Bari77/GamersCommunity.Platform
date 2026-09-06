@@ -34,7 +34,9 @@ public partial class User : IKeyTable
 
     public virtual ICollection<Friend> FriendIdFriendReceiveNavigations { get; set; } = new List<Friend>();
 
-    public virtual ICollection<Message> MessageIdReceiverNavigations { get; set; } = new List<Message>();
+    public virtual ICollection<ConversationMember> ConversationMembers { get; set; } = new List<ConversationMember>();
+
+    public virtual ICollection<Conversation> ConversationsOwned { get; set; } = new List<Conversation>();
 
     public virtual ICollection<Message> MessageIdSenderNavigations { get; set; } = new List<Message>();
 

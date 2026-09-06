@@ -3,6 +3,7 @@ import {
     afterRenderEffect,
     Component,
     computed,
+    ElementRef,
     HostListener,
     inject,
     OnDestroy,
@@ -12,8 +13,17 @@ import {
 } from "@angular/core";
 import { Router } from "@angular/router";
 import { UsersStore } from "@features/users/stores/users.store";
-import { NbButtonModule, NbChatComponent, NbChatModule, NbIconModule, NbSpinnerModule } from "@nebular/theme";
+import {
+    NbButtonModule,
+    NbChatModule,
+    NbDialogService,
+    NbIconModule,
+    NbSpinnerModule,
+    NbTooltipModule,
+} from "@nebular/theme";
 import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
+import { CreateGroupDialogComponent } from "../create-group-dialog/create-group-dialog.component";
+import { ManageGroupDialogComponent } from "../manage-group-dialog/manage-group-dialog.component";
 import { DirectMessage } from "../../models/message.model";
 import { MessengerStore } from "../../stores/messenger.store";
 
@@ -26,17 +36,17 @@ const NEAR_TOP_PX = 48;
 @Component({
     standalone: true,
     selector: "app-messenger-dock",
-    imports: [NbButtonModule, NbIconModule, NbSpinnerModule, NbChatModule, DatePipe, UserHandleComponent],
+    imports: [NbButtonModule, NbIconModule, NbSpinnerModule, NbChatModule, NbTooltipModule, DatePipe, UserHandleComponent],
     templateUrl: "./messenger-dock.component.html",
     styleUrl: "./messenger-dock.component.scss",
 })
 export class MessengerDockComponent implements OnInit, OnDestroy {
     public readonly usersStore = inject(UsersStore);
     public readonly messengerStore = inject(MessengerStore);
-    public readonly youLabel = $localize`:@@social.messenger.you:You`;
     public readonly newMessagesLabel = $localize`:@@social.messenger.newMessages:New messages`;
     public readonly composePlaceholder = $localize`:@@social.messenger.compose:Whisper something…`;
     public readonly cancelReplyLabel = $localize`:@@social.messenger.cancelReply:Cancel reply`;
+    public readonly retryLabel = $localize`:@@social.messenger.retry:Retry`;
     public readonly replyingTo = signal<DirectMessage | null>(null);
 
     public readonly fabX = signal(0);
@@ -75,14 +85,15 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
     });
 
     private readonly router = inject(Router);
-    private readonly chat = viewChild<NbChatComponent>("whisperChat");
+    private readonly dialogService = inject(NbDialogService);
+    private readonly whisperScroll = viewChild<ElementRef<HTMLElement>>("whisperScroll");
     private dragOriginX = 0;
     private dragOriginY = 0;
     private pointerOriginX = 0;
     private pointerOriginY = 0;
     private dragMoved = false;
     private activePointerId: number | null = null;
-    private lastThreadPeerId: number | null = null;
+    private lastThreadPublicId: string | null = null;
     private lastTailPublicId: string | null = null;
     private loadingOlder = false;
     private boundScrollEl: HTMLElement | null = null;
@@ -93,25 +104,25 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
     public constructor() {
         afterRenderEffect(() => {
             this.bindChatScroll();
-            const peerId = this.messengerStore.selectedPeerId();
+            const conversationPublicId = this.messengerStore.selectedConversationPublicId();
             const messages = this.messengerStore.threadMessages();
             const loading = this.messengerStore.messagesLoading();
             const tailPublicId = messages.at(-1)?.publicId ?? null;
 
-            if (peerId !== this.lastThreadPeerId) {
-                this.lastThreadPeerId = peerId;
+            if (conversationPublicId !== this.lastThreadPublicId) {
+                this.lastThreadPublicId = conversationPublicId;
                 this.lastTailPublicId = null;
                 this.pendingBelowCount.set(0);
                 this.stickToBottom.set(true);
                 this.replyingTo.set(null);
-                if (peerId != null && !loading && messages.length > 0) {
+                if (conversationPublicId != null && !loading && messages.length > 0) {
                     this.lastTailPublicId = tailPublicId;
                     this.scrollToBottom(false);
                 }
                 return;
             }
 
-            if (loading || peerId == null) {
+            if (loading || conversationPublicId == null) {
                 return;
             }
 
@@ -149,15 +160,73 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
         this.boundScrollEl?.removeEventListener("scroll", this.handleChatScroll);
     }
 
-    public messageSender(message: DirectMessage): string {
-        return message.idSender === this.usersStore.user()?.id ? this.youLabel : this.messengerStore.selectedNickname();
+    public messageHandle(message: DirectMessage): string {
+        const isMine = message.idSender === this.usersStore.user()?.id;
+        const nickname = isMine
+            ? (this.usersStore.user()?.nickname ?? message.senderNickname)
+            : message.senderNickname || this.messengerStore.selectedNickname();
+        const discriminator = isMine
+            ? (this.usersStore.user()?.discriminator ?? message.senderDiscriminator)
+            : message.senderDiscriminator || this.messengerStore.selectedDiscriminator();
+        const normalized = (discriminator ?? "").replace(/^#/, "").trim();
+        return normalized ? `${nickname}#${normalized}` : nickname;
+    }
+
+    public onMessageClick(event: MouseEvent, message: DirectMessage): void {
+        const target = event.target as HTMLElement | null;
+        if (target?.closest(".sender")) {
+            this.openSenderProfile(message);
+            return;
+        }
+        if (message.delivery === "failed") {
+            this.retryMessage(event, message);
+            return;
+        }
+        if (message.isLocal) {
+            return;
+        }
+        this.startReply(message);
     }
 
     public messageAvatar(message: DirectMessage): string {
         if (message.idSender === this.usersStore.user()?.id) {
             return this.usersStore.user()?.avatarUrl ?? "";
         }
-        return this.messengerStore.selectedPeerAvatarUrl();
+        return message.senderAvatarUrl || this.messengerStore.selectedPeerAvatarUrl();
+    }
+
+    public openSenderProfile(message: DirectMessage): void {
+        const publicId =
+            message.idSender === this.usersStore.user()?.id
+                ? this.usersStore.user()?.publicId
+                : message.senderPublicId;
+        if (publicId) {
+            this.openPeerProfile(publicId);
+        }
+    }
+
+    public openCreateGroup(): void {
+        this.dialogService.open(CreateGroupDialogComponent).onClose.subscribe((result) => {
+            if (!result?.memberIds?.length) {
+                return;
+            }
+            void this.messengerStore.createGroup(result.memberIds, result.title, result.avatarId);
+        });
+    }
+
+    public openManageGroup(): void {
+        const conversation = this.messengerStore.selectedConversation();
+        if (!conversation?.isGroup) {
+            return;
+        }
+        const ref = this.dialogService.open(ManageGroupDialogComponent, {
+            context: { initial: conversation },
+        });
+        ref.onClose.subscribe((result) => {
+            if (result?.openProfile) {
+                this.openPeerProfile(result.openProfile);
+            }
+        });
     }
 
     public messageQuote(message: DirectMessage): string {
@@ -202,10 +271,16 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
     }
 
     public startReply(message: DirectMessage): void {
-        if (!this.messengerStore.canCompose()) {
+        if (!this.messengerStore.canCompose() || message.isLocal) {
             return;
         }
         this.replyingTo.update((current) => (current?.publicId === message.publicId ? null : message));
+    }
+
+    public retryMessage(event: MouseEvent, message: DirectMessage): void {
+        event.preventDefault();
+        event.stopPropagation();
+        void this.messengerStore.retry(message);
     }
 
     public cancelReply(): void {
@@ -303,13 +378,12 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
     }
 
     private chatScrollEl(): HTMLElement | undefined {
-        return this.chat()?.scrollable?.nativeElement as HTMLElement | undefined;
+        return this.whisperScroll()?.nativeElement;
     }
 
     private scrollToBottom(smooth: boolean): void {
         const el = this.chatScrollEl();
         if (!el) {
-            this.chat()?.scrollListBottom();
             return;
         }
         if (smooth) {

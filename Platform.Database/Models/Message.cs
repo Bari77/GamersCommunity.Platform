@@ -12,15 +12,13 @@ public partial class Message : IHasPublicId
 
     public string Content { get; set; } = null!;
 
+    public int IdConversation { get; set; }
+
     public int IdSender { get; set; }
-
-    public int IdReceiver { get; set; }
-
-    public bool IsRead { get; set; }
 
     public Guid? ParentPublicId { get; set; }
 
-    public virtual User IdReceiverNavigation { get; set; } = null!;
+    public virtual Conversation IdConversationNavigation { get; set; } = null!;
 
     public virtual User IdSenderNavigation { get; set; } = null!;
 

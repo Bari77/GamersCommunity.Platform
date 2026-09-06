@@ -85,14 +85,39 @@ export class MessengerRealtimeService {
 
             this.connection.on("message.created", (payload: MessageDto) => {
                 this.zone.run(() => {
-                    const message = DirectMessage.fromDto(payload);
+                    let message: DirectMessage;
+                    try {
+                        message = DirectMessage.fromDto(payload);
+                    } catch {
+                        this.messagesStore.reload();
+                        return;
+                    }
+                    if (!message.conversationPublicId) {
+                        this.messagesStore.reload();
+                        return;
+                    }
                     this.messagesStore.upsert(message);
 
                     const me = Number(this.usersStore.user()?.id);
                     const messenger = this.injector.get(MessengerStore);
-                    if (me && message.idReceiver === me && messenger.selectedPeerId() === message.idSender) {
-                        void this.messagesStore.markThreadRead(message.idSender);
+                    if (
+                        me &&
+                        message.idSender !== me &&
+                        messenger.selectedConversationPublicId() === message.conversationPublicId
+                    ) {
+                        void this.messagesStore.markThreadRead(message.conversationPublicId);
                     }
+                });
+            });
+
+            this.connection.on("conversation.updated", (payload: { publicId?: string; deleted?: boolean }) => {
+                this.zone.run(() => {
+                    const publicId = payload?.publicId;
+                    if (!publicId) {
+                        this.messagesStore.reload();
+                        return;
+                    }
+                    this.injector.get(MessengerStore).handleConversationUpdated(publicId, !!payload.deleted);
                 });
             });
 
@@ -181,6 +206,7 @@ export class MessengerRealtimeService {
         }
 
         connection.off("message.created");
+        connection.off("conversation.updated");
         connection.off("friend.updated");
         connection.off("notification.created");
         try {

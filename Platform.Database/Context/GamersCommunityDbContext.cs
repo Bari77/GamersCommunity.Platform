@@ -26,6 +26,10 @@ public partial class GamersCommunityDbContext : DbContext
 
     public virtual DbSet<Friend> Friends { get; set; }
 
+    public virtual DbSet<Conversation> Conversations { get; set; }
+
+    public virtual DbSet<ConversationMember> ConversationMembers { get; set; }
+
     public virtual DbSet<FriendStatus> FriendStatuses { get; set; }
 
     public virtual DbSet<Game> Games { get; set; }
@@ -255,6 +259,52 @@ public partial class GamersCommunityDbContext : DbContext
                 .HasColumnType("datetime");
         });
 
+        modelBuilder.Entity<Conversation>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_Conversation");
+
+            entity.Property(e => e.Kind).HasMaxLength(16).IsRequired();
+            entity.Property(e => e.Title).HasMaxLength(80);
+            entity.Property(e => e.PictureUrl).HasMaxLength(255);
+            entity.Property(e => e.CreationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ModificationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.IdOwnerNavigation).WithMany(p => p.ConversationsOwned)
+                .HasForeignKey(d => d.IdOwner)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Conversation_Owner");
+        });
+
+        modelBuilder.Entity<ConversationMember>(entity =>
+        {
+            entity.HasKey(e => new { e.IdConversation, e.IdUser });
+
+            entity.Property(e => e.JoinedAt).HasColumnType("datetime");
+            entity.Property(e => e.LastReadAt).HasColumnType("datetime");
+            entity.Property(e => e.CreationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ModificationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+
+            entity.HasOne(d => d.IdConversationNavigation).WithMany(p => p.Members)
+                .HasForeignKey(d => d.IdConversation)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ConversationMember_Conversation");
+
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.ConversationMembers)
+                .HasForeignKey(d => d.IdUser)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_ConversationMember_User");
+
+            entity.HasIndex(e => e.IdUser);
+        });
+
         modelBuilder.Entity<Message>(entity =>
         {
             entity.HasKey(e => e.PublicId)
@@ -264,6 +314,8 @@ public partial class GamersCommunityDbContext : DbContext
             entity.HasIndex(e => new { e.CreationDate, e.PublicId })
                 .IsClustered();
 
+            entity.HasIndex(e => new { e.IdConversation, e.CreationDate, e.PublicId });
+
             entity.Property(e => e.Content).HasColumnType("text");
             entity.Property(e => e.CreationDate)
                 .HasDefaultValueSql("(getdate())")
@@ -271,12 +323,11 @@ public partial class GamersCommunityDbContext : DbContext
             entity.Property(e => e.ModificationDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.IsRead).HasDefaultValue(false);
 
-            entity.HasOne(d => d.IdReceiverNavigation).WithMany(p => p.MessageIdReceiverNavigations)
-                .HasForeignKey(d => d.IdReceiver)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Messages_Receiver");
+            entity.HasOne(d => d.IdConversationNavigation).WithMany(p => p.Messages)
+                .HasForeignKey(d => d.IdConversation)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Messages_Conversation");
 
             entity.HasOne(d => d.IdSenderNavigation).WithMany(p => p.MessageIdSenderNavigations)
                 .HasForeignKey(d => d.IdSender)

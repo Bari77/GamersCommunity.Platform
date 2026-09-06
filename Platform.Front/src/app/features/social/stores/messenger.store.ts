@@ -1,25 +1,16 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { UsersStore } from "@features/users/stores/users.store";
+import { catchError, firstValueFrom, of } from "rxjs";
+import { Conversation } from "../models/conversation.model";
 import { FriendStatusId } from "../models/friend-status";
 import { Friend } from "../models/friend.model";
 import { DirectMessage } from "../models/message.model";
+import { ConversationsService } from "../services/conversations.service";
 import { MessengerRealtimeService } from "../services/messenger-realtime.service";
 import { FriendsStore } from "./friends.store";
 import { MessagesStore } from "./messages.store";
 
 export type MessengerTab = "chats" | "contacts";
-
-export interface MessengerConversation {
-    peerId: number;
-    peerPublicId: string;
-    nickname: string;
-    discriminator: string;
-    label: string;
-    avatarUrl: string;
-    lastMessage: string;
-    lastDate: Date;
-    unreadCount: number;
-}
 
 export interface FriendUpdatedPayload {
     publicId: string;
@@ -32,69 +23,47 @@ export interface FriendUpdatedPayload {
 export class MessengerStore {
     public readonly isOpen = computed(() => this.$open());
     public readonly tab = computed(() => this.$tab());
-    public readonly selectedPeerId = computed(() => this.$selectedPeerId());
+    public readonly selectedConversationPublicId = computed(() => this.$selectedConversationPublicId());
 
-    public readonly conversations = computed((): MessengerConversation[] => {
-        const me = Number(this.usersStore.user()?.id);
-        if (!me) {
-            return [];
+    public readonly conversations = computed(() =>
+        [...this.messagesStore.conversations.value()].sort((a, b) => {
+            const aDate = a.lastDate?.getTime() ?? a.creationDate.getTime();
+            const bDate = b.lastDate?.getTime() ?? b.creationDate.getTime();
+            return bDate - aDate;
+        }),
+    );
+
+    public readonly selectedConversation = computed((): Conversation | null => {
+        const publicId = this.$selectedConversationPublicId();
+        if (!publicId) {
+            return null;
         }
-
-        return this.messagesStore.messages
-            .value()
-            .map((message) => {
-                const peerId = message.idSender === me ? message.idReceiver : message.idSender;
-                const identity = this.peerIdentity(peerId);
-                return {
-                    peerId,
-                    peerPublicId: identity.publicId,
-                    nickname: identity.nickname,
-                    discriminator: identity.discriminator,
-                    label: identity.label,
-                    avatarUrl: this.peerAvatarUrl(peerId),
-                    lastMessage: message.content,
-                    lastDate: message.creationDate,
-                    unreadCount: message.unreadCount || 0,
-                };
-            })
-            .sort((a, b) => b.lastDate.getTime() - a.lastDate.getTime());
+        return this.messagesStore.conversations.value().find((item) => item.publicId === publicId) ?? null;
     });
 
+    public readonly selectedPeerId = computed(() => this.selectedConversation()?.peerId ?? null);
+
     public readonly threadMessages = computed((): DirectMessage[] => {
-        if (this.$selectedPeerId() == null) {
+        if (!this.$selectedConversationPublicId()) {
             return [];
         }
         return this.messagesStore.threadMessages();
     });
 
-    public readonly selectedLabel = computed(() => {
-        const peerId = this.$selectedPeerId();
-        return peerId == null ? "" : this.peerIdentity(peerId).label;
-    });
-
-    public readonly selectedNickname = computed(() => {
-        const peerId = this.$selectedPeerId();
-        return peerId == null ? "" : this.peerIdentity(peerId).nickname;
-    });
-
-    public readonly selectedDiscriminator = computed(() => {
-        const peerId = this.$selectedPeerId();
-        return peerId == null ? "" : this.peerIdentity(peerId).discriminator;
-    });
-
-    public readonly selectedPeerPublicId = computed(() => {
-        const peerId = this.$selectedPeerId();
-        return peerId == null ? "" : this.peerIdentity(peerId).publicId;
-    });
-
-    public readonly selectedPeerAvatarUrl = computed(() => {
-        const peerId = this.$selectedPeerId();
-        return peerId == null ? "" : this.peerAvatarUrl(peerId);
-    });
+    public readonly selectedLabel = computed(() => this.selectedConversation()?.displayTitle ?? "");
+    public readonly selectedNickname = computed(() => this.selectedConversation()?.peerNickname ?? this.selectedLabel());
+    public readonly selectedDiscriminator = computed(() => this.selectedConversation()?.peerDiscriminator ?? "");
+    public readonly selectedPeerPublicId = computed(() => this.selectedConversation()?.peerPublicId ?? "");
+    public readonly selectedPeerAvatarUrl = computed(
+        () => this.selectedConversation()?.pictureUrl || this.selectedConversation()?.peerAvatarUrl || "",
+    );
+    public readonly selectedIsGroup = computed(() => this.selectedConversation()?.isGroup ?? false);
+    public readonly selectedIsOwner = computed(() => this.selectedConversation()?.isOwner ?? false);
+    public readonly selectedMembers = computed(() => this.selectedConversation()?.members ?? []);
 
     public readonly friendsLoading = computed(() => this.friendsStore.loading());
     public readonly messagesLoading = computed(() => {
-        if (this.$selectedPeerId() != null) {
+        if (this.$selectedConversationPublicId()) {
             return this.messagesStore.threadLoading();
         }
         return this.messagesStore.loading();
@@ -107,6 +76,7 @@ export class MessengerStore {
     public readonly realtimeStatus = computed(() => this.realtime.status());
     public readonly realtimeOfflineMessage = computed(() => this.realtime.offlineMessage());
     public readonly managedContacts = computed(() => this.friendsStore.managedContacts());
+    public readonly acceptedContacts = computed(() => this.friendsStore.accepted());
     public readonly pendingIncomingCount = computed(() => this.friendsStore.pendingIncomingCount());
     public readonly actionLoading = computed(() => this.friendsStore.actionLoading());
 
@@ -116,11 +86,11 @@ export class MessengerStore {
     public readonly totalBadgeCount = computed(() => this.contactsBadgeCount() + this.chatsBadgeCount());
 
     public readonly threadBlockState = computed((): "none" | "blockedByMe" | "blockedByPeer" => {
-        const peerId = this.$selectedPeerId();
-        if (peerId == null) {
+        const conversation = this.selectedConversation();
+        if (!conversation || conversation.isGroup || conversation.peerId == null) {
             return "none";
         }
-        const kind = this.friendsStore.relationKindWith(peerId);
+        const kind = this.friendsStore.relationKindWith(conversation.peerId);
         if (kind === "blockedByMe") {
             return "blockedByMe";
         }
@@ -131,22 +101,23 @@ export class MessengerStore {
     });
 
     public readonly canCompose = computed(
-        () => this.isLive() && this.threadBlockState() === "none" && this.$selectedPeerId() != null,
+        () => this.isLive() && this.threadBlockState() === "none" && this.$selectedConversationPublicId() != null,
     );
 
     private readonly $open = signal(false);
     private readonly $tab = signal<MessengerTab>("chats");
-    private readonly $selectedPeerId = signal<number | null>(null);
+    private readonly $selectedConversationPublicId = signal<string | null>(null);
 
     private readonly usersStore = inject(UsersStore);
     private readonly friendsStore = inject(FriendsStore);
     private readonly messagesStore = inject(MessagesStore);
+    private readonly conversationsService = inject(ConversationsService);
     private readonly realtime = inject(MessengerRealtimeService);
 
     public open(tab: MessengerTab = "chats"): void {
         this.$tab.set(tab);
         this.$open.set(true);
-        this.$selectedPeerId.set(null);
+        this.$selectedConversationPublicId.set(null);
         this.messagesStore.clearThread();
         this.refresh();
     }
@@ -158,7 +129,7 @@ export class MessengerStore {
 
     public close(): void {
         this.$open.set(false);
-        this.$selectedPeerId.set(null);
+        this.$selectedConversationPublicId.set(null);
         this.messagesStore.clearThread();
     }
 
@@ -172,24 +143,119 @@ export class MessengerStore {
 
     public setTab(tab: MessengerTab): void {
         this.$tab.set(tab);
-        this.$selectedPeerId.set(null);
+        this.$selectedConversationPublicId.set(null);
         this.messagesStore.clearThread();
     }
 
-    public selectPeer(peerId: number): void {
-        this.$selectedPeerId.set(peerId);
+    public selectConversation(publicId: string): void {
+        if (!publicId) {
+            return;
+        }
+        this.$selectedConversationPublicId.set(publicId);
         this.$tab.set("chats");
-        void this.messagesStore.loadThread(peerId);
-        void this.messagesStore.markThreadRead(peerId);
-    }
-
-    public openThread(peerId: number): void {
-        this.selectPeer(peerId);
+        void this.messagesStore.loadThread(publicId);
+        void this.messagesStore.markThreadRead(publicId);
+        void this.refreshConversation(publicId);
         this.$open.set(true);
     }
 
+    public openThread(peerId: number): void {
+        void this.openDm(peerId);
+    }
+
+    public async openDm(peerId: number): Promise<void> {
+        const existing = this.messagesStore.conversations
+            .value()
+            .find((conversation) => !conversation.isGroup && conversation.peerId === peerId);
+        if (existing) {
+            this.selectConversation(existing.publicId);
+            return;
+        }
+
+        const created = await firstValueFrom(
+            this.conversationsService.create([peerId]).pipe(catchError(() => of(null))),
+        );
+        if (!created?.publicId) {
+            return;
+        }
+        this.messagesStore.replaceConversation(created);
+        this.selectConversation(created.publicId);
+    }
+
+    public async createGroup(memberIds: number[], title?: string | null, avatarId?: number | null): Promise<void> {
+        const created = await firstValueFrom(
+            this.conversationsService.create(memberIds, title, avatarId).pipe(catchError(() => of(null))),
+        );
+        if (!created?.publicId) {
+            return;
+        }
+        this.messagesStore.replaceConversation(created);
+        this.selectConversation(created.publicId);
+    }
+
+    public async addMembers(memberIds: number[]): Promise<void> {
+        const publicId = this.$selectedConversationPublicId();
+        if (!publicId || memberIds.length === 0) {
+            return;
+        }
+        const updated = await firstValueFrom(
+            this.conversationsService.addMembers(publicId, memberIds).pipe(catchError(() => of(null))),
+        );
+        if (updated) {
+            this.messagesStore.replaceConversation(updated);
+        }
+    }
+
+    public async removeMember(memberId: number): Promise<void> {
+        const publicId = this.$selectedConversationPublicId();
+        if (!publicId) {
+            return;
+        }
+        const updated = await firstValueFrom(
+            this.conversationsService.removeMembers(publicId, [memberId]).pipe(catchError(() => of(null))),
+        );
+        if (updated) {
+            this.messagesStore.replaceConversation(updated);
+        }
+    }
+
+    public async deleteGroup(): Promise<boolean> {
+        const publicId = this.$selectedConversationPublicId();
+        if (!publicId) {
+            return false;
+        }
+        try {
+            await firstValueFrom(this.conversationsService.deleteConversation(publicId));
+        } catch {
+            return false;
+        }
+        this.dropConversation(publicId);
+        return true;
+    }
+
+    public handleConversationUpdated(publicId: string, deleted = false): void {
+        if (deleted) {
+            this.dropConversation(publicId);
+            return;
+        }
+        void this.refreshConversation(publicId, true);
+    }
+
+    public async updateGroup(title?: string | null, avatarId?: number | null): Promise<void> {
+        const publicId = this.$selectedConversationPublicId();
+        if (!publicId) {
+            return;
+        }
+        const updated = await firstValueFrom(
+            this.conversationsService.update(publicId, title, avatarId).pipe(catchError(() => of(null))),
+        );
+        if (updated) {
+            this.messagesStore.replaceConversation(updated);
+        }
+    }
+
     public clearThread(): void {
-        this.$selectedPeerId.set(null);
+        this.$selectedConversationPublicId.set(null);
         this.messagesStore.clearThread();
     }
 
@@ -201,11 +267,15 @@ export class MessengerStore {
         if (!this.canCompose()) {
             return;
         }
-        const peerId = this.$selectedPeerId();
-        if (peerId == null) {
+        const publicId = this.$selectedConversationPublicId();
+        if (!publicId) {
             return;
         }
-        await this.messagesStore.send(peerId, content, parentPublicId);
+        await this.messagesStore.send(publicId, content, parentPublicId);
+    }
+
+    public retry(message: DirectMessage): Promise<void> {
+        return this.messagesStore.retry(message);
     }
 
     public accept(friend: Friend): Promise<void> {
@@ -225,7 +295,7 @@ export class MessengerStore {
     }
 
     public unblockSelectedPeer(): Promise<void> {
-        const peerId = this.$selectedPeerId();
+        const peerId = this.selectedPeerId();
         if (peerId == null) {
             return Promise.resolve();
         }
@@ -234,20 +304,12 @@ export class MessengerStore {
 
     public isIncomingPending(friend: Friend): boolean {
         const me = this.usersStore.user()?.id;
-        return (
-            me != null &&
-            friend.idFriendStatus === FriendStatusId.Pending &&
-            friend.idFriendReceive === me
-        );
+        return me != null && friend.idFriendStatus === FriendStatusId.Pending && friend.idFriendReceive === me;
     }
 
     public isOutgoingPending(friend: Friend): boolean {
         const me = this.usersStore.user()?.id;
-        return (
-            me != null &&
-            friend.idFriendStatus === FriendStatusId.Pending &&
-            friend.idFriendAsking === me
-        );
+        return me != null && friend.idFriendStatus === FriendStatusId.Pending && friend.idFriendAsking === me;
     }
 
     public isAccepted(friend: Friend): boolean {
@@ -260,39 +322,27 @@ export class MessengerStore {
 
     public isBlockedByMe(friend: Friend): boolean {
         const me = this.usersStore.user()?.id;
-        return (
-            me != null &&
-            friend.idFriendStatus === FriendStatusId.Blocked &&
-            friend.idFriendAsking === me
+        return me != null && friend.idFriendStatus === FriendStatusId.Blocked && friend.idFriendAsking === me;
+    }
+
+    private async refreshConversation(publicId: string, reloadIfMissing = false): Promise<void> {
+        const detail = await firstValueFrom(
+            this.conversationsService.getByPublicId(publicId).pipe(catchError(() => of(null))),
         );
-    }
-
-    private peerIdentity(peerId: number): {
-        nickname: string;
-        discriminator: string;
-        publicId: string;
-        label: string;
-    } {
-        const friend = this.friendsStore.friends.value().find((f) => f.peerId === peerId);
-        if (friend) {
-            return {
-                nickname: friend.peerNickname,
-                discriminator: friend.peerDiscriminator,
-                publicId: friend.peerPublicId,
-                label: friend.peerLabel,
-            };
+        if (detail) {
+            this.messagesStore.replaceConversation(detail);
+            return;
         }
-
-        const label = $localize`:@@social.messenger.peerLabel:Player #${peerId}:peerId:`;
-        return {
-            nickname: label,
-            discriminator: "",
-            publicId: "",
-            label,
-        };
+        if (reloadIfMissing) {
+            this.dropConversation(publicId);
+            this.messagesStore.reload();
+        }
     }
 
-    private peerAvatarUrl(peerId: number): string {
-        return this.friendsStore.friends.value().find((f) => f.peerId === peerId)?.peerAvatarUrl ?? "";
+    private dropConversation(publicId: string): void {
+        this.messagesStore.removeConversation(publicId);
+        if (this.$selectedConversationPublicId() === publicId) {
+            this.clearThread();
+        }
     }
 }

@@ -1,0 +1,94 @@
+<nb-card class="create-group">
+    <nb-card-header i18n="@@social.messenger.createGroup.title">Create a group</nb-card-header>
+    <nb-card-body>
+        <input
+            nbInput
+            fullWidth
+            type="search"
+            [ngModel]="query()"
+            (ngModelChange)="query.set($event)"
+            i18n-placeholder="@@social.messenger.createGroup.search"
+            placeholder="Search contacts"
+        />
+
+        <ul class="create-group__list">
+            @for (contact of contacts(); track contact.publicId) {
+                <li>
+                    <button
+                        type="button"
+                        class="create-group__row"
+                        [class.is-selected]="isSelected(contact)"
+                        (click)="toggle(contact)"
+                    >
+                        <nb-checkbox status="control" [checked]="isSelected(contact)"></nb-checkbox>
+                        @if (contact.peerAvatarUrl) {
+                            <img class="create-group__avatar" [src]="contact.peerAvatarUrl" [alt]="contact.peerNickname" />
+                        } @else {
+                            <span class="create-group__avatar create-group__avatar--fallback">{{
+                                contact.peerNickname.charAt(0)
+                            }}</span>
+                        }
+                        <app-user-handle [nickname]="contact.peerNickname" [discriminator]="contact.peerDiscriminator" />
+                    </button>
+                </li>
+            } @empty {
+                <li class="create-group__empty" i18n="@@social.messenger.createGroup.empty">No matching contacts.</li>
+            }
+        </ul>
+
+        @if (isGroup()) {
+            <label class="create-group__field">
+                <span i18n="@@social.messenger.createGroup.name">Group name (optional)</span>
+                <input
+                    nbInput
+                    fullWidth
+                    maxlength="80"
+                    [ngModel]="title()"
+                    (ngModelChange)="title.set($event)"
+                    i18n-placeholder="@@social.messenger.createGroup.namePlaceholder"
+                    placeholder="Leave empty to use member names"
+                />
+            </label>
+
+            <p class="create-group__field-label" i18n="@@social.messenger.createGroup.picture">Picture (optional)</p>
+            <div class="create-group__avatars">
+                @for (id of avatarIds; track id) {
+                    <button
+                        type="button"
+                        class="create-group__avatar-option"
+                        [class.is-selected]="selectedAvatarId() === id"
+                        (click)="selectAvatar(id)"
+                    >
+                        <img [src]="usersStore.avatarUrlForId(id)" [alt]="'Avatar ' + id" />
+                    </button>
+                }
+            </div>
+        } @else if (selectedCount() === 1) {
+            <p class="create-group__hint" i18n="@@social.messenger.createGroup.dmHint">
+                One contact selected — this will open a direct whisper.
+            </p>
+        } @else {
+            <p class="create-group__hint" i18n="@@social.messenger.createGroup.needTwo">
+                Select at least two contacts to create a group.
+            </p>
+        }
+    </nb-card-body>
+    <nb-card-footer>
+        <button type="button" nbButton ghost status="basic" (click)="cancel()" i18n="@@social.messenger.createGroup.cancel">
+            Cancel
+        </button>
+        <button
+            type="button"
+            nbButton
+            status="primary"
+            [disabled]="!canSubmit()"
+            (click)="submit()"
+        >
+            @if (isGroup()) {
+                <span i18n="@@social.messenger.createGroup.submitGroup">Create group</span>
+            } @else {
+                <span i18n="@@social.messenger.createGroup.submitDm">Open chat</span>
+            }
+        </button>
+    </nb-card-footer>
+</nb-card>

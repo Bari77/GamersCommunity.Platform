@@ -58,4 +58,4 @@ Do **not** expose sequential `int` primary keys in public URLs for user-owned or
 
 Catalog / reference tables (game types, roles, statuses, …) stay on stable `int` ids.
 
-Entities with `PublicId`: `User`, `Event`, `Message`, `Friend`, `Banned`, `EventsUsersInterest`, `Post`, `Notification`. Migration: `AddPublicId` (+ later social migrations).
+Entities with `PublicId`: `User`, `Event`, `Message`, `Friend`, `Banned`, `EventsUsersInterest`, `Post`, `Notification`, `Conversation`. Migration: `AddPublicId` (+ later social migrations).

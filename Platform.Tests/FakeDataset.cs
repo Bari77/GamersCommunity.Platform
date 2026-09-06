@@ -310,12 +310,69 @@ namespace Platform.Tests
 
             #region Messages
 
+            ctx.Conversations.AddRange(
+                new Conversation
+                {
+                    Id = 1,
+                    Kind = ConversationKind.Dm,
+                    CreationDate = DateTime.UtcNow,
+                    ModificationDate = DateTime.UtcNow,
+                },
+                new Conversation
+                {
+                    Id = 2,
+                    Kind = ConversationKind.Dm,
+                    CreationDate = DateTime.UtcNow,
+                    ModificationDate = DateTime.UtcNow,
+                }
+            );
+
+            var joined = DateTime.UtcNow.AddDays(-1);
+            ctx.ConversationMembers.AddRange(
+                new ConversationMember
+                {
+                    IdConversation = 1,
+                    IdUser = 1,
+                    JoinedAt = joined,
+                    LastReadAt = joined,
+                    CreationDate = joined,
+                    ModificationDate = joined,
+                },
+                new ConversationMember
+                {
+                    IdConversation = 1,
+                    IdUser = 2,
+                    JoinedAt = joined,
+                    LastReadAt = joined,
+                    CreationDate = joined,
+                    ModificationDate = joined,
+                },
+                new ConversationMember
+                {
+                    IdConversation = 2,
+                    IdUser = 2,
+                    JoinedAt = joined,
+                    LastReadAt = joined,
+                    CreationDate = joined,
+                    ModificationDate = joined,
+                },
+                new ConversationMember
+                {
+                    IdConversation = 2,
+                    IdUser = 3,
+                    JoinedAt = joined,
+                    LastReadAt = joined,
+                    CreationDate = joined,
+                    ModificationDate = joined,
+                }
+            );
+
             ctx.Messages.AddRange(
                 new Message
                 {
                     PublicId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                    IdConversation = 1,
                     IdSender = 1,
-                    IdReceiver = 2,
                     Content = "Content A",
                     CreationDate = DateTime.UtcNow,
                     ModificationDate = DateTime.UtcNow,
@@ -323,8 +380,8 @@ namespace Platform.Tests
                 new Message
                 {
                     PublicId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                    IdConversation = 2,
                     IdSender = 2,
-                    IdReceiver = 3,
                     Content = "Content B",
                     CreationDate = DateTime.UtcNow,
                     ModificationDate = DateTime.UtcNow,

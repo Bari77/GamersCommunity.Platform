@@ -1,0 +1,126 @@
+@if (pendingDelete()) {
+    <nb-card class="manage-group">
+        <nb-card-header i18n="@@social.messenger.manageGroup.deleteTitle">Delete this group?</nb-card-header>
+        <nb-card-body>
+            <p class="manage-group__warning" i18n="@@social.messenger.manageGroup.deleteWarning">
+                Removing the last member will delete this group for everyone. This cannot be undone.
+            </p>
+        </nb-card-body>
+        <nb-card-footer>
+            <button
+                type="button"
+                nbButton
+                ghost
+                status="basic"
+                [disabled]="deleting()"
+                (click)="cancelDelete()"
+                i18n="@@social.messenger.manageGroup.deleteCancel"
+            >
+                Cancel
+            </button>
+            <button
+                type="button"
+                nbButton
+                status="danger"
+                [disabled]="deleting()"
+                (click)="confirmDeleteGroup()"
+                i18n="@@social.messenger.manageGroup.deleteConfirm"
+            >
+                Delete group
+            </button>
+        </nb-card-footer>
+    </nb-card>
+} @else {
+    <nb-card class="manage-group">
+        <nb-card-header i18n="@@social.messenger.manageGroup.title">Group members</nb-card-header>
+        <nb-card-body>
+            <ul class="manage-group__members">
+                @for (member of members(); track member.publicId) {
+                    <li class="manage-group__member">
+                        <button type="button" class="manage-group__identity" (click)="openProfile(member.publicId)">
+                            @if (member.avatarUrl) {
+                                <img class="manage-group__avatar" [src]="member.avatarUrl" [alt]="member.nickname" />
+                            }
+                            <app-user-handle [nickname]="member.nickname" [discriminator]="member.discriminator" />
+                            @if (member.isOwner) {
+                                <span class="manage-group__badge" i18n="@@social.messenger.manageGroup.owner">Owner</span>
+                            }
+                        </button>
+                        @if (isOwner() && !member.isOwner) {
+                            <button
+                                type="button"
+                                nbButton
+                                size="tiny"
+                                ghost
+                                status="danger"
+                                (click)="removeMember(member.id)"
+                                i18n="@@social.messenger.manageGroup.remove"
+                            >
+                                Remove
+                            </button>
+                        }
+                    </li>
+                }
+            </ul>
+
+            @if (isOwner()) {
+                <label class="manage-group__field">
+                    <span i18n="@@social.messenger.createGroup.name">Group name (optional)</span>
+                    <input nbInput fullWidth maxlength="80" [ngModel]="title()" (ngModelChange)="title.set($event)" />
+                </label>
+                <div class="manage-group__avatars">
+                    @for (id of avatarIds; track id) {
+                        <button
+                            type="button"
+                            class="manage-group__avatar-option"
+                            [class.is-selected]="selectedAvatarId() === id"
+                            (click)="selectAvatar(id)"
+                        >
+                            <img [src]="usersStore.avatarUrlForId(id)" [alt]="'Avatar ' + id" />
+                        </button>
+                    }
+                </div>
+                <button type="button" nbButton size="small" status="primary" (click)="saveDetails()" i18n="@@social.messenger.manageGroup.save">
+                    Save group
+                </button>
+
+                <h3 class="manage-group__subtitle" i18n="@@social.messenger.manageGroup.add">Add contacts</h3>
+                <input
+                    nbInput
+                    fullWidth
+                    type="search"
+                    [ngModel]="addQuery()"
+                    (ngModelChange)="addQuery.set($event)"
+                    i18n-placeholder="@@social.messenger.createGroup.search"
+                    placeholder="Search contacts"
+                />
+                <ul class="manage-group__list">
+                    @for (contact of addableContacts(); track contact.publicId) {
+                        <li>
+                            <label class="manage-group__row" [class.is-selected]="isSelected(contact)" (click)="toggle(contact); $event.preventDefault()">
+                                <nb-checkbox status="control" [checked]="isSelected(contact)"></nb-checkbox>
+                                <app-user-handle [nickname]="contact.peerNickname" [discriminator]="contact.peerDiscriminator" />
+                            </label>
+                        </li>
+                    } @empty {
+                        <li class="manage-group__empty" i18n="@@social.messenger.manageGroup.noAddable">No contacts left to add.</li>
+                    }
+                </ul>
+                <button
+                    type="button"
+                    nbButton
+                    size="small"
+                    status="primary"
+                    [disabled]="selectedIds().size === 0"
+                    (click)="addSelected()"
+                    i18n="@@social.messenger.manageGroup.addSelected"
+                >
+                    Add to group
+                </button>
+            }
+        </nb-card-body>
+        <nb-card-footer>
+            <button type="button" nbButton ghost status="basic" (click)="close()" i18n="@@social.messenger.manageGroup.close">Close</button>
+        </nb-card-footer>
+    </nb-card>
+}
