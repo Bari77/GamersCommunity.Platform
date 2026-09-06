@@ -88,6 +88,7 @@ public class MessagesService(
                 SenderDiscriminator = m.IdSenderNavigation.Discriminator,
                 SenderAvatarUrl = m.IdSenderNavigation.AvatarUrl,
                 CreationDate = m.CreationDate,
+                Kind = m.Kind,
                 ParentPublicId = m.ParentPublicId,
                 ParentContent = m.ParentMessage != null ? m.ParentMessage.Content : null,
             })
@@ -138,6 +139,7 @@ public class MessagesService(
         {
             PublicId = Guid.NewGuid(),
             Content = cipher.Encrypt(plaintext),
+            Kind = MessageKind.Text,
             IdConversation = conversation.Id,
             IdSender = me,
             ParentPublicId = parent?.PublicId,
@@ -172,6 +174,7 @@ public class MessagesService(
                         SenderDiscriminator = sender.Discriminator,
                         SenderAvatarUrl = sender.AvatarUrl,
                         CreationDate = UtcDateTimeJsonConverter.AsUtc(entity.CreationDate),
+                        Kind = entity.Kind,
                         ParentPublicId = entity.ParentPublicId,
                         ParentContent = parent?.Content,
                     },
@@ -223,6 +226,7 @@ public class MessagesService(
                 SenderDiscriminator = m.IdSenderNavigation.Discriminator,
                 SenderAvatarUrl = m.IdSenderNavigation.AvatarUrl,
                 CreationDate = m.CreationDate,
+                Kind = m.Kind,
                 ParentPublicId = m.ParentPublicId,
                 ParentContent = m.ParentMessage != null ? m.ParentMessage.Content : null,
             })
@@ -247,13 +251,15 @@ public class MessagesService(
 
         var row = await context.Messages.AsNoTracking()
             .Where(m => m.PublicId == id)
-            .Select(m => new { m.PublicId, m.IdConversation, m.Content })
+            .Select(m => new { m.PublicId, m.IdConversation, m.Content, m.Kind })
             .FirstOrDefaultAsync(ct);
 
         if (row is null)
             throw new NotFoundException("PARENT_NOT_FOUND", "Parent message not found");
         if (row.IdConversation != conversationId)
             throw new BadRequestException("INVALID_PARENT", "Parent message is not in this conversation");
+        if (row.Kind != MessageKind.Text)
+            throw new BadRequestException("INVALID_PARENT", "Cannot reply to this message");
 
         return new ParentQuote(row.PublicId, cipher.Decrypt(row.Content));
     }
@@ -325,6 +331,7 @@ public class MessagesService(
         public string SenderDiscriminator { get; set; } = "";
         public string SenderAvatarUrl { get; set; } = "";
         public DateTime CreationDate { get; set; }
+        public string Kind { get; set; } = MessageKind.Text;
         public Guid? ParentPublicId { get; set; }
         public string? ParentContent { get; set; }
     }

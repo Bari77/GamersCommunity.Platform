@@ -5,6 +5,8 @@ export interface Environment {
     assetsBaseUrl: string;
     avatarMinId: number;
     avatarMaxId: number;
+    groupAvatarMinId: number;
+    groupAvatarMaxId: number;
     idpUrl: string;
     idpAppSlug: string;
     idpClientId: string;

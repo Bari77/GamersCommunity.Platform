@@ -100,9 +100,21 @@ export class UsersStore {
         return `${environment.assetsBaseUrl}/Avatars/${avatarId}.png`;
     }
 
+    public groupAvatarUrlForId(avatarId: number): string {
+        return `${environment.assetsBaseUrl}/Avatars/g${avatarId}.png`;
+    }
+
     public listAvatarIds(): number[] {
         const ids: number[] = [];
         for (let id = environment.avatarMinId; id <= environment.avatarMaxId; id++) {
+            ids.push(id);
+        }
+        return ids;
+    }
+
+    public listGroupAvatarIds(): number[] {
+        const ids: number[] = [];
+        for (let id = environment.groupAvatarMinId; id <= environment.groupAvatarMaxId; id++) {
             ids.push(id);
         }
         return ids;

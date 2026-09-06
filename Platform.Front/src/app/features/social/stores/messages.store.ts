@@ -257,6 +257,7 @@ export class MessagesStore {
             new Date(),
             parentPublicId ?? null,
             parent?.content ?? null,
+            "text",
             delivery,
         );
     }
@@ -296,7 +297,7 @@ export class MessagesStore {
 
         const previous = current[index];
         let unreadCount = previous.unreadCount || 0;
-        if (incomingForMe && !viewing) {
+        if (incomingForMe && !viewing && !message.isSystem) {
             unreadCount += 1;
         } else if (viewing) {
             unreadCount = 0;

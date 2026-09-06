@@ -19,7 +19,7 @@ export class CreateGroupDialogComponent {
     public readonly title = signal("");
     public readonly selectedIds = signal<Set<number>>(new Set());
     public readonly selectedAvatarId = signal<number | null>(null);
-    public readonly avatarIds = this.usersStore.listAvatarIds();
+    public readonly avatarIds = this.usersStore.listGroupAvatarIds();
 
     public readonly contacts = computed(() => {
         const q = this.query().trim().toLowerCase();

@@ -12,6 +12,8 @@ public partial class Message : IHasPublicId
 
     public string Content { get; set; } = null!;
 
+    public string Kind { get; set; } = MessageKind.Text;
+
     public int IdConversation { get; set; }
 
     public int IdSender { get; set; }

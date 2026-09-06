@@ -26,7 +26,7 @@ export class ManageGroupDialogComponent {
     public readonly selectedAvatarId = signal<number | null>(null);
     public readonly addQuery = signal("");
     public readonly selectedIds = signal<Set<number>>(new Set());
-    public readonly avatarIds = this.usersStore.listAvatarIds();
+    public readonly avatarIds = this.usersStore.listGroupAvatarIds();
 
     public readonly isOwner = computed(() => this.conversation()?.isOwner ?? false);
     public readonly members = computed(() => this.conversation()?.members ?? []);

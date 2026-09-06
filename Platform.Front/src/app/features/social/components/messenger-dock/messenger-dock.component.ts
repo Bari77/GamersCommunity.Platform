@@ -182,7 +182,7 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
             this.retryMessage(event, message);
             return;
         }
-        if (message.isLocal) {
+        if (message.isSystem || message.isLocal) {
             return;
         }
         this.startReply(message);
@@ -233,6 +233,14 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
         return message.parentContent ?? "";
     }
 
+    public eventLabel(message: DirectMessage): string {
+        const handle = this.messageHandle(message);
+        if (message.kind === "member_left") {
+            return $localize`:@@social.messenger.event.left:${handle}:handle: left the group.`;
+        }
+        return $localize`:@@social.messenger.event.joined:${handle}:handle: joined the group.`;
+    }
+
     public onMessagesScroll(): void {
         const el = this.chatScrollEl();
         if (!el) {
@@ -271,7 +279,7 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
     }
 
     public startReply(message: DirectMessage): void {
-        if (!this.messengerStore.canCompose() || message.isLocal) {
+        if (!this.messengerStore.canCompose() || message.isLocal || message.isSystem) {
             return;
         }
         this.replyingTo.update((current) => (current?.publicId === message.publicId ? null : message));

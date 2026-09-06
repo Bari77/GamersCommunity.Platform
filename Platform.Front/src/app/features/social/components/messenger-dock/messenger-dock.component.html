@@ -152,6 +152,9 @@
                                 <p class="messenger-dock__empty">{{ messengerStore.placeholderText() }}</p>
                             }
                             @for (message of messengerStore.threadMessages(); track message.publicId) {
+                                @if (message.isSystem) {
+                                    <p class="messenger-dock__event">{{ eventLabel(message) }}</p>
+                                } @else {
                                 <article
                                     class="messenger-dock__bubble"
                                     [class.is-mine]="message.idSender === usersStore.user()?.id"
@@ -191,6 +194,7 @@
                                         }
                                     </div>
                                 </article>
+                                }
                             }
                         </div>
                         @if (messengerStore.canCompose()) {

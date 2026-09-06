@@ -317,6 +317,10 @@ public partial class GamersCommunityDbContext : DbContext
             entity.HasIndex(e => new { e.IdConversation, e.CreationDate, e.PublicId });
 
             entity.Property(e => e.Content).HasColumnType("text");
+            entity.Property(e => e.Kind)
+                .HasMaxLength(32)
+                .IsRequired()
+                .HasDefaultValue(MessageKind.Text);
             entity.Property(e => e.CreationDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

@@ -59,7 +59,7 @@
                         [class.is-selected]="selectedAvatarId() === id"
                         (click)="selectAvatar(id)"
                     >
-                        <img [src]="usersStore.avatarUrlForId(id)" [alt]="'Avatar ' + id" />
+                        <img [src]="usersStore.groupAvatarUrlForId(id)" [alt]="'Group icon ' + id" />
                     </button>
                 }
             </div>

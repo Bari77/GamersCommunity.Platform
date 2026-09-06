@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Platform.Consumer.Configuration;
 using Platform.Consumer.Realtime;
 using Platform.Consumer.Security;
+using Platform.Consumer.Serialization;
 using Platform.Database.Context;
 using Platform.Database.Models;
 using Serilog;
@@ -74,7 +75,7 @@ public class ConversationsService(
         var members = await LoadMembersAsync(convIds, ct);
         var messages = await context.Messages.AsNoTracking()
             .Where(m => convIds.Contains(m.IdConversation))
-            .Select(m => new { m.IdConversation, m.IdSender, m.Content, m.CreationDate, m.PublicId })
+            .Select(m => new { m.IdConversation, m.IdSender, m.Content, m.CreationDate, m.PublicId, m.Kind })
             .ToListAsync(ct);
 
         var result = new List<ConversationDto>(conversations.Count);
@@ -90,6 +91,7 @@ public class ConversationsService(
             var last = visible.FirstOrDefault();
             var unread = visible.Count(m =>
                 m.IdSender != me
+                && m.Kind == MessageKind.Text
                 && (membership.LastReadAt is null || m.CreationDate > membership.LastReadAt));
             var lastPlain = last is null ? null : cipher.Decrypt(last.Content);
 
@@ -111,11 +113,12 @@ public class ConversationsService(
             .Where(m => m.IdConversation == conversation.Id && m.CreationDate >= membership.JoinedAt)
             .OrderByDescending(m => m.CreationDate)
             .ThenByDescending(m => m.PublicId)
-            .Select(m => new { m.Content, m.CreationDate, m.IdSender, m.PublicId })
+            .Select(m => new { m.Content, m.CreationDate, m.IdSender, m.PublicId, m.Kind })
             .ToListAsync(ct);
         var last = visible.FirstOrDefault();
         var unread = visible.Count(m =>
             m.IdSender != me
+            && m.Kind == MessageKind.Text
             && (membership.LastReadAt is null || m.CreationDate > membership.LastReadAt));
         var lastPlain = last is null ? null : cipher.Decrypt(last.Content);
         return MapDto(me, conversation, members, lastPlain, last?.CreationDate, unread, includeMembers: true, membership);
@@ -155,7 +158,7 @@ public class ConversationsService(
         if (request.Title is not null)
             conversation.Title = NormalizeTitle(request.Title);
         if (request.AvatarId is int avatarId)
-            conversation.PictureUrl = BuildAvatarUrl(avatarId);
+            conversation.PictureUrl = BuildGroupAvatarUrl(avatarId);
 
         conversation.ModificationDate = DateTime.UtcNow;
         await context.SaveChangesAsync(ct);
@@ -206,7 +209,9 @@ public class ConversationsService(
         }
 
         conversation.ModificationDate = now;
+        var joinEvents = await QueueMembershipEventsAsync(conversation, toAdd, MessageKind.MemberJoined, now, ct);
         await context.SaveChangesAsync(ct);
+        await PublishMembershipEventsAsync(conversation, joinEvents, ct);
         await PublishUpdatedAsync(conversation.PublicId, conversation.Id, toAdd, ct);
         return await GetMineAsync(message, ct);
     }
@@ -282,7 +287,14 @@ public class ConversationsService(
 
         context.ConversationMembers.RemoveRange(removing);
         conversation.ModificationDate = DateTime.UtcNow;
+        var leaveEvents = await QueueMembershipEventsAsync(
+            conversation,
+            removing.Select(m => m.IdUser).ToList(),
+            MessageKind.MemberLeft,
+            conversation.ModificationDate,
+            ct);
         await context.SaveChangesAsync(ct);
+        await PublishMembershipEventsAsync(conversation, leaveEvents, ct);
         await PublishUpdatedAsync(conversation.PublicId, conversation.Id, removing.Select(m => m.IdUser), ct);
         return await GetMineAsync(message, ct);
     }
@@ -346,7 +358,7 @@ public class ConversationsService(
             PublicId = Guid.NewGuid(),
             Kind = ConversationKind.Group,
             Title = NormalizeTitle(title),
-            PictureUrl = avatarId is int id ? BuildAvatarUrl(id) : null,
+            PictureUrl = avatarId is int id ? BuildGroupAvatarUrl(id) : null,
             IdOwner = me,
             CreationDate = now,
             ModificationDate = now,
@@ -485,12 +497,109 @@ public class ConversationsService(
         ModificationDate = now,
     };
 
-    private string? BuildAvatarUrl(int avatarId)
+    private async Task<List<MembershipEvent>> QueueMembershipEventsAsync(
+        Conversation conversation,
+        IReadOnlyCollection<int> userIds,
+        string kind,
+        DateTime now,
+        CancellationToken ct)
+    {
+        if (userIds.Count == 0)
+            return [];
+
+        var users = await context.Users.AsNoTracking()
+            .Where(u => userIds.Contains(u.Id))
+            .Select(u => new { u.Id, u.PublicId, u.Nickname, u.Discriminator, u.AvatarUrl })
+            .ToListAsync(ct);
+
+        var events = new List<MembershipEvent>(users.Count);
+        foreach (var user in users)
+        {
+            var handle = string.IsNullOrWhiteSpace(user.Discriminator)
+                ? user.Nickname
+                : $"{user.Nickname}#{user.Discriminator}";
+            var plaintext = kind == MessageKind.MemberJoined
+                ? $"{handle} joined the group."
+                : $"{handle} left the group.";
+            var entity = new Message
+            {
+                PublicId = Guid.NewGuid(),
+                Content = cipher.Encrypt(plaintext),
+                Kind = kind,
+                IdConversation = conversation.Id,
+                IdSender = user.Id,
+                CreationDate = now,
+                ModificationDate = now,
+            };
+            await context.Messages.AddAsync(entity, ct);
+            events.Add(new MembershipEvent(entity, plaintext, user.PublicId, user.Nickname, user.Discriminator, user.AvatarUrl));
+        }
+
+        return events;
+    }
+
+    private async Task PublishMembershipEventsAsync(
+        Conversation conversation,
+        IReadOnlyList<MembershipEvent> events,
+        CancellationToken ct)
+    {
+        if (events.Count == 0)
+            return;
+
+        var recipients = await LoadKeycloakSubjectsAsync(
+            await context.ConversationMembers.AsNoTracking()
+                .Where(m => m.IdConversation == conversation.Id)
+                .Select(m => m.IdUser)
+                .ToListAsync(ct),
+            ct);
+        if (recipients.Length == 0)
+            return;
+
+        foreach (var item in events)
+        {
+            try
+            {
+                await realtimePublisher.PublishAsync(
+                    new MessageCreatedRealtimeEvent
+                    {
+                        RecipientKeycloaks = recipients,
+                        Message = new MessageRealtimePayload
+                        {
+                            PublicId = item.Entity.PublicId,
+                            ConversationPublicId = conversation.PublicId,
+                            Content = item.Plaintext,
+                            IdSender = item.Entity.IdSender,
+                            SenderPublicId = item.SenderPublicId,
+                            SenderNickname = item.SenderNickname,
+                            SenderDiscriminator = item.SenderDiscriminator,
+                            SenderAvatarUrl = item.SenderAvatarUrl,
+                            CreationDate = UtcDateTimeJsonConverter.AsUtc(item.Entity.CreationDate),
+                            Kind = item.Entity.Kind,
+                        },
+                    },
+                    ct);
+            }
+            catch (Exception ex)
+            {
+                logger.Warning(ex, "Failed to publish membership event {MessageId}.", item.Entity.PublicId);
+            }
+        }
+    }
+
+    private sealed record MembershipEvent(
+        Message Entity,
+        string Plaintext,
+        Guid SenderPublicId,
+        string SenderNickname,
+        string SenderDiscriminator,
+        string SenderAvatarUrl);
+
+    private string? BuildGroupAvatarUrl(int avatarId)
     {
         var settings = appSettings.Value.AvatarSettings;
-        if (avatarId < settings.MinRangeAvatarId || avatarId > settings.MaxRangeAvatarId)
-            throw new BadRequestException("INVALID_AVATAR", $"Avatar id must be between {settings.MinRangeAvatarId} and {settings.MaxRangeAvatarId}");
-        return $"{settings.AvatarBaseUrl.TrimEnd('/')}/{avatarId}.png";
+        if (avatarId < settings.MinRangeGroupAvatarId || avatarId > settings.MaxRangeGroupAvatarId)
+            throw new BadRequestException("INVALID_AVATAR", $"Group avatar id must be between {settings.MinRangeGroupAvatarId} and {settings.MaxRangeGroupAvatarId}");
+        return $"{settings.AvatarBaseUrl.TrimEnd('/')}/g{avatarId}.png";
     }
 
     private static string? NormalizeTitle(string? title)

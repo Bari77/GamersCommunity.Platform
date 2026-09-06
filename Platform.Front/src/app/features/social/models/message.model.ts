@@ -16,11 +16,16 @@ export class DirectMessage {
         public creationDate: Date,
         public parentPublicId: string | null = null,
         public parentContent: string | null = null,
+        public kind: string = "text",
         public delivery: MessageDelivery = "sent",
     ) {}
 
     public get isLocal(): boolean {
         return this.delivery !== "sent";
+    }
+
+    public get isSystem(): boolean {
+        return this.kind === "member_joined" || this.kind === "member_left";
     }
 
     public static fromDto(dto: MessageDto): DirectMessage {
@@ -38,6 +43,7 @@ export class DirectMessage {
             parseUtcDate(dto.creationDate),
             parentPublicId || null,
             parentContent || null,
+            DirectMessage.text(dto.kind) || "text",
         );
     }
 
@@ -88,6 +94,7 @@ export class DirectMessage {
             this.creationDate,
             this.parentPublicId,
             this.parentContent,
+            this.kind,
             delivery,
         );
     }
@@ -105,6 +112,7 @@ export class DirectMessage {
             this.creationDate,
             this.parentPublicId,
             this.parentContent,
+            this.kind,
             this.delivery,
         );
     }

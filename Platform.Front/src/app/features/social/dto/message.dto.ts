@@ -8,6 +8,7 @@ export interface MessageDto {
     senderDiscriminator: string;
     senderAvatarUrl: string;
     creationDate: string;
+    kind?: string;
     parentPublicId?: string | null;
     parentContent?: string | null;
 }

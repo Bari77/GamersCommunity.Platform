@@ -7,6 +7,8 @@ export const environment: Environment = {
     assetsBaseUrl: "https://host.bariserv.net/GamersCommunity",
     avatarMinId: 1,
     avatarMaxId: 12,
+    groupAvatarMinId: 1,
+    groupAvatarMaxId: 18,
     idpUrl: "https://idp-gc.bariserv.net",
     idpAppSlug: "gc-front",
     idpClientId: "gc-front",
