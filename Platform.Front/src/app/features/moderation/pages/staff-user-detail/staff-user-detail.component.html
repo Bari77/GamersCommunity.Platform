@@ -1,0 +1,107 @@
+<section class="social-page gc-enter">
+    <a routerLink="/moderation/users" nbButton ghost size="small" i18n="@@moderation.detail.back">Back to directory</a>
+
+    @if (store.loading() || !store.detail()) {
+        <div class="social-page__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
+    } @else {
+        @let user = store.detail()!;
+        <header class="detail-head">
+            <img [src]="user.avatarUrl" [alt]="user.nickname" />
+            <div>
+                <h1 class="gc-display">
+                    <app-user-handle [nickname]="user.nickname" [discriminator]="user.discriminator" />
+                </h1>
+                <p>
+                    {{ user.siteRole }}
+                    @if (user.sanction !== "none") {
+                        · {{ user.sanction }}
+                    }
+                </p>
+                <p>
+                    <span i18n="@@moderation.detail.lastSeen">Last connection</span>
+                    @if (user.lastConnection) {
+                        {{ user.lastConnection | date: "medium" }}
+                    } @else {
+                        —
+                    }
+                </p>
+            </div>
+        </header>
+
+        <div class="detail-actions" [nbSpinner]="store.busy()">
+            @if (!isSelf()) {
+                <button type="button" nbButton status="warning" (click)="openSanction('mute')" i18n="@@moderation.action.mute">
+                    Mute
+                </button>
+                @if (permissions.canBan()) {
+                    <button type="button" nbButton status="danger" (click)="openSanction('ban')" i18n="@@moderation.action.ban">
+                        Ban
+                    </button>
+                }
+            }
+            <a [routerLink]="['/users', user.publicId]" nbButton ghost status="control" i18n="@@moderation.detail.profile">
+                Public profile
+            </a>
+        </div>
+
+        @if (permissions.canManageRanks() && !isSelf()) {
+            <section class="social-section">
+                <h2 class="social-section__title" i18n="@@moderation.detail.ranks">Ranks</h2>
+                <label class="field-label" i18n="@@moderation.detail.siteRole">Site role</label>
+                <nb-select [selected]="user.siteRole" (selectedChange)="changeSiteRole($event)">
+                    <nb-option value="member">member</nb-option>
+                    <nb-option value="moderator">moderator</nb-option>
+                    <nb-option value="admin">admin</nb-option>
+                </nb-select>
+
+                @for (game of games(); track game.id) {
+                    <label class="field-label">{{ game.title }}</label>
+                    <nb-select
+                        [selected]="gameRole(game.urlValue)"
+                        (selectedChange)="changeGameRole(game.urlValue, $event)"
+                    >
+                        <nb-option value="" i18n="@@moderation.detail.noGameRole">None</nb-option>
+                        <nb-option value="member">member</nb-option>
+                        <nb-option value="moderator">moderator</nb-option>
+                        <nb-option value="admin">admin</nb-option>
+                    </nb-select>
+                }
+            </section>
+        }
+
+        <section class="social-section">
+            <h2 class="social-section__title" i18n="@@moderation.detail.sanctions">Sanctions</h2>
+            @if (user.sanctions.length === 0) {
+                <p class="social-section__empty" i18n="@@moderation.detail.noSanctions">No sanction history.</p>
+            } @else {
+                <ul class="sanction-list">
+                    @for (row of user.sanctions; track row.publicId) {
+                        <li class="sanction-row">
+                            <div>
+                                <strong>{{ row.kind }}</strong>
+                                @if (row.active) {
+                                    <span class="pill" i18n="@@moderation.sanction.active">active</span>
+                                }
+                                <p>{{ row.entitled }}</p>
+                                <p class="friend-row__status">
+                                    {{ row.beginDate | date: "medium" }}
+                                    @if (row.endDate) {
+                                        → {{ row.endDate | date: "medium" }}
+                                    } @else if (row.kind === "ban") {
+                                        <span i18n="@@moderation.sanction.permanentShort">permanent</span>
+                                    }
+                                    · {{ row.modoNickname }}
+                                </p>
+                            </div>
+                            @if (row.active && !isSelf() && (row.kind !== "ban" || permissions.canBan())) {
+                                <button type="button" nbButton size="small" ghost status="basic" (click)="revoke(row.publicId, row.kind)" i18n="@@moderation.action.lift">
+                                    Lift
+                                </button>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+</section>

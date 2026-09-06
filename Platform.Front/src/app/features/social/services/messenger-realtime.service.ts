@@ -2,6 +2,7 @@ import { computed, effect, inject, Injectable, Injector, NgZone, signal } from "
 import { NotificationDto } from "@features/notifications/dto/notification.dto";
 import { AppNotification } from "@features/notifications/models/notification.model";
 import { NotificationsStore } from "@features/notifications/stores/notifications.store";
+import { ModerationReportsBadgeStore } from "@features/moderation/stores/moderation-reports-badge.store";
 import { UsersStore } from "@features/users/stores/users.store";
 import { NbAuthOAuth2JWTToken, NbAuthService } from "@nebular/auth";
 import * as signalR from "@microsoft/signalr";
@@ -40,6 +41,7 @@ export class MessengerRealtimeService {
     private readonly messagesStore = inject(MessagesStore);
     private readonly friendsStore = inject(FriendsStore);
     private readonly notificationsStore = inject(NotificationsStore);
+    private readonly reportsBadgeStore = inject(ModerationReportsBadgeStore);
     private readonly injector = inject(Injector);
     private readonly zone = inject(NgZone);
 
@@ -133,6 +135,16 @@ export class MessengerRealtimeService {
                 });
             });
 
+            this.connection.on("report.queue.updated", (payload: { openCount?: number }) => {
+                this.zone.run(() => {
+                    if (typeof payload?.openCount === "number") {
+                        this.reportsBadgeStore.setOpenCount(payload.openCount);
+                    } else {
+                        void this.reportsBadgeStore.reload();
+                    }
+                });
+            });
+
             this.connection.onreconnecting(() => {
                 this.zone.run(() => this.$status.set("connecting"));
             });
@@ -143,6 +155,7 @@ export class MessengerRealtimeService {
                     this.messagesStore.reload();
                     this.friendsStore.reload();
                     this.notificationsStore.reload();
+                    void this.reportsBadgeStore.reload();
                 });
             });
             this.connection.onclose(() => {
@@ -209,6 +222,7 @@ export class MessengerRealtimeService {
         connection.off("conversation.updated");
         connection.off("friend.updated");
         connection.off("notification.created");
+        connection.off("report.queue.updated");
         try {
             await connection.stop();
         } catch {

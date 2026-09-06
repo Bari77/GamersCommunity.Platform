@@ -4,6 +4,7 @@ import { FooterComponent } from "@core/layout/footer/components/footer/footer.co
 import { HeaderComponent } from "@core/layout/header/components/header/header.component";
 import { LoadingComponent } from "@core/layout/splash/components/loading/loading.component";
 import { LoadingStore } from "@core/stores/loading.store";
+import { MuteBannerComponent } from "@features/moderation/components/mute-banner/mute-banner.component";
 import { MessengerDockComponent } from "@features/social/components/messenger-dock/messenger-dock.component";
 import { MessengerRealtimeService } from "@features/social/services/messenger-realtime.service";
 import { PresenceHeartbeatService } from "@features/users/services/presence-heartbeat.service";
@@ -14,7 +15,15 @@ import { firstValueFrom, interval, map } from "rxjs";
 @Component({
     standalone: true,
     selector: "app",
-    imports: [RouterOutlet, NbLayoutModule, HeaderComponent, FooterComponent, LoadingComponent, MessengerDockComponent],
+    imports: [
+        RouterOutlet,
+        NbLayoutModule,
+        HeaderComponent,
+        FooterComponent,
+        LoadingComponent,
+        MessengerDockComponent,
+        MuteBannerComponent,
+    ],
     templateUrl: "./app.component.html",
     styleUrl: "./app.component.scss",
 })

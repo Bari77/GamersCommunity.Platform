@@ -56,6 +56,7 @@ namespace Platform.Consumer
                         // Bind configuration sections to strongly-typed settings
                         services.AddOptions<RabbitMQSettings>().Bind(context.Configuration.GetSection("RabbitMQ")).ValidateOnStart();
                         services.AddOptions<AppSettings>().Bind(context.Configuration.GetSection("AppSettings")).ValidateOnStart();
+                        services.AddOptions<AuthZSettings>().Bind(context.Configuration.GetSection(AuthZSettings.SectionName));
                         services.AddOptions<MessageEncryptionSettings>()
                             .Bind(context.Configuration.GetSection(MessageEncryptionSettings.SectionName))
                             .Validate(s => !string.IsNullOrWhiteSpace(s.Key), "MessageEncryption:Key is required.")

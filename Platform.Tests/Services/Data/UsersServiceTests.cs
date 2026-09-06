@@ -34,6 +34,7 @@ namespace Platform.Tests.Services.Data
                     MinRangeAvatarId = 1,
                     MaxRangeAvatarId = 10,
                 }
-            }));
+            }),
+            Options.Create(new AuthZSettings()));
     }
 }

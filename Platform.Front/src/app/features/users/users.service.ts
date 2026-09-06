@@ -32,9 +32,7 @@ export class UsersService extends BaseService {
             .pipe(map((dtos) => dtos.map((dto) => PublicUser.fromDto(dto))));
     }
 
-    public touch(): Observable<PublicUser> {
-        return this.http
-            .post<PublicUserDto>(this.getURL("actions/Touch"), {})
-            .pipe(map((dto) => PublicUser.fromDto(dto)));
+    public touch(): Observable<User> {
+        return this.post<UserDto, User>(User, "actions/Touch", {});
     }
 }

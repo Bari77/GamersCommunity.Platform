@@ -56,7 +56,7 @@ namespace Platform.Tests
                     ModificationDate = DateTime.UtcNow,
                     IdType = 1,
                     Picture = string.Empty,
-                    UrlValue = string.Empty,
+                    UrlValue = "/world-of-warcraft",
                 },
                 new Game
                 {
@@ -66,7 +66,7 @@ namespace Platform.Tests
                     ModificationDate = DateTime.UtcNow,
                     IdType = 2,
                     Picture = string.Empty,
-                    UrlValue = string.Empty,
+                    UrlValue = "/game-b",
                 }
             );
 
@@ -116,12 +116,33 @@ namespace Platform.Tests
 
             #endregion
 
+            #region SiteRoles
+
+            ctx.SiteRoles.AddRange(
+                new SiteRole { Id = 1, Code = "admin" },
+                new SiteRole { Id = 2, Code = "moderator" },
+                new SiteRole { Id = 3, Code = "member" }
+            );
+
+            #endregion
+
+            #region GameRoles
+
+            ctx.GameRoles.AddRange(
+                new GameRole { Id = 1, IdGame = 1, Code = "admin" },
+                new GameRole { Id = 2, IdGame = 1, Code = "moderator" },
+                new GameRole { Id = 3, IdGame = 1, Code = "member" }
+            );
+
+            #endregion
+
             #region Users
 
             ctx.Users.AddRange(
                 new User
                 {
                     Id = 1,
+                    PublicId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                     Nickname = "User A",
                     Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
                     CreationDate = DateTime.UtcNow,
@@ -134,6 +155,7 @@ namespace Platform.Tests
                 new User
                 {
                     Id = 2,
+                    PublicId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
                     Nickname = "User B",
                     Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
                     CreationDate = DateTime.UtcNow,
@@ -146,6 +168,7 @@ namespace Platform.Tests
                 new User
                 {
                     Id = 3,
+                    PublicId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
                     Nickname = "User C",
                     Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
                     CreationDate = DateTime.UtcNow,

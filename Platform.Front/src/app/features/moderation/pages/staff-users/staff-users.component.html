@@ -1,0 +1,73 @@
+<section class="social-page gc-enter">
+    <header class="social-page__header">
+        <h1 class="gc-display" i18n="@@moderation.users.title">Staff directory</h1>
+        <p i18n="@@moderation.users.lead">Search players, filter by role or sanction, then open a file.</p>
+        <app-moderation-nav active="users" />
+    </header>
+
+    <div class="moderation-filters">
+        <input
+            nbInput
+            fullWidth
+            name="query"
+            [ngModel]="query"
+            (ngModelChange)="onQueryChange($event)"
+            placeholder="nick#1234"
+            i18n-placeholder="@@moderation.users.query"
+        />
+        <nb-select
+            [selected]="siteRole"
+            (selectedChange)="onSiteRoleChange($event)"
+            placeholder="Role"
+            fullWidth
+            i18n-placeholder="@@moderation.users.role"
+        >
+            <nb-option value="" i18n="@@moderation.filter.any">Any role</nb-option>
+            <nb-option value="member">member</nb-option>
+            <nb-option value="moderator">moderator</nb-option>
+            <nb-option value="admin">admin</nb-option>
+        </nb-select>
+        <nb-select
+            [selected]="sanction"
+            (selectedChange)="onSanctionChange($event)"
+            placeholder="Sanction"
+            fullWidth
+            i18n-placeholder="@@moderation.users.sanction"
+        >
+            <nb-option value="" i18n="@@moderation.filter.anySanction">Any sanction</nb-option>
+            <nb-option value="none" i18n="@@moderation.sanction.none">None</nb-option>
+            <nb-option value="muted" i18n="@@moderation.sanction.muted">Muted</nb-option>
+            <nb-option value="banned" i18n="@@moderation.sanction.banned">Banned</nb-option>
+        </nb-select>
+    </div>
+
+    @if (store.loading()) {
+        <div class="social-page__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
+    } @else if (store.rows().length === 0) {
+        <p class="social-section__empty" i18n="@@moderation.users.empty">No players match these filters.</p>
+    } @else {
+        <ul class="friend-list">
+            @for (user of store.rows(); track user.publicId) {
+                <li class="friend-row" (click)="open(user.publicId)">
+                    <img class="friend-row__avatar friend-row__avatar--img" [src]="user.avatarUrl" [alt]="user.nickname" />
+                    <div class="friend-row__meta">
+                        <app-user-handle [nickname]="user.nickname" [discriminator]="user.discriminator" />
+                        <span class="friend-row__status">
+                            {{ user.siteRole }}
+                            @if (user.sanction !== "none") {
+                                · {{ user.sanction }}
+                            }
+                        </span>
+                    </div>
+                    <span class="friend-row__status">
+                        @if (user.lastConnection) {
+                            {{ user.lastConnection | date: "medium" }}
+                        } @else {
+                            —
+                        }
+                    </span>
+                </li>
+            }
+        </ul>
+    }
+</section>

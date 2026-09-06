@@ -1,33 +1,41 @@
 import { inject, Injectable, signal } from "@angular/core";
-import { NbAuthService } from "@nebular/auth";
+import { toObservable } from "@angular/core/rxjs-interop";
 import { NbAclService } from "@nebular/security";
-import { environment } from "environments/environment";
+import { GameRoleAssignment, toAclRoles } from "@core/security/acl-roles.util";
 
 @Injectable({ providedIn: "root" })
 export class PermissionsService {
-    private authService = inject(NbAuthService);
-    private acl = inject(NbAclService);
+    private readonly acl = inject(NbAclService);
+    private readonly $roles = signal<string[]>([]);
 
-    private roles = signal<string[]>([]);
+    public readonly roles = this.$roles.asReadonly();
+    public readonly roles$ = toObservable(this.$roles);
 
-    public constructor() {
-        this.authService.getToken().subscribe((token) => {
-            if (!token.isValid()) {
-                this.roles.set([]);
-                return;
-            }
+    public applyFromSession(siteRoles: string[], gameRoles: GameRoleAssignment[]): void {
+        this.$roles.set(toAclRoles(siteRoles, gameRoles));
+    }
 
-            const payload = token.getPayload();
-            const roles: string[] = [
-                ...(payload.realm_access?.roles ?? []),
-                ...(payload.resource_access?.[environment.idpClientId]?.roles ?? []),
-            ];
-
-            this.roles.set(roles);
-        });
+    public clear(): void {
+        this.$roles.set([]);
     }
 
     public can(permission: string, resource: string): boolean {
-        return this.roles().some((role) => this.acl.can(role, permission, resource));
+        return this.$roles().some((role) => this.acl.can(role, permission, resource));
+    }
+
+    public isStaff(): boolean {
+        return this.can("view", "moderation");
+    }
+
+    public isAdmin(): boolean {
+        return this.$roles().includes("admin");
+    }
+
+    public canBan(): boolean {
+        return this.isAdmin();
+    }
+
+    public canManageRanks(): boolean {
+        return this.isAdmin();
     }
 }

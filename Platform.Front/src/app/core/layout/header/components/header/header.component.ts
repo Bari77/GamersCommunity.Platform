@@ -2,6 +2,7 @@ import { Component, inject, model } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
 import { GamesStore } from "@features/games/stores/games.store";
+import { ModerationReportsBadgeStore } from "@features/moderation/stores/moderation-reports-badge.store";
 import { NotificationBellComponent } from "@features/notifications/components/notification-bell/notification-bell.component";
 import { UsersStore } from "@features/users/stores/users.store";
 import {
@@ -50,6 +51,7 @@ import { UserHandleComponent } from "@shared/components/user-handle/user-handle.
 export class HeaderComponent {
     public readonly gamesStore = inject(GamesStore);
     public readonly usersStore = inject(UsersStore);
+    public readonly reportsBadge = inject(ModerationReportsBadgeStore);
     public readonly searchService = inject(NbSearchService);
     public readonly router = inject(Router);
     public toastr = inject(NbToastrService);

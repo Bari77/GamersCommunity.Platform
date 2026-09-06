@@ -14,9 +14,13 @@ public partial class Banned : IKeyTable
 
     public string Entitled { get; set; } = null!;
 
+    public string Kind { get; set; } = "ban";
+
     public DateTime BeginDate { get; set; }
 
-    public DateTime EndDate { get; set; }
+    public DateTime? EndDate { get; set; }
+
+    public DateTime? RevokedAt { get; set; }
 
     public int IdUserBan { get; set; }
 

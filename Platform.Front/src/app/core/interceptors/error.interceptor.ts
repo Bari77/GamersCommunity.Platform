@@ -28,6 +28,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
             switch (error.status) {
                 case 400:
+                    if (error.error?.Code === "BANNED") {
+                        msg = $localize`:@@error.httpCode.banned:This account is banned.`;
+                        title = $localize`:@@error.httpCode.bannedTitle:Account banned`;
+                        break;
+                    }
                     msg = $localize`:@@error.httpCode.badRequest:Please correct the data before sending it.`;
                     title = $localize`:@@error.httpCode.badRequestTitle:Incorrect data`;
                     break;

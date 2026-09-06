@@ -1,0 +1,36 @@
+<nb-card>
+    <nb-card-header>
+        @if (kind === "ban") {
+            <span i18n="@@moderation.sanction.banTitle">Ban {{ nickname }}</span>
+        } @else {
+            <span i18n="@@moderation.sanction.muteTitle">Mute {{ nickname }}</span>
+        }
+    </nb-card-header>
+    <nb-card-body [formGroup]="form">
+        <label class="field-label" for="reason" i18n="@@moderation.sanction.reason">Reason</label>
+        <textarea id="reason" nbInput fullWidth formControlName="reason" rows="3"></textarea>
+
+        @if (kind === "ban") {
+            <label class="field-check">
+                <nb-checkbox formControlName="permanent"></nb-checkbox>
+                <span i18n="@@moderation.sanction.permanent">Permanent</span>
+            </label>
+        }
+
+        @if (kind === "mute" || !form.value.permanent) {
+            <label class="field-label" for="duration" i18n="@@moderation.sanction.duration">Duration</label>
+            <nb-select id="duration" formControlName="duration" fullWidth>
+                <nb-option value="1h" i18n="@@moderation.duration.1h">1 hour</nb-option>
+                <nb-option value="24h" i18n="@@moderation.duration.24h">24 hours</nb-option>
+                <nb-option value="7d" i18n="@@moderation.duration.7d">7 days</nb-option>
+                <nb-option value="30d" i18n="@@moderation.duration.30d">30 days</nb-option>
+            </nb-select>
+        }
+    </nb-card-body>
+    <nb-card-footer>
+        <button type="button" nbButton ghost (click)="cancel()" i18n="@@moderation.action.cancel">Cancel</button>
+        <button type="button" nbButton status="danger" (click)="submit()" [disabled]="form.invalid" i18n="@@moderation.action.confirm">
+            Confirm
+        </button>
+    </nb-card-footer>
+</nb-card>

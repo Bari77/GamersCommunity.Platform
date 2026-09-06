@@ -48,6 +48,8 @@ public partial class GamersCommunityDbContext : DbContext
 
     public virtual DbSet<PostStatus> PostStatuses { get; set; }
 
+    public virtual DbSet<Report> Reports { get; set; }
+
     public virtual DbSet<Rank> Ranks { get; set; }
 
     public virtual DbSet<RankRight> RankRights { get; set; }
@@ -76,9 +78,13 @@ public partial class GamersCommunityDbContext : DbContext
                 .HasColumnType("datetime");
             entity.Property(e => e.EndDate).HasColumnType("datetime");
             entity.Property(e => e.Entitled).HasMaxLength(255);
+            entity.Property(e => e.Kind).HasMaxLength(16).IsRequired();
+            entity.Property(e => e.RevokedAt).HasColumnType("datetime");
             entity.Property(e => e.ModificationDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+
+            entity.HasIndex(e => new { e.IdUserBan, e.Kind, e.RevokedAt });
 
             entity.HasOne(d => d.IdModoNavigation).WithMany(p => p.BannedIdModoNavigations)
                 .HasForeignKey(d => d.IdModo)
@@ -402,6 +408,34 @@ public partial class GamersCommunityDbContext : DbContext
             entity.Property(e => e.ModificationDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<Report>(entity =>
+        {
+            entity.ToTable("Reports");
+
+            entity.Property(e => e.CreationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ModificationDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Reason).HasMaxLength(1000).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(16).IsRequired();
+            entity.Property(e => e.LinkUrl).HasMaxLength(500);
+
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.IdTarget);
+
+            entity.HasOne(d => d.IdReporterNavigation).WithMany(p => p.ReportIdReporterNavigations)
+                .HasForeignKey(d => d.IdReporter)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Reports_Reporter");
+
+            entity.HasOne(d => d.IdTargetNavigation).WithMany(p => p.ReportIdTargetNavigations)
+                .HasForeignKey(d => d.IdTarget)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Reports_Target");
         });
 
         modelBuilder.Entity<Rank>(entity =>

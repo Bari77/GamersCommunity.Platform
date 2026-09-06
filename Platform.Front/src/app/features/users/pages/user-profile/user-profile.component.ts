@@ -1,12 +1,18 @@
 import { DatePipe } from "@angular/common";
 import { Component, effect, inject, input } from "@angular/core";
 import { RouterLink } from "@angular/router";
+import {
+    ReportDialogComponent,
+    ReportDialogResult,
+} from "@features/moderation/components/report-dialog/report-dialog.component";
+import { ReportsService } from "@features/moderation/services/reports.service";
 import { FriendRelationKind, FriendsStore } from "@features/social/stores/friends.store";
 import { MessengerStore } from "@features/social/stores/messenger.store";
 import { UsersStore } from "@features/users/stores/users.store";
 import { isUserOnline } from "@features/users/utils/presence.util";
-import { NbButtonModule, NbSpinnerModule } from "@nebular/theme";
+import { NbButtonModule, NbDialogService, NbSpinnerModule, NbToastrService } from "@nebular/theme";
 import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
+import { firstValueFrom } from "rxjs";
 import { PublicUser } from "../../models/public-user.model";
 import { UserDirectoryStore } from "../../stores/user-directory.store";
 
@@ -23,6 +29,9 @@ export class UserProfileComponent {
     public readonly usersStore = inject(UsersStore);
     public readonly friendsStore = inject(FriendsStore);
     public readonly messengerStore = inject(MessengerStore);
+    private readonly dialogs = inject(NbDialogService);
+    private readonly reports = inject(ReportsService);
+    private readonly toastr = inject(NbToastrService);
 
     public constructor() {
         effect(() => {
@@ -86,5 +95,26 @@ export class UserProfileComponent {
 
     public whisper(user: PublicUser): void {
         this.messengerStore.openThread(user.id);
+    }
+
+    public async report(user: PublicUser): Promise<void> {
+        const ref = this.dialogs.open(ReportDialogComponent, {
+            context: { nickname: user.fullNickname },
+        });
+        const result = (await firstValueFrom(ref.onClose)) as ReportDialogResult | null;
+        if (!result) {
+            return;
+        }
+        await firstValueFrom(
+            this.reports.create({
+                targetPublicId: user.publicId,
+                reason: result.reason,
+                linkUrl: `/users/${user.publicId}`,
+            }),
+        );
+        this.toastr.success(
+            $localize`:@@moderation.report.sent:Thanks, the staff will review it.`,
+            $localize`:@@moderation.report.sentTitle:Report sent`,
+        );
     }
 }

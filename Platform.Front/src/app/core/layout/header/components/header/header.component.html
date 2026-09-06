@@ -47,6 +47,22 @@
                 Friends
             </button>
         }
+        @if (usersStore.isStaff()) {
+            <button
+                type="button"
+                class="header-moderation"
+                (click)="redirect('/moderation/users')"
+                nbButton
+                ghost
+                status="control"
+                i18n="@@core.header.moderation"
+            >
+                Moderation
+                @if (reportsBadge.openCount() > 0) {
+                    <span class="header-moderation__badge">{{ reportsBadge.openCount() }}</span>
+                }
+            </button>
+        }
     </div>
 
     <div class="right">

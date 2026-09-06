@@ -1,3 +1,13 @@
+export interface GameRoleAssignmentDto {
+    gameUrlValue: string;
+    code: string;
+}
+
+export interface ActiveMuteDto {
+    reason: string;
+    endDate: string;
+}
+
 export interface UserDto {
     id: number;
     publicId: string;
@@ -7,4 +17,7 @@ export interface UserDto {
     mail: string;
     lastConnection: string;
     idKeycloak: string;
+    siteRoles?: string[];
+    gameRoles?: GameRoleAssignmentDto[];
+    activeMute?: ActiveMuteDto | null;
 }

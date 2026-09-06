@@ -7,6 +7,9 @@ export interface NotificationPayload {
     preview?: string;
     friendshipPublicId?: string;
     messagePublicId?: string;
+    kind?: string;
+    entitled?: string;
+    endDate?: string;
 }
 
 export function parseNotificationPayload(payloadJson: string | null): NotificationPayload {
@@ -35,6 +38,8 @@ export function localizeNotificationTitle(item: AppNotification): string {
             return $localize`:@@notifications.friendRequest.title:Friend request`;
         case "notifications.friendAccepted.title":
             return $localize`:@@notifications.friendAccepted.title:Friend request accepted`;
+        case "notifications.sanction.mute.title":
+            return $localize`:@@notifications.sanction.mute.title:You were muted`;
         default:
             return item.title;
     }
@@ -53,6 +58,10 @@ export function localizeNotificationBody(item: AppNotification): string | null {
             return $localize`:@@notifications.friendRequest.body:${name}:name: wants to add you`;
         case "notifications.friendAccepted.body":
             return $localize`:@@notifications.friendAccepted.body:${name}:name: accepted your request`;
+        case "notifications.sanction.mute.body": {
+            const reason = payload.entitled?.trim() || item.body;
+            return $localize`:@@notifications.sanction.mute.body:A moderator muted you: ${reason}:reason:`;
+        }
         default:
             return item.body;
     }

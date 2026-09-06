@@ -43,4 +43,12 @@ public partial class User : IKeyTable
     public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<Post> Posts { get; set; } = new List<Post>();
+
+    public virtual ICollection<Report> ReportIdReporterNavigations { get; set; } = new List<Report>();
+
+    public virtual ICollection<Report> ReportIdTargetNavigations { get; set; } = new List<Report>();
+
+    public virtual ICollection<UserGameRole> UserGameRoles { get; set; } = new List<UserGameRole>();
+
+    public virtual ICollection<UserSiteRole> UserSiteRoles { get; set; } = new List<UserSiteRole>();
 }

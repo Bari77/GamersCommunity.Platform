@@ -41,10 +41,13 @@ public class ConversationsService(
             case "GET":
                 return JsonSafe.Serialize(await GetMineAsync(message, ct));
             case "CREATE":
+                await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await CreateMineAsync(message, ct));
             case "UPDATE":
+                await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await UpdateMineAsync(message, ct));
             case "ADDMEMBERS":
+                await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await AddMembersAsync(message, ct));
             case "REMOVEMEMBERS":
             {
@@ -680,6 +683,12 @@ public class ConversationsService(
             .FirstOrDefaultAsync(u => u.IdKeycloak == idKeycloak, ct);
 
         return user?.Id ?? throw new UnauthorizedException("UNAUTHORIZED", "Caller user not found");
+    }
+
+    private async Task EnsureCallerNotBannedAsync(BusMessage message, CancellationToken ct)
+    {
+        var me = await RequireCallerUserIdAsync(message, ct);
+        await CallerAuth.EnsureNotBannedAsync(context, me, ct);
     }
 
     private async Task<string[]> LoadKeycloakSubjectsAsync(IEnumerable<int> userIds, CancellationToken ct)

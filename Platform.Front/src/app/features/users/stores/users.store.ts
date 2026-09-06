@@ -19,7 +19,9 @@ export class UsersStore {
     public readonly isLoggedIn = computed(() => !!this.$user());
     public readonly discriminator = computed(() => `#${this.$user()?.discriminator}`);
     public readonly fullNickname = computed(() => `${this.$user()?.nickname}#${this.$user()?.discriminator}`);
-    public readonly menuItems = computed(() => this.$menuItems());
+    public readonly menuItems = computed(() => this.getMenuItems());
+    public readonly isStaff = computed(() => this.permissionsService.isStaff());
+    public readonly activeMute = computed(() => this.$user()?.activeMute ?? null);
 
     private readonly authService = inject(NbAuthService);
     private readonly usersService = inject(UsersService);
@@ -30,7 +32,7 @@ export class UsersStore {
     private readonly $redirectLoading = signal<boolean>(false);
     private readonly $loading = signal<boolean>(false);
     private readonly $user = signal<User | null>(null);
-    private readonly $menuItems = signal<NbMenuItem[]>(this.getMenuItems());
+    private readonly $sessionResolved = signal(false);
     private nicknameDialogRef: ReturnType<NbDialogService["open"]> | null = null;
 
     public constructor() {
@@ -39,12 +41,95 @@ export class UsersStore {
             .pipe(map((token) => token as NbAuthOAuth2JWTToken))
             .subscribe((token: NbAuthOAuth2JWTToken) => {
                 if (!token?.isValid()) {
-                    this.$user.set(null);
+                    this.setSession(null);
+                    this.$sessionResolved.set(true);
                     return;
                 }
 
-                this.loadUserFromPayload(token.getAccessTokenPayload()).subscribe();
+                this.loadUserFromPayload(token.getAccessTokenPayload()).subscribe({
+                    next: () => this.$sessionResolved.set(true),
+                    error: () => this.$sessionResolved.set(true),
+                });
             });
+    }
+
+    public async ensureSession(): Promise<void> {
+        const start = Date.now();
+        while (!this.$sessionResolved()) {
+            if (Date.now() - start > 15_000) {
+                return;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+    }
+
+    public applyTouchSession(refreshed: User): void {
+        const current = this.$user();
+        if (!current || current.publicId !== refreshed.publicId) {
+            return;
+        }
+
+        if (
+            !this.rolesEqual(current.siteRoles, refreshed.siteRoles) ||
+            !this.gameRolesEqual(current.gameRoles, refreshed.gameRoles) ||
+            !this.activeMuteEqual(current.activeMute, refreshed.activeMute)
+        ) {
+            this.setSession(
+                new User(
+                    current.id,
+                    current.publicId,
+                    current.nickname,
+                    current.discriminator,
+                    current.avatarUrl,
+                    current.mail,
+                    refreshed.lastConnection,
+                    current.idKeycloak,
+                    refreshed.siteRoles,
+                    refreshed.gameRoles,
+                    refreshed.activeMute,
+                ),
+            );
+            return;
+        }
+
+        if (current.lastConnection.getTime() !== refreshed.lastConnection.getTime()) {
+            this.$user.set(
+                new User(
+                    current.id,
+                    current.publicId,
+                    current.nickname,
+                    current.discriminator,
+                    current.avatarUrl,
+                    current.mail,
+                    refreshed.lastConnection,
+                    current.idKeycloak,
+                    current.siteRoles,
+                    current.gameRoles,
+                    current.activeMute,
+                ),
+            );
+        }
+    }
+
+    public handleBanned(): void {
+        this.setSession(null);
+        this.authService.logout("authentik").subscribe();
+    }
+
+    public async refreshSessionFromTouch(): Promise<void> {
+        if (!this.isLoggedIn()) {
+            return;
+        }
+
+        try {
+            const refreshed = await firstValueFrom(this.usersService.touch());
+            this.applyTouchSession(refreshed);
+        } catch (err: unknown) {
+            const code = (err as { error?: { Code?: string } })?.error?.Code;
+            if (code === "BANNED") {
+                this.handleBanned();
+            }
+        }
     }
 
     public login(): void {
@@ -74,7 +159,7 @@ export class UsersStore {
             .pipe(finalize(() => this.$loading.set(false)))
             .subscribe({
                 next: () => {
-                    this.$user.set(null);
+                    this.setSession(null);
                     this.router.navigate(["/home"]);
                 },
             });
@@ -90,7 +175,7 @@ export class UsersStore {
         return this.usersService.update(publicId, data).pipe(
             finalize(() => this.$loading.set(false)),
             map((user) => {
-                this.$user.set(user);
+                this.setSession(user);
                 return user;
             }),
         );
@@ -138,11 +223,17 @@ export class UsersStore {
                 .pipe(finalize(() => this.$loading.set(false)))
                 .subscribe({
                     next: (user) => {
-                        this.$user.set(user);
+                        this.setSession(user);
                         sub.next();
                         sub.complete();
                     },
                     error: async (err) => {
+                        if (err.error?.Code === "BANNED") {
+                            this.handleBanned();
+                            sub.error(err);
+                            sub.complete();
+                            return;
+                        }
                         if (err.error?.Code !== "NICKNAME_MANDATORY") {
                             sub.error(err);
                             sub.complete();
@@ -164,7 +255,7 @@ export class UsersStore {
                             .pipe(finalize(() => this.$loading.set(false)))
                             .subscribe({
                                 next: (user) => {
-                                    this.$user.set(user);
+                                    this.setSession(user);
                                     sub.next();
                                     sub.complete();
                                 },
@@ -196,21 +287,74 @@ export class UsersStore {
         );
     }
 
+    private setSession(user: User | null): void {
+        this.$user.set(user);
+        if (user) {
+            this.permissionsService.applyFromSession(user.siteRoles, user.gameRoles);
+        } else {
+            this.permissionsService.clear();
+        }
+    }
+
+    private rolesEqual(left: string[], right: string[]): boolean {
+        if (left.length !== right.length) {
+            return false;
+        }
+        const a = [...left].sort();
+        const b = [...right].sort();
+        return a.every((role, index) => role === b[index]);
+    }
+
+    private gameRolesEqual(
+        left: User["gameRoles"],
+        right: User["gameRoles"],
+    ): boolean {
+        if (left.length !== right.length) {
+            return false;
+        }
+        const a = [...left].sort((x, y) => `${x.gameUrlValue}:${x.code}`.localeCompare(`${y.gameUrlValue}:${y.code}`));
+        const b = [...right].sort((x, y) => `${x.gameUrlValue}:${x.code}`.localeCompare(`${y.gameUrlValue}:${y.code}`));
+        return a.every(
+            (role, index) =>
+                role.gameUrlValue === b[index].gameUrlValue && role.code === b[index].code,
+        );
+    }
+
+    private activeMuteEqual(left: User["activeMute"], right: User["activeMute"]): boolean {
+        if (left == null && right == null) {
+            return true;
+        }
+        if (left == null || right == null) {
+            return false;
+        }
+        return left.reason === right.reason && left.endDate.getTime() === right.endDate.getTime();
+    }
+
     private getMenuItems(): NbMenuItem[] {
-        const result = [
+        const result: NbMenuItem[] = [
             {
                 data: "profile",
                 link: "/users/profile",
                 title: $localize`:@@core.header.menu.profile:Profile`,
                 icon: "person-outline",
             },
-            {
-                data: "logout",
-                link: "/users/logout",
-                title: $localize`:@@core.header.menu.logout:Logout`,
-                icon: "power-outline",
-            },
         ];
+
+        if (this.permissionsService.isStaff()) {
+            result.push({
+                data: "moderation",
+                link: "/moderation/users",
+                title: $localize`:@@core.header.menu.moderation:Moderation`,
+                icon: "shield-outline",
+            });
+        }
+
+        result.push({
+            data: "logout",
+            link: "/users/logout",
+            title: $localize`:@@core.header.menu.logout:Logout`,
+            icon: "power-outline",
+        });
 
         return result;
     }

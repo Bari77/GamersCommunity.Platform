@@ -12,4 +12,5 @@ public static class RealtimeEventTypes
     public const string FriendUpdated = "friend.updated";
     public const string NotificationCreated = "notification.created";
     public const string PresenceChanged = "presence.changed";
+    public const string ReportQueueUpdated = "report.queue.updated";
 }

@@ -1,0 +1,16 @@
+nb-card {
+    max-width: 28rem;
+    min-width: 22rem;
+}
+
+.field-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: rgb(180 190 220 / 80%);
+}
+
+nb-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}

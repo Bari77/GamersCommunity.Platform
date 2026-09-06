@@ -17,7 +17,7 @@ public partial class GamersCommunityDbContext
         modelBuilder.Entity<UserSiteRole>(entity =>
         {
             entity.HasKey(e => new { e.IdUser, e.IdSiteRole });
-            entity.HasOne(d => d.IdUserNavigation).WithMany()
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.UserSiteRoles)
                 .HasForeignKey(d => d.IdUser)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(d => d.IdSiteRoleNavigation).WithMany(p => p.UserSiteRoles)
@@ -38,7 +38,7 @@ public partial class GamersCommunityDbContext
         modelBuilder.Entity<UserGameRole>(entity =>
         {
             entity.HasKey(e => new { e.IdUser, e.IdGameRole });
-            entity.HasOne(d => d.IdUserNavigation).WithMany()
+            entity.HasOne(d => d.IdUserNavigation).WithMany(p => p.UserGameRoles)
                 .HasForeignKey(d => d.IdUser)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasOne(d => d.IdGameRoleNavigation).WithMany(p => p.UserGameRoles)

@@ -28,6 +28,10 @@ export const appRoutes: Routes = [
         loadChildren: () => import("./features/users/users.routes").then((r) => r.usersRoutes),
     },
     {
+        path: "moderation",
+        loadChildren: () => import("./features/moderation/moderation.routes").then((r) => r.moderationRoutes),
+    },
+    {
         path: "world-of-warcraft",
         loadChildren: () => loadRemoteRoutes("worldOfWarcraft", "./Routes", "worldOfWarcraftRoutes"),
     },

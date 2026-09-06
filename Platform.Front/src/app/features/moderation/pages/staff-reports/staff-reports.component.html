@@ -1,0 +1,57 @@
+<section class="social-page gc-enter">
+    <header class="social-page__header">
+        <h1 class="gc-display" i18n="@@moderation.reports.title">Reports</h1>
+        <p i18n="@@moderation.reports.lead">Review player reports, then mute, ban, or dismiss.</p>
+        <app-moderation-nav active="reports" />
+    </header>
+
+    <div class="moderation-filters">
+        <nb-select [selected]="status" (selectedChange)="onStatusChange($event)" fullWidth>
+            <nb-option value="open" i18n="@@moderation.reports.open">Open</nb-option>
+            <nb-option value="actioned" i18n="@@moderation.reports.actioned">Actioned</nb-option>
+            <nb-option value="dismissed" i18n="@@moderation.reports.dismissed">Dismissed</nb-option>
+        </nb-select>
+    </div>
+
+    @if (store.loading()) {
+        <div class="social-page__loading" [nbSpinner]="true" nbSpinnerStatus="primary" nbSpinnerSize="large"></div>
+    } @else if (store.rows().length === 0) {
+        <p class="social-section__empty" i18n="@@moderation.reports.empty">No reports in this queue.</p>
+    } @else {
+        <ul class="report-list" [nbSpinner]="store.busy()">
+            @for (report of store.rows(); track report.publicId) {
+                <li class="report-card">
+                    <div class="report-card__head">
+                        <button type="button" class="report-card__target" (click)="openUser(report.targetPublicId)">
+                            <app-user-handle [nickname]="report.targetNickname" [discriminator]="report.targetDiscriminator" />
+                        </button>
+                        <span>{{ report.creationDate | date: "medium" }}</span>
+                    </div>
+                    <p>{{ report.reason }}</p>
+                    <p class="report-card__meta">
+                        <span i18n="@@moderation.reports.by">Reported by</span>
+                        {{ report.reporterLabel }}
+                        @if (report.linkUrl) {
+                            · <a [href]="report.linkUrl">{{ report.linkUrl }}</a>
+                        }
+                    </p>
+                    @if (report.status === "open") {
+                        <div class="detail-actions">
+                            <button type="button" nbButton size="small" status="warning" (click)="sanction(report, 'mute')" i18n="@@moderation.action.mute">
+                                Mute
+                            </button>
+                            @if (permissions.canBan()) {
+                                <button type="button" nbButton size="small" status="danger" (click)="sanction(report, 'ban')" i18n="@@moderation.action.ban">
+                                    Ban
+                                </button>
+                            }
+                            <button type="button" nbButton size="small" ghost status="basic" (click)="dismiss(report)" i18n="@@moderation.reports.dismiss">
+                                Dismiss
+                            </button>
+                        </div>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>

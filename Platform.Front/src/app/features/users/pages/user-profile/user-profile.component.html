@@ -165,6 +165,16 @@
                         </button>
                     }
                 }
+                <button
+                    type="button"
+                    nbButton
+                    ghost
+                    status="warning"
+                    (click)="report(user)"
+                    i18n="@@users.profilePublic.action.report"
+                >
+                    Report
+                </button>
             </div>
         } @else {
             <a routerLink="/users/login" nbButton status="primary" i18n="@@users.profilePublic.loginToAdd">

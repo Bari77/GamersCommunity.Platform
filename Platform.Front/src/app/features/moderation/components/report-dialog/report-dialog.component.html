@@ -1,0 +1,13 @@
+<nb-card>
+    <nb-card-header i18n="@@moderation.report.title">Report {{ nickname }}</nb-card-header>
+    <nb-card-body [formGroup]="form">
+        <label class="field-label" for="report-reason" i18n="@@moderation.report.reason">Why are you reporting this player?</label>
+        <textarea id="report-reason" nbInput fullWidth formControlName="reason" rows="4"></textarea>
+    </nb-card-body>
+    <nb-card-footer>
+        <button type="button" nbButton ghost (click)="cancel()" i18n="@@moderation.action.cancel">Cancel</button>
+        <button type="button" nbButton status="warning" (click)="submit()" [disabled]="form.invalid" i18n="@@moderation.report.submit">
+            Send report
+        </button>
+    </nb-card-footer>
+</nb-card>

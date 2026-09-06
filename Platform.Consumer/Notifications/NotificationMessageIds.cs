@@ -10,4 +10,7 @@ public static class NotificationMessageIds
 
     public const string MessageTitle = "notifications.message.title";
     public const string MessageBody = "notifications.message.body";
+
+    public const string SanctionMuteTitle = "notifications.sanction.mute.title";
+    public const string SanctionMuteBody = "notifications.sanction.mute.body";
 }

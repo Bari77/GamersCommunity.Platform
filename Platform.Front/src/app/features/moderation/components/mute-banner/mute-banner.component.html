@@ -1,0 +1,7 @@
+@if (mute(); as sanction) {
+    <aside class="mute-banner" role="status">
+        <strong i18n="@@moderation.mute.bannerTitle">A moderator muted you</strong>
+        <span>{{ sanction.reason }}</span>
+        <span i18n="@@moderation.mute.until">Until {{ sanction.endDate | date: "medium" }}</span>
+    </aside>
+}

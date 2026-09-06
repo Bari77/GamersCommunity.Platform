@@ -1,0 +1,26 @@
+<nav class="moderation-nav">
+    <a
+        routerLink="/moderation/users"
+        nbButton
+        size="small"
+        [status]="active() === 'users' ? 'primary' : 'control'"
+        [ghost]="active() !== 'users'"
+        i18n="@@moderation.nav.users"
+    >
+        Users
+    </a>
+    <a
+        routerLink="/moderation/reports"
+        nbButton
+        size="small"
+        class="moderation-nav__reports"
+        [status]="active() === 'reports' ? 'primary' : 'control'"
+        [ghost]="active() !== 'reports'"
+        i18n="@@moderation.nav.reports"
+    >
+        Reports
+        @if (reportsBadge.openCount() > 0) {
+            <span class="moderation-nav__badge">{{ reportsBadge.openCount() }}</span>
+        }
+    </a>
+</nav>

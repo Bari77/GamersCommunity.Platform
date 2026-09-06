@@ -9,4 +9,5 @@ public static class NotificationKinds
     public const string ContentApproval = "content_approval";
     public const string GuildRequest = "guild_request";
     public const string Lfg = "lfg";
+    public const string Sanction = "sanction";
 }

@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Platform.Consumer.Models;
 using Platform.Consumer.Notifications;
 using Platform.Consumer.Realtime;
+using Platform.Consumer.Security;
 using Platform.Database.Context;
 using Platform.Database.Models;
 using Serilog;
@@ -32,10 +33,13 @@ public class FriendsService(
             case "LIST":
                 return JsonSafe.Serialize(await ListMineAsync(message, ct));
             case "CREATE":
+                await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await CreateRequestAsync(message, ct));
             case "UPDATE":
+                await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await UpdateRelationAsync(message, ct));
             case "DELETE":
+                await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await RemoveRelationAsync(message, ct));
             default:
                 return await base.HandleAsync(message, ct);
@@ -306,5 +310,11 @@ public class FriendsService(
             .FirstOrDefaultAsync(u => u.IdKeycloak == idKeycloak, ct);
 
         return user?.Id ?? throw new UnauthorizedException("UNAUTHORIZED", "Caller user not found");
+    }
+
+    private async Task EnsureCallerNotBannedAsync(BusMessage message, CancellationToken ct)
+    {
+        var me = await RequireCallerUserIdAsync(message, ct);
+        await CallerAuth.EnsureNotBannedAsync(Context, me, ct);
     }
 }

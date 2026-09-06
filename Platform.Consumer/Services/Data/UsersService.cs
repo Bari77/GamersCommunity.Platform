@@ -4,6 +4,7 @@ using GamersCommunity.Core.Serialization;
 using GamersCommunity.Core.Services;
 using Platform.Consumer.Configuration;
 using Platform.Consumer.Models;
+using Platform.Consumer.Security;
 using Platform.Consumer.Utils;
 using Platform.Consumer.Validators;
 using Platform.Database.Context;
@@ -30,7 +31,10 @@ namespace Platform.Consumer.Services.Data
     /// The database context used to access the <c>Users</c> table.
     /// Typically injected by dependency injection.
     /// </param>
-    public class UsersService(GamersCommunityDbContext context, IOptions<AppSettings> otps) : GenericDataService<GamersCommunityDbContext, User>(context, "Users")
+    public class UsersService(
+        GamersCommunityDbContext context,
+        IOptions<AppSettings> otps,
+        IOptions<AuthZSettings> authZOptions) : GenericDataService<GamersCommunityDbContext, User>(context, "Users")
     {
         /// <summary>
         /// Random number generator
@@ -40,7 +44,8 @@ namespace Platform.Consumer.Services.Data
         /// <summary>
         /// App settings options value
         /// </summary>
-        private AppSettings AppSettings = otps.Value;
+        private readonly AppSettings AppSettings = otps.Value;
+        private readonly AuthZSettings AuthZ = authZOptions.Value;
 
         public override async Task<string> HandleAsync(BusMessage message, CancellationToken ct = default)
         {
@@ -61,13 +66,8 @@ namespace Platform.Consumer.Services.Data
 
                     if (user != null)
                     {
-                        if (await Context.Banneds
-                            .Where(w => w.IdUserBan == user.Id && w.BeginDate <= DateTime.UtcNow && DateTime.UtcNow <= w.EndDate)
-                            .AnyAsync(ct))
-                        {
-                            throw new BadRequestException("BANNED", "Banned account");
-                        }
-                        return JsonSafe.Serialize(await LoginAsync(user, ct));
+                        await CallerAuth.EnsureNotBannedAsync(Context, user.Id, ct);
+                        return JsonSafe.Serialize(await ToSessionAsync(await LoginAsync(user, ct), ct));
                     }
 
                     if (string.IsNullOrEmpty(info.Nickname))
@@ -94,22 +94,164 @@ namespace Platform.Consumer.Services.Data
 
                 case "Touch":
                     return JsonSafe.Serialize(await TouchPresenceAsync(message, ct));
+
+                case "StaffList":
+                    return JsonSafe.Serialize(await StaffListAsync(message, ct));
+
+                case "StaffGet":
+                    return JsonSafe.Serialize(await StaffGetAsync(message, ct));
             }
 
             return await base.HandleAsync(message, ct);
         }
 
-        private async Task<PublicUserProfile> TouchPresenceAsync(BusMessage message, CancellationToken ct)
+        private async Task<SessionUserDto> TouchPresenceAsync(BusMessage message, CancellationToken ct)
         {
-            if (message.Caller?.Subject is not { } subject || !Guid.TryParse(subject, out var idKeycloak))
+            var user = await CallerAuth.RequireUserAsync(Context, message, ct);
+            await CallerAuth.EnsureNotBannedAsync(Context, user.Id, ct);
+            return await ToSessionAsync(await LoginAsync(user, ct), ct);
+        }
+
+        private async Task<List<StaffUserDto>> StaffListAsync(BusMessage message, CancellationToken ct)
+        {
+            await CallerAuth.RequireSiteRoleAsync(Context, message, SiteRoleCodes.Moderator, ct);
+
+            var request = string.IsNullOrWhiteSpace(message.Data)
+                ? new StaffListRequest()
+                : ConsumerParamParser.ToObject<StaffListRequest>(message.Data);
+
+            var take = request.Take is > 0 and <= 50 ? request.Take : 25;
+            var users = Context.Users.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(request.Query))
             {
-                throw new UnauthorizedException("UNAUTHORIZED", "Authenticated caller required");
+                var query = request.Query.Trim();
+                if (query.Length > 64)
+                    throw new BadRequestException("QUERY_TOO_LONG", "Search query is too long");
+
+                var hashIndex = query.IndexOf('#');
+                if (hashIndex >= 0)
+                {
+                    var nickname = query[..hashIndex].Trim();
+                    var discriminator = query[(hashIndex + 1)..].Trim();
+                    if (nickname.Length > 0)
+                        users = users.Where(u => u.Nickname.StartsWith(nickname));
+                    if (discriminator.Length > 0)
+                        users = users.Where(u => u.Discriminator.StartsWith(discriminator));
+                }
+                else
+                {
+                    users = users.Where(u => u.Nickname.Contains(query));
+                }
             }
 
-            var user = await Context.Users.FirstOrDefaultAsync(u => u.IdKeycloak == idKeycloak, ct)
-                ?? throw new UnauthorizedException("UNAUTHORIZED", "Caller user not found");
+            if (!string.IsNullOrWhiteSpace(request.SiteRole))
+            {
+                var role = request.SiteRole.Trim();
+                users = users.Where(u => u.UserSiteRoles.Any(r => r.IdSiteRoleNavigation.Code == role));
+            }
 
-            return PublicUserProfile.FromEntity(await LoginAsync(user, ct));
+            if (request.LastConnectionAfter is { } after)
+                users = users.Where(u => u.LastConnection != null && u.LastConnection >= after);
+            if (request.LastConnectionBefore is { } before)
+                users = users.Where(u => u.LastConnection != null && u.LastConnection <= before);
+
+            if (request.AfterPublicId is { } cursorId && request.AfterLastConnection is { } cursorDate)
+            {
+                users = users.Where(u =>
+                    u.LastConnection < cursorDate
+                    || (u.LastConnection == cursorDate && u.PublicId.CompareTo(cursorId) < 0)
+                    || (u.LastConnection == null && cursorDate != DateTime.MinValue));
+            }
+
+            var now = DateTime.UtcNow;
+            if (request.Sanction is { } sanction && sanction.Length > 0)
+            {
+                users = sanction switch
+                {
+                    SanctionFilters.Banned => users.Where(u => u.BannedIdUserBanNavigations.Any(s =>
+                        s.Kind == SanctionKinds.Ban && s.RevokedAt == null && s.BeginDate <= now
+                        && (s.EndDate == null || now <= s.EndDate))),
+                    SanctionFilters.Muted => users.Where(u =>
+                        !u.BannedIdUserBanNavigations.Any(s =>
+                            s.Kind == SanctionKinds.Ban && s.RevokedAt == null && s.BeginDate <= now
+                            && (s.EndDate == null || now <= s.EndDate))
+                        && u.BannedIdUserBanNavigations.Any(s =>
+                            s.Kind == SanctionKinds.Mute && s.RevokedAt == null && s.BeginDate <= now
+                            && (s.EndDate == null || now <= s.EndDate))),
+                    SanctionFilters.None => users.Where(u => !u.BannedIdUserBanNavigations.Any(s =>
+                        s.RevokedAt == null && s.BeginDate <= now && (s.EndDate == null || now <= s.EndDate))),
+                    _ => throw new BadRequestException("INVALID_SANCTION", "Sanction filter is invalid"),
+                };
+            }
+
+            var rows = await users
+                .Include(u => u.UserSiteRoles).ThenInclude(r => r.IdSiteRoleNavigation)
+                .Include(u => u.UserGameRoles).ThenInclude(r => r.IdGameRoleNavigation).ThenInclude(r => r.IdGameNavigation)
+                .Include(u => u.BannedIdUserBanNavigations)
+                .OrderByDescending(u => u.LastConnection)
+                .ThenByDescending(u => u.PublicId)
+                .Take(take)
+                .ToListAsync(ct);
+
+            return rows.Select(ToStaffUser).ToList();
+        }
+
+        private async Task<StaffUserDetailDto> StaffGetAsync(BusMessage message, CancellationToken ct)
+        {
+            await CallerAuth.RequireSiteRoleAsync(Context, message, SiteRoleCodes.Moderator, ct);
+
+            if (message.PublicId is not Guid publicId)
+                throw new BadRequestException("ID_MANDATORY", "Id mandatory");
+
+            var user = await Context.Users.AsNoTracking()
+                .Include(u => u.UserSiteRoles).ThenInclude(r => r.IdSiteRoleNavigation)
+                .Include(u => u.UserGameRoles).ThenInclude(r => r.IdGameRoleNavigation).ThenInclude(r => r.IdGameNavigation)
+                .Include(u => u.BannedIdUserBanNavigations)
+                .FirstOrDefaultAsync(u => u.PublicId == publicId, ct)
+                ?? throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
+
+            var modoIds = user.BannedIdUserBanNavigations.Select(s => s.IdModo).Distinct().ToList();
+            var modos = await Context.Users.AsNoTracking()
+                .Where(u => modoIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, ct);
+
+            var now = DateTime.UtcNow;
+            var sanctions = user.BannedIdUserBanNavigations
+                .OrderByDescending(s => s.CreationDate)
+                .Select(s =>
+                {
+                    modos.TryGetValue(s.IdModo, out var modo);
+                    var active = s.RevokedAt == null && s.BeginDate <= now && (s.EndDate == null || now <= s.EndDate);
+                    return new SanctionDto
+                    {
+                        PublicId = s.PublicId,
+                        Kind = s.Kind,
+                        Entitled = s.Entitled,
+                        BeginDate = s.BeginDate,
+                        EndDate = s.EndDate,
+                        RevokedAt = s.RevokedAt,
+                        ModoPublicId = modo?.PublicId ?? Guid.Empty,
+                        ModoNickname = modo?.Nickname ?? "",
+                        Active = active,
+                    };
+                })
+                .ToList();
+
+            var summary = ToStaffUser(user);
+            return new StaffUserDetailDto
+            {
+                Id = summary.Id,
+                PublicId = summary.PublicId,
+                Nickname = summary.Nickname,
+                Discriminator = summary.Discriminator,
+                AvatarUrl = summary.AvatarUrl,
+                LastConnection = summary.LastConnection,
+                SiteRoles = summary.SiteRoles,
+                GameRoles = summary.GameRoles,
+                Sanction = summary.Sanction,
+                Sanctions = sanctions,
+            };
         }
 
         private async Task<List<PublicUserProfile>> SearchPublicAsync(BusMessage message, CancellationToken ct)
@@ -248,7 +390,7 @@ namespace Platform.Consumer.Services.Data
         /// <param name="entity">The user entity to create.</param>
         /// <param name="ct">A cancellation token to observe while waiting for the task to complete.</param>
         /// <returns>The newly created and logged-in <see cref="User"/> entity.</returns>
-        private async Task<User> SignupAsync(User entity, CancellationToken ct = default)
+        private async Task<SessionUserDto> SignupAsync(User entity, CancellationToken ct = default)
         {
             UserValidator.ValidateNickname(entity.Nickname);
 
@@ -263,7 +405,8 @@ namespace Platform.Consumer.Services.Data
             entity.ModificationDate = DateTime.UtcNow;
 
             await CreateAsync(entity, ct);
-            return await LoginAsync(entity, ct);
+            await AssignSignupRoleAsync(entity, ct);
+            return await ToSessionAsync(await LoginAsync(entity, ct), ct);
         }
 
         /// <summary>
@@ -279,9 +422,103 @@ namespace Platform.Consumer.Services.Data
             entity.LastConnection = DateTime.UtcNow;
             entity.ModificationDate = DateTime.UtcNow;
             await UpdateAsync(entity.Id, entity, ct);
+            await EnsureSiteRoleAsync(entity, ct);
 
             return await GetAsync(entity.Id, ct);
         }
+
+        private async Task AssignSignupRoleAsync(User entity, CancellationToken ct)
+        {
+            var code = await ShouldBootstrapAdminAsync(entity, ct)
+                ? SiteRoleCodes.Admin
+                : SiteRoleCodes.Member;
+            await ReplaceSiteRoleAsync(entity.Id, code, ct);
+        }
+
+        private async Task EnsureSiteRoleAsync(User entity, CancellationToken ct)
+        {
+            var hasRole = await Context.UserSiteRoles.AnyAsync(r => r.IdUser == entity.Id, ct);
+            if (hasRole)
+            {
+                if (await ShouldBootstrapAdminAsync(entity, ct))
+                    await ReplaceSiteRoleAsync(entity.Id, SiteRoleCodes.Admin, ct);
+                return;
+            }
+
+            await AssignSignupRoleAsync(entity, ct);
+        }
+
+        private async Task<bool> ShouldBootstrapAdminAsync(User entity, CancellationToken ct)
+        {
+            if (AuthZ.BootstrapAdminKeycloakId is not Guid bootstrapId || bootstrapId == Guid.Empty)
+                return false;
+            if (entity.IdKeycloak != bootstrapId)
+                return false;
+
+            return !await Context.UserSiteRoles.AnyAsync(
+                r => r.IdSiteRoleNavigation.Code == SiteRoleCodes.Admin,
+                ct);
+        }
+
+        private async Task ReplaceSiteRoleAsync(int userId, string code, CancellationToken ct)
+        {
+            var role = await Context.SiteRoles.FirstOrDefaultAsync(r => r.Code == code, ct)
+                ?? throw new InternalServerErrorException("ROLE_MISSING", $"Site role {code} is not seeded");
+
+            var existing = await Context.UserSiteRoles.Where(r => r.IdUser == userId).ToListAsync(ct);
+            Context.UserSiteRoles.RemoveRange(existing);
+            Context.UserSiteRoles.Add(new UserSiteRole { IdUser = userId, IdSiteRole = role.Id });
+            await Context.SaveChangesAsync(ct);
+        }
+
+        private async Task<SessionUserDto> ToSessionAsync(User user, CancellationToken ct)
+        {
+            var siteRoles = await CallerAuth.LoadSiteRoleCodesAsync(Context, user.Id, ct);
+            var gameRoles = await Context.UserGameRoles.AsNoTracking()
+                .Where(r => r.IdUser == user.Id)
+                .Select(r => new GameRoleAssignmentDto
+                {
+                    GameUrlValue = r.IdGameRoleNavigation.IdGameNavigation.UrlValue,
+                    Code = r.IdGameRoleNavigation.Code,
+                })
+                .ToListAsync(ct);
+
+            var mute = await CallerAuth.ActiveMuteAsync(Context, user.Id, ct);
+
+            return new SessionUserDto
+            {
+                Id = user.Id,
+                PublicId = user.PublicId,
+                Nickname = user.Nickname,
+                Discriminator = user.Discriminator,
+                AvatarUrl = user.AvatarUrl,
+                Mail = user.Mail,
+                LastConnection = user.LastConnection,
+                IdKeycloak = user.IdKeycloak,
+                SiteRoles = siteRoles,
+                GameRoles = gameRoles,
+                ActiveMute = mute is { EndDate: { } end }
+                    ? new ActiveMuteDto { Reason = mute.Entitled, EndDate = end }
+                    : null,
+            };
+        }
+
+        private static StaffUserDto ToStaffUser(User user) => new()
+        {
+            Id = user.Id,
+            PublicId = user.PublicId,
+            Nickname = user.Nickname,
+            Discriminator = user.Discriminator,
+            AvatarUrl = user.AvatarUrl,
+            LastConnection = user.LastConnection,
+            SiteRoles = user.UserSiteRoles.Select(r => r.IdSiteRoleNavigation.Code).ToList(),
+            GameRoles = user.UserGameRoles.Select(r => new GameRoleAssignmentDto
+            {
+                GameUrlValue = r.IdGameRoleNavigation.IdGameNavigation.UrlValue,
+                Code = r.IdGameRoleNavigation.Code,
+            }).ToList(),
+            Sanction = CallerAuth.ActiveSanctionLabel(user.BannedIdUserBanNavigations),
+        };
 
         private string GetRandomAvatar()
         {

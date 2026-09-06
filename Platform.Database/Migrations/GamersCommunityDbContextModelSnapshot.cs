@@ -38,7 +38,7 @@ namespace Platform.Database.Migrations
                         .HasColumnType("datetime")
                         .HasDefaultValueSql("(getdate())");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime");
 
                     b.Property<string>("Entitled")
@@ -52,6 +52,11 @@ namespace Platform.Database.Migrations
                     b.Property<int>("IdUserBan")
                         .HasColumnType("int");
 
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
                     b.Property<DateTime>("ModificationDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime")
@@ -62,14 +67,17 @@ namespace Platform.Database.Migrations
                         .HasColumnType("uniqueidentifier")
                         .HasDefaultValueSql("NEWSEQUENTIALID()");
 
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime");
+
                     b.HasKey("Id");
 
                     b.HasIndex("IdModo");
 
-                    b.HasIndex("IdUserBan");
-
                     b.HasIndex("PublicId")
                         .IsUnique();
+
+                    b.HasIndex("IdUserBan", "Kind", "RevokedAt");
 
                     b.ToTable("Banned", (string)null);
                 });
@@ -585,15 +593,15 @@ namespace Platform.Database.Migrations
                     b.Property<int>("IdConversation")
                         .HasColumnType("int");
 
+                    b.Property<int>("IdSender")
+                        .HasColumnType("int");
+
                     b.Property<string>("Kind")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)")
                         .HasDefaultValue("text");
-
-                    b.Property<int>("IdSender")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("ModificationDate")
                         .ValueGeneratedOnAdd()
@@ -829,6 +837,63 @@ namespace Platform.Database.Migrations
                     b.HasIndex("IdRight");
 
                     b.ToTable("RankRights");
+                });
+
+            modelBuilder.Entity("Platform.Database.Models.Report", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreationDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<int>("IdReporter")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdTarget")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LinkUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("ModificationDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasDefaultValueSql("(getdate())");
+
+                    b.Property<Guid>("PublicId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdReporter");
+
+                    b.HasIndex("IdTarget");
+
+                    b.HasIndex("PublicId")
+                        .IsUnique();
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Reports", (string)null);
                 });
 
             modelBuilder.Entity("Platform.Database.Models.Right", b =>
@@ -1216,6 +1281,25 @@ namespace Platform.Database.Migrations
                     b.Navigation("IdRightNavigation");
                 });
 
+            modelBuilder.Entity("Platform.Database.Models.Report", b =>
+                {
+                    b.HasOne("Platform.Database.Models.User", "IdReporterNavigation")
+                        .WithMany("ReportIdReporterNavigations")
+                        .HasForeignKey("IdReporter")
+                        .IsRequired()
+                        .HasConstraintName("FK_Reports_Reporter");
+
+                    b.HasOne("Platform.Database.Models.User", "IdTargetNavigation")
+                        .WithMany("ReportIdTargetNavigations")
+                        .HasForeignKey("IdTarget")
+                        .IsRequired()
+                        .HasConstraintName("FK_Reports_Target");
+
+                    b.Navigation("IdReporterNavigation");
+
+                    b.Navigation("IdTargetNavigation");
+                });
+
             modelBuilder.Entity("Platform.Database.Models.UserGameRole", b =>
                 {
                     b.HasOne("Platform.Database.Models.GameRole", "IdGameRoleNavigation")
@@ -1225,7 +1309,7 @@ namespace Platform.Database.Migrations
                         .IsRequired();
 
                     b.HasOne("Platform.Database.Models.User", "IdUserNavigation")
-                        .WithMany()
+                        .WithMany("UserGameRoles")
                         .HasForeignKey("IdUser")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1263,7 +1347,7 @@ namespace Platform.Database.Migrations
                         .IsRequired();
 
                     b.HasOne("Platform.Database.Models.User", "IdUserNavigation")
-                        .WithMany()
+                        .WithMany("UserSiteRoles")
                         .HasForeignKey("IdUser")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1366,6 +1450,14 @@ namespace Platform.Database.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("ReportIdReporterNavigations");
+
+                    b.Navigation("ReportIdTargetNavigations");
+
+                    b.Navigation("UserGameRoles");
+
+                    b.Navigation("UserSiteRoles");
                 });
 #pragma warning restore 612, 618
         }

@@ -95,3 +95,24 @@
     border-radius: 4px;
     vertical-align: middle;
 }
+
+.header-moderation {
+    position: relative;
+}
+
+.header-moderation__badge {
+    position: absolute;
+    top: 0.15rem;
+    right: 0.15rem;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.28rem;
+    border-radius: 999px;
+    background: #e85d4c;
+    color: #fff;
+    font-size: 0.65rem;
+    line-height: 1.05rem;
+    font-weight: 700;
+    text-align: center;
+    pointer-events: none;
+}

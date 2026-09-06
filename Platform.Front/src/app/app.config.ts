@@ -37,6 +37,8 @@ import {
     NbThemeModule,
     NbToastrModule,
     NbChatModule,
+    NbSelectModule,
+    NbCheckboxModule,
 } from "@nebular/theme";
 import { environment } from "environments/environment";
 import { appRoutes } from "./app.routes";
@@ -68,6 +70,8 @@ export const appConfig: ApplicationConfig = {
             NbInputModule,
             NbIconModule,
             NbChatModule,
+            NbSelectModule,
+            NbCheckboxModule,
 
             // Nebular Auth
             NbAuthModule.forRoot({

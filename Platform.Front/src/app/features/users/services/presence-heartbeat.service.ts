@@ -1,14 +1,11 @@
 import { effect, inject, Injectable, OnDestroy } from "@angular/core";
 import { UsersStore } from "@features/users/stores/users.store";
-import { UsersService } from "@features/users/users.service";
-import { firstValueFrom } from "rxjs";
 
 const HEARTBEAT_MS = 60_000;
 
 @Injectable({ providedIn: "root" })
 export class PresenceHeartbeatService implements OnDestroy {
     private readonly usersStore = inject(UsersStore);
-    private readonly usersService = inject(UsersService);
     private timer: ReturnType<typeof setInterval> | null = null;
 
     public constructor() {
@@ -42,13 +39,6 @@ export class PresenceHeartbeatService implements OnDestroy {
     }
 
     private async touch(): Promise<void> {
-        if (!this.usersStore.isLoggedIn()) {
-            return;
-        }
-        try {
-            await firstValueFrom(this.usersService.touch());
-        } catch {
-            /* ignore transient presence failures */
-        }
+        await this.usersStore.refreshSessionFromTouch();
     }
 }
