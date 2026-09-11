@@ -41,7 +41,7 @@ Pont identité Platform ↔ microservice jeu, fiche joueur WoW publique, rails s
 - [x] Widgets : identité, présentation IRL, présentation IG, stats, persos, galerie photo, galerie vidéo, streams, lecteur Twitch, liens
 - [x] Pages par défaut : accueil (verrouillée), personnages, vidéos, photos, liens — le propriétaire crée / renomme / réordonne / supprime les siennes
 - [x] Publier DevKit 0.4.0 et remplacer la référence `file:.tmp-packs/...` par la version registry
-- [ ] Reporter le package widgets dans `GamersCommunity.Games.Template`
+- [x] Reporter le package widgets dans `GamersCommunity.Games.Template` — plomberie + démo `/template/workspace` (pas de persistance : le Template n'a pas d'entité joueur)
 
 ## B4 — Home WoW (rails)
 
