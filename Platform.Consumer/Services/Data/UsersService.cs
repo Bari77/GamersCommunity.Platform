@@ -102,9 +102,32 @@ namespace Platform.Consumer.Services.Data
 
                 case "StaffGet":
                     return JsonSafe.Serialize(await StaffGetAsync(message, ct));
+
+                case "Sanctions":
+                    return JsonSafe.Serialize(await CallerSanctionsAsync(message, ct));
             }
 
             return await base.HandleAsync(message, ct);
+        }
+
+        /// <summary>
+        /// Sanctions of the caller, for a game microservice about to accept a publication. Mutes and
+        /// bans stay owned by Platform and are never copied into a game database, so the game asks
+        /// this action every time rather than reading a replicated column.
+        /// </summary>
+        private async Task<CallerSanctionsDto> CallerSanctionsAsync(BusMessage message, CancellationToken ct)
+        {
+            var user = await CallerAuth.RequireUserAsync(Context, message, ct);
+            var mute = await CallerAuth.ActiveMuteAsync(Context, user.Id, ct);
+
+            return new CallerSanctionsDto
+            {
+                UserPublicId = user.PublicId,
+                Banned = await CallerAuth.HasActiveBanAsync(Context, user.Id, ct),
+                ActiveMute = mute is { EndDate: { } end }
+                    ? new ActiveMuteDto { Reason = mute.Entitled, EndDate = end }
+                    : null,
+            };
         }
 
         private async Task<SessionUserDto> TouchPresenceAsync(BusMessage message, CancellationToken ct)
