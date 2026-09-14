@@ -1,0 +1,32 @@
+<gc-breadcrumb [rootLabel]="homeLabel" rootLink="/home" />
+
+<div class="context-bar__game">
+    @if (gameNav().length > 0) {
+        <nav class="context-bar__nav" [attr.aria-label]="navLabel">
+            @for (link of gameNav(); track link.path) {
+                <!-- Loose matching on purpose: a guild sheet keeps the Guilds tab lit. -->
+                <a class="context-bar__link" [routerLink]="link.path" routerLinkActive="context-bar__link--active">
+                    {{ link.label }}
+                </a>
+            }
+        </nav>
+    }
+
+    @if (gameSearch(); as search) {
+        <form class="context-bar__search" (ngSubmit)="submit()">
+            <nb-form-field>
+                <nb-icon nbPrefix icon="search-outline"></nb-icon>
+                <input
+                    nbInput
+                    fieldSize="small"
+                    type="search"
+                    [placeholder]="search.label"
+                    [attr.aria-label]="search.label"
+                    [ngModel]="term()"
+                    (ngModelChange)="term.set($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                />
+            </nb-form-field>
+        </form>
+    }
+</div>

@@ -1,0 +1,91 @@
+:host {
+    /* Nebular pads the layout column; the bar bleeds back out of it to span the viewport. */
+    --context-bar-gutter: 2.25rem;
+    --gc-breadcrumb-padding: 0;
+
+    position: sticky;
+    top: 4.75rem; /* Cosmic header height, which is fixed. */
+    z-index: 1030; /* Under the header and footer, which sit at 1040. */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: calc(-1 * var(--context-bar-gutter)) calc(-1 * var(--context-bar-gutter)) 1.25rem;
+    padding: 0.5rem var(--context-bar-gutter);
+    background: var(--gc-surface-1, #0e1524);
+    border-bottom: 1px solid rgb(255 255 255 / 6%);
+}
+
+:host(.context-bar--empty) {
+    display: none;
+}
+
+.context-bar__game {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.context-bar__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.context-bar__link {
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    color: var(--text-hint-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.context-bar__link:hover,
+.context-bar__link:focus-visible {
+    background: rgb(255 255 255 / 6%);
+    color: var(--text-basic-color);
+}
+
+.context-bar__link--active {
+    background: color-mix(in srgb, var(--gc-accent) 18%, transparent);
+    color: var(--gc-accent);
+}
+
+.context-bar__search {
+    flex: 0 1 22rem;
+    min-width: 0;
+}
+
+.context-bar__search nb-form-field,
+.context-bar__search input {
+    width: 100%;
+}
+
+@media (max-width: 991px) {
+    :host {
+        --context-bar-gutter: 1.5rem;
+    }
+}
+
+@media (max-width: 767px) {
+    :host {
+        --context-bar-gutter: 1rem;
+
+        flex-wrap: wrap;
+    }
+
+    .context-bar__game {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+
+    .context-bar__search {
+        flex-basis: 100%;
+    }
+}

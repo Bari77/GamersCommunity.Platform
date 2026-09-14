@@ -38,7 +38,23 @@ export const appRoutes: Routes = [
     {
         path: "world-of-warcraft",
         component: GameRemoteShellComponent,
-        data: { breadcrumb: "World of Warcraft" },
+        data: {
+            breadcrumb: "World of Warcraft",
+            gameNav: [
+                {
+                    path: "/world-of-warcraft/sheet",
+                    label: $localize`:@@core.contextBar.nav.sheet:My profile`,
+                },
+                {
+                    path: "/world-of-warcraft/guilds",
+                    label: $localize`:@@core.contextBar.nav.guilds:Guilds`,
+                },
+            ],
+            gameSearch: {
+                path: "/world-of-warcraft/search",
+                label: $localize`:@@core.contextBar.search.worldOfWarcraft:Search a character, a player or a guild`,
+            },
+        },
         loadChildren: () => loadRemoteRoutes("worldOfWarcraft", "./Routes", "worldOfWarcraftRoutes"),
     },
     {
