@@ -41,6 +41,8 @@ public class FriendsService(
             case "DELETE":
                 await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await RemoveRelationAsync(message, ct));
+            case "ARE_FRIENDS":
+                return JsonSafe.Serialize(await AreFriendsAsync(message, ct));
             default:
                 return await base.HandleAsync(message, ct);
         }
@@ -69,6 +71,48 @@ public class FriendsService(
             peers.TryGetValue(peerId, out var peer);
             return ToDto(f, peerId, peer);
         }).ToList();
+    }
+
+    /// <summary>
+    /// Tells a game microservice whether two Platform users are accepted friends, so it can gate a
+    /// friends-only page.
+    /// </summary>
+    /// <remarks>
+    /// Called service to service with no end-user behind it, so it resolves no caller identity.
+    /// </remarks>
+    private async Task<AreFriendsResultDto> AreFriendsAsync(BusMessage message, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(message.Data))
+            throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
+
+        var request = ConsumerParamParser.ToObject<AreFriendsRequestDto>(message.Data);
+        if (request.FirstUserPublicId == Guid.Empty || request.SecondUserPublicId == Guid.Empty)
+            throw new BadRequestException("USERS_MANDATORY", "Two user public ids mandatory");
+
+        // A player is not their own friend: the caller already knows it is looking at its own sheet
+        // and grants access on that ground, not on friendship.
+        if (request.FirstUserPublicId == request.SecondUserPublicId)
+            return new AreFriendsResultDto { AreFriends = false };
+
+        var ids = await Context.Users.AsNoTracking()
+            .Where(u => u.PublicId == request.FirstUserPublicId || u.PublicId == request.SecondUserPublicId)
+            .Select(u => u.Id)
+            .ToListAsync(ct);
+
+        if (ids.Count != 2)
+            return new AreFriendsResultDto { AreFriends = false };
+
+        var first = ids[0];
+        var second = ids[1];
+
+        return new AreFriendsResultDto
+        {
+            AreFriends = await Context.Friends.AsNoTracking().AnyAsync(
+                f => f.IdFriendStatus == StatusAccepted
+                    && ((f.IdFriendAsking == first && f.IdFriendReceive == second)
+                        || (f.IdFriendAsking == second && f.IdFriendReceive == first)),
+                ct),
+        };
     }
 
     private async Task<int> CreateRequestAsync(BusMessage message, CancellationToken ct)
