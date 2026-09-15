@@ -83,14 +83,26 @@ public abstract class ReferenceTableSeed<TContext, TEntity> : IReferenceTableSee
         await db.Database.OpenConnectionAsync(ct);
         try
         {
-            await db.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT " + qualified + " ON", ct);
+            await ExecuteIdentityInsertAsync(db, qualified, enabled: true, ct);
             await db.SaveChangesAsync(ct);
-            await db.Database.ExecuteSqlRawAsync("SET IDENTITY_INSERT " + qualified + " OFF", ct);
+            await ExecuteIdentityInsertAsync(db, qualified, enabled: false, ct);
         }
         finally
         {
             await db.Database.CloseConnectionAsync();
         }
+    }
+
+    private static async Task ExecuteIdentityInsertAsync(
+        TContext db,
+        string qualifiedTable,
+        bool enabled,
+        CancellationToken ct)
+    {
+        var connection = db.Database.GetDbConnection();
+        await using var command = connection.CreateCommand();
+        command.CommandText = "SET IDENTITY_INSERT " + qualifiedTable + (enabled ? " ON" : " OFF");
+        await command.ExecuteNonQueryAsync(ct);
     }
 
     private static string QuoteIdent(string name)
