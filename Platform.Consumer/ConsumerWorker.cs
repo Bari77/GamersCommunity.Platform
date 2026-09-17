@@ -25,32 +25,45 @@ namespace Platform.Consumer
     /// <param name="logger">The application logger.</param>
     public class ConsumerWorker(IServiceScopeFactory scopeFactory, ILogger logger) : BackgroundService
     {
+        private static readonly TimeSpan ReconnectDelay = TimeSpan.FromSeconds(3);
+
         /// <summary>
         /// Main execution loop of the background service.
         /// Starts the RabbitMQ consumer and keeps it alive until cancellation is requested.
+        /// Broker outages are retried instead of stopping the host.
         /// </summary>
         /// <param name="ct">Cancellation token triggered when the host is shutting down.</param>
         /// <returns>A task representing the execution of the consumer.</returns>
-        /// <exception cref="Exception">
-        /// Re-throws any unhandled exceptions to allow the container/orchestrator to restart the service.
-        /// </exception>
         protected override async Task ExecuteAsync(CancellationToken ct)
         {
             using var scope = scopeFactory.CreateScope();
             var consumer = scope.ServiceProvider.GetRequiredService<PlatformServiceConsumer>();
 
-            try
+            while (!ct.IsCancellationRequested)
             {
-                await consumer.StartListeningAsync(ct);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                logger.Information("ConsumerWorker stopping (cancellation requested).");
-            }
-            catch (Exception ex)
-            {
-                logger.Fatal(ex, "Fatal RabbitMQ communication error. Exiting so the container can restart.");
-                throw;
+                try
+                {
+                    await consumer.StartListeningAsync(ct);
+                    return;
+                }
+                catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                {
+                    logger.Information("ConsumerWorker stopping (cancellation requested).");
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "RabbitMQ communication error. Retrying in {Delay}s.", ReconnectDelay.TotalSeconds);
+                    try
+                    {
+                        await Task.Delay(ReconnectDelay, ct);
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                    {
+                        logger.Information("ConsumerWorker stopping (cancellation requested).");
+                        return;
+                    }
+                }
             }
         }
     }
