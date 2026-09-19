@@ -4,7 +4,7 @@ import { PermissionsService } from "@core/services/permissions.service";
 import { NbAuthOAuth2JWTToken, NbAuthService } from "@nebular/auth";
 import { NbDialogService, NbMenuItem } from "@nebular/theme";
 import { environment } from "environments/environment";
-import { finalize, firstValueFrom, map, Observable, Subscriber, throwError } from "rxjs";
+import { finalize, firstValueFrom, map, Observable, shareReplay, Subscriber, throwError } from "rxjs";
 import { NicknameDialogComponent } from "../components/nickname-dialog/nickname-dialog.component";
 import { LoadRequestDto } from "../dto/load.dto";
 import { UpdateUserRequestDto } from "../dto/update-user.dto";
@@ -35,23 +35,16 @@ export class UsersStore {
     private readonly $user = signal<User | null>(null);
     private readonly $sessionResolved = signal(false);
     private nicknameDialogRef: ReturnType<NbDialogService["open"]> | null = null;
+    private pendingLoad: { subject: string; request: Observable<void> } | null = null;
 
     public constructor() {
+        // The token stream, not a one-shot read: a token refreshed later (bootstrap, periodic
+        // refresh, interceptor) must rehydrate the session instead of leaving the header anonymous
+        // while the API still answers authenticated calls.
         this.authService
-            .getToken()
+            .onTokenChange()
             .pipe(map((token) => token as NbAuthOAuth2JWTToken))
-            .subscribe((token: NbAuthOAuth2JWTToken) => {
-                if (!token?.isValid()) {
-                    this.setSession(null);
-                    this.$sessionResolved.set(true);
-                    return;
-                }
-
-                this.loadUserFromPayload(token.getAccessTokenPayload()).subscribe({
-                    next: () => this.$sessionResolved.set(true),
-                    error: () => this.$sessionResolved.set(true),
-                });
-            });
+            .subscribe((token: NbAuthOAuth2JWTToken) => this.syncSessionFromToken(token));
     }
 
     public async ensureSession(): Promise<void> {
@@ -210,7 +203,34 @@ export class UsersStore {
         return ids;
     }
 
+    /**
+     * Loads the session behind an IdP subject, sharing an in-flight load: the token stream and the
+     * OAuth callback both ask for it on login, and the nickname prompt must only be opened once.
+     */
     public loadUserFromPayload(payload: any): Observable<void> {
+        const subject: string | undefined = payload?.sub;
+        const pending = this.pendingLoad;
+        if (pending && pending.subject === subject) {
+            return pending.request;
+        }
+
+        const request = this.requestUserLoad(payload).pipe(
+            finalize(() => {
+                if (this.pendingLoad?.subject === subject) {
+                    this.pendingLoad = null;
+                }
+            }),
+            shareReplay({ bufferSize: 1, refCount: false }),
+        );
+
+        if (subject) {
+            this.pendingLoad = { subject, request };
+        }
+
+        return request;
+    }
+
+    private requestUserLoad(payload: any): Observable<void> {
         return new Observable<void>((sub: Subscriber<void>) => {
             if (!payload?.sub) {
                 sub.error("Invalid token or without IdP subject.");
@@ -290,6 +310,26 @@ export class UsersStore {
                 this.nicknameDialogRef = null;
             }),
         );
+    }
+
+    private syncSessionFromToken(token: NbAuthOAuth2JWTToken): void {
+        if (!token?.isValid()) {
+            this.setSession(null);
+            this.$sessionResolved.set(true);
+            return;
+        }
+
+        const payload = token.getAccessTokenPayload();
+        if (payload?.sub && this.$user()?.idKeycloak === payload.sub) {
+            // Same identity with a fresher token: the loaded session still stands.
+            this.$sessionResolved.set(true);
+            return;
+        }
+
+        this.loadUserFromPayload(payload).subscribe({
+            next: () => this.$sessionResolved.set(true),
+            error: () => this.$sessionResolved.set(true),
+        });
     }
 
     private setSession(user: User | null): void {

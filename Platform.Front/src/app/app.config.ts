@@ -1,27 +1,29 @@
 import {
     ApplicationConfig,
     importProvidersFrom,
+    inject,
+    provideAppInitializer,
     provideBrowserGlobalErrorListeners,
     provideZoneChangeDetection,
 } from "@angular/core";
 import { provideRouter, withComponentInputBinding } from "@angular/router";
 
-import { HTTP_INTERCEPTORS, HttpRequest, provideHttpClient, withInterceptors, withInterceptorsFromDi } from "@angular/common/http";
+import { provideHttpClient, withInterceptors } from "@angular/common/http";
 import { provideAnimations } from "@angular/platform-browser/animations";
 import { AuthGuard } from "@core/guards/auth.guard";
 import { UnauthGuard } from "@core/guards/unauth.guard";
+import { authTokenInterceptor } from "@core/interceptors/auth-token.interceptor";
 import { errorInterceptor } from "@core/interceptors/error.interceptor";
 import { accessControlWow } from "@core/security/world-of-warcraft.security";
+import { AuthTokenService } from "@core/services/auth-token.service";
 import { PermissionsService } from "@core/services/permissions.service";
 import { RoleService } from "@core/services/role.service";
 import {
-    NbAuthJWTInterceptor,
     NbAuthModule,
     NbAuthOAuth2JWTToken,
     NbOAuth2AuthStrategy,
     NbOAuth2ClientAuthMethod,
     NbOAuth2ResponseType,
-    NB_AUTH_TOKEN_INTERCEPTOR_FILTER,
 } from "@nebular/auth";
 import { NbEvaIconsModule } from "@nebular/eva-icons";
 import { NbRoleProvider, NbSecurityModule } from "@nebular/security";
@@ -41,6 +43,7 @@ import {
     NbCheckboxModule,
 } from "@nebular/theme";
 import { environment } from "environments/environment";
+import { catchError, firstValueFrom, of, timeout } from "rxjs";
 import { appRoutes } from "./app.routes";
 import { accessControlGlobal } from "./nebular.security";
 
@@ -52,7 +55,7 @@ export const appConfig: ApplicationConfig = {
         }),
         provideAnimations(),
         provideRouter(appRoutes, withComponentInputBinding()),
-        provideHttpClient(withInterceptors([errorInterceptor]), withInterceptorsFromDi()),
+        provideHttpClient(withInterceptors([errorInterceptor, authTokenInterceptor])),
         importProvidersFrom(
             // Nebular UI
             NbThemeModule.forRoot({ name: "cosmic" }),
@@ -133,16 +136,24 @@ export const appConfig: ApplicationConfig = {
             }),
         ),
 
-        // Interceptor JWT Nebular (ajoute automatiquement Authorization: Bearer ...)
-        // Filter returns true → skip auth header. Nebular default is always true (noop).
-        {
-            provide: NB_AUTH_TOKEN_INTERCEPTOR_FILTER,
-            useValue: (req: HttpRequest<unknown>) => req.url.includes("/application/o/token"),
-        },
-        { provide: HTTP_INTERCEPTORS, useClass: NbAuthJWTInterceptor, multi: true },
         { provide: NbRoleProvider, useClass: RoleService },
         PermissionsService,
         AuthGuard,
         UnauthGuard,
+
+        // An access token that expired while the app was closed is still renewable. Renewing it
+        // before the first component renders keeps the header, the guards and the federated games on
+        // the same session. A slow or unreachable IdP must never hold the bootstrap: the token
+        // stream picks up a late refresh on its own.
+        provideAppInitializer(() =>
+            firstValueFrom(
+                inject(AuthTokenService)
+                    .restoreSession()
+                    .pipe(
+                        timeout({ first: 5_000 }),
+                        catchError(() => of(false)),
+                    ),
+            ),
+        ),
     ],
 };

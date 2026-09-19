@@ -1,13 +1,13 @@
 import { computed, effect, inject, Injectable, Injector, NgZone, signal } from "@angular/core";
+import { AuthTokenService } from "@core/services/auth-token.service";
 import { NotificationDto } from "@features/notifications/dto/notification.dto";
 import { AppNotification } from "@features/notifications/models/notification.model";
 import { NotificationsStore } from "@features/notifications/stores/notifications.store";
 import { ModerationReportsBadgeStore } from "@features/moderation/stores/moderation-reports-badge.store";
 import { UsersStore } from "@features/users/stores/users.store";
-import { NbAuthOAuth2JWTToken, NbAuthService } from "@nebular/auth";
 import * as signalR from "@microsoft/signalr";
 import { environment } from "environments/environment";
-import { firstValueFrom, map } from "rxjs";
+import { firstValueFrom } from "rxjs";
 import { MessageDto } from "../dto/message.dto";
 import { DirectMessage } from "../models/message.model";
 import { FriendsStore } from "../stores/friends.store";
@@ -21,7 +21,7 @@ const RETRY_CAP_MS = 30_000;
 
 @Injectable({ providedIn: "root" })
 export class MessengerRealtimeService {
-    private readonly authService = inject(NbAuthService);
+    private readonly authToken = inject(AuthTokenService);
     private readonly usersStore = inject(UsersStore);
     private readonly messagesStore = inject(MessagesStore);
     private readonly friendsStore = inject(FriendsStore);
@@ -231,9 +231,7 @@ export class MessengerRealtimeService {
     }
 
     private async resolveAccessToken(): Promise<string> {
-        const token = await firstValueFrom(
-            this.authService.getToken().pipe(map((t) => t as NbAuthOAuth2JWTToken)),
-        );
-        return token?.getValue() ?? "";
+        // Reconnections happen long after the hub was opened, so the token may need a refresh.
+        return (await firstValueFrom(this.authToken.bearerToken())) ?? "";
     }
 }
