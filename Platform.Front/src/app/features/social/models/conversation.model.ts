@@ -1,5 +1,6 @@
 import { parseUtcDate } from "@shared/utils/utc-date.util";
 import { ConversationDto, ConversationMemberDto } from "../dto/conversation.dto";
+import { GuildChannelCrest, parseGuildChannelCrest } from "./guild-channel-crest";
 
 export class ConversationMember {
     public constructor(
@@ -28,7 +29,7 @@ export class ConversationMember {
 export class Conversation {
     public constructor(
         public publicId: string,
-        public kind: "dm" | "group",
+        public kind: "dm" | "group" | "guild",
         public displayTitle: string,
         public title: string | null,
         public pictureUrl: string | null,
@@ -46,11 +47,19 @@ export class Conversation {
     ) {}
 
     public get isGroup(): boolean {
-        return this.kind === "group";
+        return this.kind === "group" || this.kind === "guild";
+    }
+
+    public get membershipLocked(): boolean {
+        return this.kind === "guild";
+    }
+
+    public get guildCrest(): GuildChannelCrest | null {
+        return parseGuildChannelCrest(this.pictureUrl);
     }
 
     public static fromDto(dto: ConversationDto): Conversation {
-        const kind = dto.kind === "group" ? "group" : "dm";
+        const kind = dto.kind === "guild" || dto.kind === "group" ? dto.kind : "dm";
         return new Conversation(
             dto.publicId ?? "",
             kind,

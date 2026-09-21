@@ -28,7 +28,9 @@ export class ManageGroupDialogComponent {
     public readonly avatarIds = this.usersStore.listGroupAvatarIds();
 
     public readonly isOwner = computed(() => this.conversation()?.isOwner ?? false);
+    public readonly membershipLocked = computed(() => this.conversation()?.membershipLocked ?? false);
     public readonly members = computed(() => this.conversation()?.members ?? []);
+    public readonly canEditMembers = computed(() => this.isOwner() && !this.membershipLocked());
 
     public readonly addableContacts = computed(() => {
         const memberIds = new Set(this.members().map((member) => member.id));

@@ -266,6 +266,10 @@ public partial class GamersCommunityDbContext : DbContext
             entity.Property(e => e.Kind).HasMaxLength(16).IsRequired();
             entity.Property(e => e.Title).HasMaxLength(80);
             entity.Property(e => e.PictureUrl).HasMaxLength(255);
+            entity.Property(e => e.ManagedKey).HasMaxLength(64);
+            entity.HasIndex(e => e.ManagedKey, "UQ_Conversations_ManagedKey")
+                .IsUnique()
+                .HasFilter("[ManagedKey] IS NOT NULL");
             entity.Property(e => e.CreationDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");

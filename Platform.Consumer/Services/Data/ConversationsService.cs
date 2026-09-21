@@ -57,6 +57,15 @@ public class ConversationsService(
             case "DELETE":
                 await DeleteMineAsync(message, ct);
                 return JsonSafe.Serialize(true);
+            case "ENSURE_GUILD":
+                return JsonSafe.Serialize(await EnsureGuildChannelAsync(message, ct));
+            case "ADD_GUILD_MEMBER":
+                return JsonSafe.Serialize(await AddGuildMemberAsync(message, ct));
+            case "REMOVE_GUILD_MEMBER":
+                return JsonSafe.Serialize(await RemoveGuildMemberAsync(message, ct));
+            case "DELETE_GUILD":
+                await DeleteGuildChannelAsync(message, ct);
+                return JsonSafe.Serialize(true);
             default:
                 throw new InternalServerErrorException("ACTION_NOT_IMPLEMENTED", $"Action {message.Action} not implemented");
         }
@@ -151,6 +160,7 @@ public class ConversationsService(
     {
         var me = await RequireCallerUserIdAsync(message, ct);
         var conversation = await RequireTrackedConversationAsync(message, ct);
+        EnsureMembershipEditable(conversation);
         await RequireOwnerAsync(conversation, me, ct);
         if (conversation.Kind != ConversationKind.Group)
             throw new BadRequestException("NOT_A_GROUP", "Only groups can be renamed");
@@ -173,6 +183,7 @@ public class ConversationsService(
     {
         var me = await RequireCallerUserIdAsync(message, ct);
         var conversation = await RequireTrackedConversationAsync(message, ct);
+        EnsureMembershipEditable(conversation);
         await RequireOwnerAsync(conversation, me, ct);
         if (conversation.Kind != ConversationKind.Group)
             throw new BadRequestException("NOT_A_GROUP", "Cannot add members to a direct chat");
@@ -223,6 +234,7 @@ public class ConversationsService(
     {
         var me = await RequireCallerUserIdAsync(message, ct);
         var conversation = await RequireTrackedConversationAsync(message, ct);
+        EnsureMembershipEditable(conversation);
         await RequireOwnerAsync(conversation, me, ct);
         if (conversation.Kind != ConversationKind.Group)
             throw new BadRequestException("NOT_A_GROUP", "Only groups can be deleted");
@@ -265,6 +277,7 @@ public class ConversationsService(
     {
         var me = await RequireCallerUserIdAsync(message, ct);
         var conversation = await RequireTrackedConversationAsync(message, ct);
+        EnsureMembershipEditable(conversation);
         await RequireOwnerAsync(conversation, me, ct);
         if (conversation.Kind != ConversationKind.Group)
             throw new BadRequestException("NOT_A_GROUP", "Cannot remove members from a direct chat");
@@ -428,6 +441,219 @@ public class ConversationsService(
                 m.JoinedAt)).ToListAsync(ct);
     }
 
+    /// <summary>
+    /// Creates or refreshes the Whispers channel bound to a guild. Called service-to-service with
+    /// no end-user behind it, so it resolves no caller identity.
+    /// </summary>
+    private async Task<ConversationDto> EnsureGuildChannelAsync(BusMessage message, CancellationToken ct)
+    {
+        var request = RequireGuildChannelRequest(message);
+        var managedKey = NormalizeManagedKey(request.ManagedKey);
+        var ownerId = await RequireUserIdByPublicIdAsync(request.OwnerUserPublicId, ct);
+        var title = NormalizeTitle(request.Title)
+            ?? throw new BadRequestException("TITLE_MANDATORY", "Guild channel name is required");
+        var pictureUrl = NormalizeManagedPictureUrl(request.PictureUrl);
+        var now = DateTime.UtcNow;
+
+        var conversation = await context.Conversations
+            .FirstOrDefaultAsync(c => c.ManagedKey == managedKey, ct);
+
+        if (conversation is null)
+        {
+            conversation = new Conversation
+            {
+                PublicId = Guid.NewGuid(),
+                Kind = ConversationKind.Guild,
+                ManagedKey = managedKey,
+                Title = title,
+                PictureUrl = pictureUrl,
+                IdOwner = ownerId,
+                CreationDate = now,
+                ModificationDate = now,
+            };
+            await context.Conversations.AddAsync(conversation, ct);
+            await context.SaveChangesAsync(ct);
+            await context.ConversationMembers.AddAsync(NewMember(conversation.Id, ownerId, now, isOwner: true), ct);
+            await context.SaveChangesAsync(ct);
+            await PublishUpdatedAsync(conversation.PublicId, conversation.Id, extraUserIds: [], ct);
+        }
+        else
+        {
+            if (conversation.Kind != ConversationKind.Guild)
+                throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a guild channel");
+
+            conversation.Title = title;
+            conversation.PictureUrl = pictureUrl;
+            conversation.ModificationDate = now;
+            await ApplyGuildOwnerAsync(conversation, ownerId, now, ct);
+            await context.SaveChangesAsync(ct);
+            await PublishUpdatedAsync(conversation.PublicId, conversation.Id, extraUserIds: [], ct);
+        }
+
+        var members = await LoadMembersAsync([conversation.Id], ct);
+        return MapDto(ownerId, conversation, members, lastContent: null, lastDate: null, unreadCount: 0, includeMembers: true);
+    }
+
+    private async Task<ConversationDto> AddGuildMemberAsync(BusMessage message, CancellationToken ct)
+    {
+        var request = RequireGuildMemberRequest(message);
+        var conversation = await RequireManagedGuildAsync(request.ManagedKey, ct);
+        var userId = await RequireUserIdByPublicIdAsync(request.UserPublicId, ct);
+
+        var already = await context.ConversationMembers.AsNoTracking()
+            .AnyAsync(m => m.IdConversation == conversation.Id && m.IdUser == userId, ct);
+        if (already)
+        {
+            var existing = await LoadMembersAsync([conversation.Id], ct);
+            var viewer = conversation.IdOwner ?? userId;
+            return MapDto(viewer, conversation, existing, lastContent: null, lastDate: null, unreadCount: 0, includeMembers: true);
+        }
+
+        var now = DateTime.UtcNow;
+        await context.ConversationMembers.AddAsync(NewMember(conversation.Id, userId, now, isOwner: false), ct);
+        conversation.ModificationDate = now;
+        var joinEvents = await QueueMembershipEventsAsync(conversation, [userId], MessageKind.MemberJoined, now, ct);
+        await context.SaveChangesAsync(ct);
+        await PublishMembershipEventsAsync(conversation, joinEvents, ct);
+        await PublishUpdatedAsync(conversation.PublicId, conversation.Id, [userId], ct);
+
+        var members = await LoadMembersAsync([conversation.Id], ct);
+        var me = conversation.IdOwner ?? userId;
+        return MapDto(me, conversation, members, lastContent: null, lastDate: null, unreadCount: 0, includeMembers: true);
+    }
+
+    private async Task<ConversationDto> RemoveGuildMemberAsync(BusMessage message, CancellationToken ct)
+    {
+        var request = RequireGuildMemberRequest(message);
+        var conversation = await RequireManagedGuildAsync(request.ManagedKey, ct);
+        var userId = await RequireUserIdByPublicIdAsync(request.UserPublicId, ct);
+
+        var member = await context.ConversationMembers
+            .FirstOrDefaultAsync(m => m.IdConversation == conversation.Id && m.IdUser == userId, ct);
+        if (member is null)
+        {
+            var existing = await LoadMembersAsync([conversation.Id], ct);
+            var viewer = conversation.IdOwner ?? userId;
+            return MapDto(viewer, conversation, existing, lastContent: null, lastDate: null, unreadCount: 0, includeMembers: true);
+        }
+
+        context.ConversationMembers.Remove(member);
+        conversation.ModificationDate = DateTime.UtcNow;
+        var leaveEvents = await QueueMembershipEventsAsync(
+            conversation,
+            [userId],
+            MessageKind.MemberLeft,
+            conversation.ModificationDate,
+            ct);
+        await context.SaveChangesAsync(ct);
+        await PublishMembershipEventsAsync(conversation, leaveEvents, ct);
+        await PublishUpdatedAsync(conversation.PublicId, conversation.Id, [userId], ct);
+
+        var members = await LoadMembersAsync([conversation.Id], ct);
+        var me = conversation.IdOwner ?? userId;
+        return MapDto(me, conversation, members, lastContent: null, lastDate: null, unreadCount: 0, includeMembers: true);
+    }
+
+    private async Task DeleteGuildChannelAsync(BusMessage message, CancellationToken ct)
+    {
+        if (string.IsNullOrEmpty(message.Data))
+            throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
+
+        var request = ConsumerParamParser.ToObject<ManagedKeyRequest>(message.Data);
+        var managedKey = NormalizeManagedKey(request.ManagedKey);
+        var conversation = await context.Conversations
+            .FirstOrDefaultAsync(c => c.ManagedKey == managedKey, ct);
+        if (conversation is null)
+            return;
+        if (conversation.Kind != ConversationKind.Guild)
+            throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a guild channel");
+
+        await DeleteGroupAsync(conversation, ct);
+    }
+
+    private async Task ApplyGuildOwnerAsync(Conversation conversation, int ownerUserId, DateTime now, CancellationToken ct)
+    {
+        conversation.IdOwner = ownerUserId;
+        var members = await context.ConversationMembers
+            .Where(m => m.IdConversation == conversation.Id)
+            .ToListAsync(ct);
+
+        foreach (var member in members)
+        {
+            var shouldOwn = member.IdUser == ownerUserId;
+            if (member.IsOwner == shouldOwn)
+                continue;
+            member.IsOwner = shouldOwn;
+            member.ModificationDate = now;
+        }
+
+        if (members.All(m => m.IdUser != ownerUserId))
+            await context.ConversationMembers.AddAsync(NewMember(conversation.Id, ownerUserId, now, isOwner: true), ct);
+    }
+
+    private async Task<Conversation> RequireManagedGuildAsync(string? managedKey, CancellationToken ct)
+    {
+        var key = NormalizeManagedKey(managedKey);
+        var conversation = await context.Conversations.FirstOrDefaultAsync(c => c.ManagedKey == key, ct)
+            ?? throw new NotFoundException("NOT_FOUND", "Guild channel not found");
+        if (conversation.Kind != ConversationKind.Guild)
+            throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a guild channel");
+        return conversation;
+    }
+
+    private static GuildChannelRequest RequireGuildChannelRequest(BusMessage message)
+    {
+        if (string.IsNullOrEmpty(message.Data))
+            throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
+        return ConsumerParamParser.ToObject<GuildChannelRequest>(message.Data);
+    }
+
+    private static GuildMemberRequest RequireGuildMemberRequest(BusMessage message)
+    {
+        if (string.IsNullOrEmpty(message.Data))
+            throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
+        return ConsumerParamParser.ToObject<GuildMemberRequest>(message.Data);
+    }
+
+    private async Task<int> RequireUserIdByPublicIdAsync(Guid publicId, CancellationToken ct)
+    {
+        if (publicId == Guid.Empty)
+            throw new BadRequestException("USER_MANDATORY", "User public id is required");
+
+        var id = await context.Users.AsNoTracking()
+            .Where(u => u.PublicId == publicId)
+            .Select(u => u.Id)
+            .FirstOrDefaultAsync(ct);
+
+        return id != 0
+            ? id
+            : throw new NotFoundException("USER_NOT_FOUND", "Platform user not found");
+    }
+
+    private static void EnsureMembershipEditable(Conversation conversation)
+    {
+        if (conversation.Kind == ConversationKind.Guild)
+            throw new ForbiddenException("MEMBERSHIP_MANAGED", "Members of this channel are managed by the guild");
+    }
+
+    private static string NormalizeManagedKey(string? value)
+    {
+        var key = (value ?? "").Trim();
+        if (key.Length is < 3 or > 64)
+            throw new BadRequestException("INVALID_MANAGED_KEY", "Managed key is required");
+        return key;
+    }
+
+    private static string? NormalizeManagedPictureUrl(string? value)
+    {
+        var url = value?.Trim();
+        if (string.IsNullOrEmpty(url))
+            return null;
+        if (url.Length > 255)
+            throw new BadRequestException("PICTURE_TOO_LONG", "Channel picture is too long");
+        return url;
+    }
+
     private ConversationDto MapDto(
         int me,
         Conversation conversation,
@@ -452,6 +678,7 @@ public class ConversationsService(
             PictureUrl = conversation.PictureUrl,
             IdOwner = conversation.IdOwner,
             IsOwner = isOwner,
+            MembershipLocked = conversation.Kind == ConversationKind.Guild,
             CreationDate = conversation.CreationDate,
             LastMessage = lastContent,
             LastDate = lastDate,
@@ -722,6 +949,25 @@ public class ConversationsService(
         public int[]? MemberIds { get; set; }
     }
 
+    private sealed class GuildChannelRequest
+    {
+        public string? ManagedKey { get; set; }
+        public string? Title { get; set; }
+        public string? PictureUrl { get; set; }
+        public Guid OwnerUserPublicId { get; set; }
+    }
+
+    private sealed class GuildMemberRequest
+    {
+        public string? ManagedKey { get; set; }
+        public Guid UserPublicId { get; set; }
+    }
+
+    private sealed class ManagedKeyRequest
+    {
+        public string? ManagedKey { get; set; }
+    }
+
     private sealed record MemberRow(
         int IdConversation,
         int IdUser,
@@ -741,6 +987,7 @@ public class ConversationsService(
         public string? PictureUrl { get; set; }
         public int? IdOwner { get; set; }
         public bool IsOwner { get; set; }
+        public bool MembershipLocked { get; set; }
         public DateTime CreationDate { get; set; }
         public string? LastMessage { get; set; }
         public DateTime? LastDate { get; set; }

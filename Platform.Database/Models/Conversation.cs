@@ -18,6 +18,12 @@ public partial class Conversation : IKeyTable
 
     public string? PictureUrl { get; set; }
 
+    /// <summary>
+    /// Stable key for conversations whose membership is owned by another microservice
+    /// (e.g. <c>wow:guild:{publicId}</c>). Null for ordinary DMs and player-created groups.
+    /// </summary>
+    public string? ManagedKey { get; set; }
+
     public int? IdOwner { get; set; }
 
     public virtual User? IdOwnerNavigation { get; set; }
@@ -31,4 +37,9 @@ public static class ConversationKind
 {
     public const string Dm = "dm";
     public const string Group = "group";
+
+    /// <summary>
+    /// Group whose members follow a guild roster. Players cannot add or remove anyone.
+    /// </summary>
+    public const string Guild = "guild";
 }

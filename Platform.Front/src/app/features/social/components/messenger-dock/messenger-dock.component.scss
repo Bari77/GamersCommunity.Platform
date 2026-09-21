@@ -209,6 +209,12 @@
     flex-shrink: 0;
 }
 
+.messenger-dock__avatar--crest {
+    padding: 0;
+    overflow: hidden;
+    background: rgb(12 16 28 / 55%);
+}
+
 .messenger-dock__messages {
     flex: 1;
     min-height: 0;

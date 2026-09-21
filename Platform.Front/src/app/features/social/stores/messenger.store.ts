@@ -54,9 +54,13 @@ export class MessengerStore {
     public readonly selectedNickname = computed(() => this.selectedConversation()?.peerNickname ?? this.selectedLabel());
     public readonly selectedDiscriminator = computed(() => this.selectedConversation()?.peerDiscriminator ?? "");
     public readonly selectedPeerPublicId = computed(() => this.selectedConversation()?.peerPublicId ?? "");
-    public readonly selectedPeerAvatarUrl = computed(
-        () => this.selectedConversation()?.pictureUrl || this.selectedConversation()?.peerAvatarUrl || "",
-    );
+    public readonly selectedPeerAvatarUrl = computed(() => {
+        const conversation = this.selectedConversation();
+        if (!conversation || conversation.guildCrest) {
+            return conversation?.peerAvatarUrl || "";
+        }
+        return conversation.pictureUrl || conversation.peerAvatarUrl || "";
+    });
     public readonly selectedIsGroup = computed(() => this.selectedConversation()?.isGroup ?? false);
     public readonly selectedIsOwner = computed(() => this.selectedConversation()?.isOwner ?? false);
     public readonly selectedMembers = computed(() => this.selectedConversation()?.members ?? []);

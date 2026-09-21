@@ -1,0 +1,69 @@
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    line-height: 0;
+    background: transparent;
+}
+
+.crest {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.crest__layer,
+.crest__ring,
+.crest__hooks {
+    position: absolute;
+    display: block;
+}
+
+.crest__layer {
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-blend-mode: multiply;
+    mask-repeat: no-repeat;
+    mask-size: 100% 100%;
+}
+
+.crest__layer,
+.crest__hooks {
+    z-index: 1;
+}
+
+.crest__ring {
+    z-index: 0;
+    inset: 6.8% auto auto 6.8%;
+    width: 86.4%;
+    height: 86.4%;
+}
+
+.crest__flag {
+    inset: 18.8% auto auto 14.8%;
+    width: 71.6%;
+    height: 84%;
+    filter: brightness(1.5);
+}
+
+.crest__hooks {
+    inset: 19.6% auto auto 14.8%;
+    width: 71.6%;
+    height: 12.8%;
+}
+
+.crest__border {
+    inset: 24% auto auto 20%;
+    width: 58.8%;
+    height: 63.6%;
+    filter: brightness(2);
+}
+
+.crest__emblem {
+    inset: 30% auto auto 22%;
+    width: 50%;
+    height: 50%;
+    filter: brightness(1.75);
+}

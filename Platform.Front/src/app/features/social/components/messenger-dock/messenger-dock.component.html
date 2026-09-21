@@ -27,7 +27,13 @@
                         >
                             <nb-icon icon="arrow-back-outline" pack="eva"></nb-icon>
                         </button>
-                        @if (messengerStore.selectedPeerAvatarUrl()) {
+                        @if (messengerStore.selectedConversation()?.guildCrest; as crest) {
+                            <app-guild-channel-crest
+                                class="messenger-dock__avatar messenger-dock__avatar--header messenger-dock__avatar--crest"
+                                [crest]="crest"
+                                [label]="messengerStore.selectedLabel()"
+                            />
+                        } @else if (messengerStore.selectedPeerAvatarUrl()) {
                             <img
                                 class="messenger-dock__avatar messenger-dock__avatar--img messenger-dock__avatar--header"
                                 [src]="messengerStore.selectedPeerAvatarUrl()"
@@ -299,7 +305,13 @@
                                     @for (chat of messengerStore.conversations(); track chat.publicId) {
                                         <li>
                                             <button type="button" (click)="messengerStore.selectConversation(chat.publicId)" class="messenger-dock__row">
-                                                @if (chat.pictureUrl || chat.peerAvatarUrl) {
+                                                @if (chat.guildCrest; as crest) {
+                                                    <app-guild-channel-crest
+                                                        class="messenger-dock__avatar messenger-dock__avatar--crest"
+                                                        [crest]="crest"
+                                                        [label]="chat.displayTitle"
+                                                    />
+                                                } @else if (chat.pictureUrl || chat.peerAvatarUrl) {
                                                     <img
                                                         class="messenger-dock__avatar messenger-dock__avatar--img"
                                                         [src]="chat.pictureUrl || chat.peerAvatarUrl"

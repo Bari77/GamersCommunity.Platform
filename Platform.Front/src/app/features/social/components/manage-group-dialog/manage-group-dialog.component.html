@@ -42,11 +42,11 @@
                                 <img class="manage-group__avatar" [src]="member.avatarUrl" [alt]="member.nickname" />
                             }
                             <app-user-handle [nickname]="member.nickname" [discriminator]="member.discriminator" />
-                            @if (member.isOwner) {
+                            @if (member.isOwner && !membershipLocked()) {
                                 <span class="manage-group__badge" i18n="@@social.messenger.manageGroup.owner">Owner</span>
                             }
                         </button>
-                        @if (isOwner() && !member.isOwner) {
+                        @if (canEditMembers() && !member.isOwner) {
                             <button
                                 type="button"
                                 nbButton
@@ -63,7 +63,13 @@
                 }
             </ul>
 
-            @if (isOwner()) {
+            @if (membershipLocked()) {
+                <p class="manage-group__hint" i18n="@@social.messenger.manageGroup.guildManaged">
+                    Members of this channel follow the guild roster and cannot be edited here.
+                </p>
+            }
+
+            @if (canEditMembers()) {
                 <label class="manage-group__field">
                     <span i18n="@@social.messenger.createGroup.name">Group name (optional)</span>
                     <input nbInput fullWidth maxlength="80" [ngModel]="title()" (ngModelChange)="title.set($event)" />

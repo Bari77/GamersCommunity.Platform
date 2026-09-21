@@ -10,12 +10,13 @@ export interface ConversationMemberDto {
 
 export interface ConversationDto {
     publicId: string;
-    kind: "dm" | "group" | string;
+    kind: "dm" | "group" | "guild" | string;
     title?: string | null;
     displayTitle: string;
     pictureUrl?: string | null;
     idOwner?: number | null;
     isOwner: boolean;
+    membershipLocked?: boolean;
     creationDate: string;
     lastMessage?: string | null;
     lastDate?: string | null;

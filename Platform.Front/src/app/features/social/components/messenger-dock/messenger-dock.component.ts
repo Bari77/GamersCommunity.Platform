@@ -23,6 +23,7 @@ import {
 } from "@nebular/theme";
 import { SkeletonComponent } from "@bari77/gc-ui";
 import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
+import { GuildChannelCrestComponent } from "../guild-channel-crest/guild-channel-crest.component";
 import { CreateGroupDialogComponent } from "../create-group-dialog/create-group-dialog.component";
 import { ManageGroupDialogComponent } from "../manage-group-dialog/manage-group-dialog.component";
 import { DirectMessage } from "../../models/message.model";
@@ -46,6 +47,7 @@ const NEAR_TOP_PX = 48;
         DatePipe,
         SkeletonComponent,
         UserHandleComponent,
+        GuildChannelCrestComponent,
     ],
     templateUrl: "./messenger-dock.component.html",
     styleUrl: "./messenger-dock.component.scss",
