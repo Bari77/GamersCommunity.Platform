@@ -58,6 +58,20 @@ export const appRoutes: Routes = [
         loadChildren: () => loadRemoteRoutes("worldOfWarcraft", "./Routes", "worldOfWarcraftRoutes"),
     },
     {
+        path: "league-of-legends",
+        component: GameRemoteShellComponent,
+        data: {
+            breadcrumb: "League of Legends",
+            gameNav: [
+                {
+                    path: "/league-of-legends/sheet",
+                    label: $localize`:@@core.contextBar.nav.sheet:My profile`,
+                },
+            ],
+        },
+        loadChildren: () => loadRemoteRoutes("leagueOfLegends", "./Routes", "leagueOfLegendsRoutes"),
+    },
+    {
         path: "offline",
         loadComponent: () =>
             import("@core/layout/splash/components/offline/offline.component").then((m) => m.OfflineComponent),

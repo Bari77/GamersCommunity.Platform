@@ -11,7 +11,7 @@ Facebook-like community for gamers: one Platform identity, game-specific sheets/
 | Layer | Owns |
 |-------|------|
 | **Platform.Front (shell)** | Home feed, profile wall, friends, 1:1 DMs and group chats, site-wide events (IRL / cross-game), game catalogue |
-| **Game remotes** (e.g. WoW) | Game hub, player sheet, characters, guilds/teams, LFG, moderated guild wall, in-game events |
+| **Game remotes** (WoW, LoL, …) | Game hub, player sheet, characters/summoners, guilds/teams, LFG, moderated org wall, in-game events |
 
 Platform `UserGroupRole.IdGroup` references a group id owned by the game microservice. Guilds are not duplicated in Platform.
 
@@ -34,6 +34,9 @@ Platform `UserGroupRole.IdGroup` references a group id owned by the game microse
 | **B** | WoW player sheet + characters + profile media |
 | **C** | Guilds, moderated wall, LFG board + DM deep-link |
 | **D** | In-game events, notification center, share/SEO polish |
+| **F** | LoL player sheet + summoners + lanes + champions — [tickets](../../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front/docs/VAGUE_B.md) |
+| **G** | LoL teams (5 + coach + manager), moderated wall, LFG — [tickets](../../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front/docs/VAGUE_C.md) |
+| **H** | LoL in-game events, notifs, substitutes — [tickets](../../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front/docs/VAGUE_D.md) |
 
 ## Display vs technical keys
 

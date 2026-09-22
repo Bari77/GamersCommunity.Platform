@@ -4,8 +4,10 @@
     "scripts": {
         "start": "ng serve",
         "start:remote:wow": "npm run start --prefix ../../GamersCommunity.Games.WorldOfWarcraft/WorldOfWarcraft.Front",
+        "start:remote:lol": "npm run start --prefix ../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front",
         "dev": "ng serve",
         "dev:federation": "npx concurrently -n shell,wow -c blue,green \"npm run dev\" \"npm run start:remote:wow\"",
+        "dev:federation:lol": "npx concurrently -n shell,lol -c blue,magenta \"npm run dev\" \"npm run start:remote:lol\"",
         "watch": "ng build --localize --watch --configuration development",
         "lint": "npx eslint src",
         "lint:fix": "npx eslint src --fix",

@@ -8,6 +8,9 @@ export function gameAclSuffix(urlValue: string): string {
     if (slug === "world-of-warcraft") {
         return "wow";
     }
+    if (slug === "league-of-legends") {
+        return "lol";
+    }
     return slug.replace(/-/g, "_");
 }
 

@@ -50,6 +50,8 @@ Each game lives in its own repo folder, e.g.:
 ```
 GamersCommunity.Games.WorldOfWarcraft/
 └── WorldOfWarcraft.Front/     ← remote (port 4201)
+GamersCommunity.Games.LeagueOfLegends/
+└── LeagueOfLegends.Front/     ← remote (port 4202)
 ```
 
 The remote **exposes routes** via federation (`./Routes` → `worldOfWarcraftRoutes`).
@@ -63,6 +65,7 @@ npm run dev:federation
 # Or separately
 npm run dev                              # shell :4200
 npm run start:remote:wow                 # remote :4201
+npm run start:remote:lol                 # remote :4202
 ```
 
 ---
@@ -82,8 +85,7 @@ src/
  │   ├── features/
  │   │   ├── home/
  │   │   ├── users/
- │   │   ├── games/             # catalogue Platform (stays in shell)
- │   │   └── league-of-legends/ # stub until its remote exists
+ │   │   └── games/             # catalogue Platform (stays in the shell)
  │   │
  │   ├── shared/
  │   │   ├── components/

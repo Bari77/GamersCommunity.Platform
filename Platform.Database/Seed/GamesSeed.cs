@@ -24,5 +24,15 @@ public sealed class GamesSeed : KeyTableSeed<GamersCommunityDbContext, Game>
             CreationDate = SeedDates.Utc,
             ModificationDate = SeedDates.Utc,
         },
+        new()
+        {
+            Id = 2,
+            Title = "League Of Legends",
+            UrlValue = "/league-of-legends",
+            Picture = "league-of-legends",
+            IdType = 2,
+            CreationDate = SeedDates.Utc,
+            ModificationDate = SeedDates.Utc,
+        },
     ];
 }

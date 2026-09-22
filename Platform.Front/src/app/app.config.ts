@@ -14,6 +14,7 @@ import { AuthGuard } from "@core/guards/auth.guard";
 import { UnauthGuard } from "@core/guards/unauth.guard";
 import { authTokenInterceptor } from "@core/interceptors/auth-token.interceptor";
 import { errorInterceptor } from "@core/interceptors/error.interceptor";
+import { accessControlLol } from "@core/security/league-of-legends.security";
 import { accessControlWow } from "@core/security/world-of-warcraft.security";
 import { AuthTokenService } from "@core/services/auth-token.service";
 import { PermissionsService } from "@core/services/permissions.service";
@@ -132,6 +133,7 @@ export const appConfig: ApplicationConfig = {
                 accessControl: {
                     ...accessControlGlobal,
                     ...accessControlWow,
+                    ...accessControlLol,
                 },
             }),
         ),
