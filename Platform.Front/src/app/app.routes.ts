@@ -71,10 +71,18 @@ export const appRoutes: Routes = [
                     label: $localize`:@@core.contextBar.nav.sheet:My profile`,
                 },
                 {
+                    path: "/league-of-legends/lfg",
+                    label: $localize`:@@core.contextBar.nav.lfg:LFG`,
+                },
+                {
                     path: "/league-of-legends/teams",
                     label: $localize`:@@core.contextBar.nav.teams:Teams`,
                 },
             ],
+            gameSearch: {
+                path: "/league-of-legends/search",
+                label: $localize`:@@core.contextBar.search.leagueOfLegends:Search a player or a team`,
+            },
         },
         loadChildren: () => loadRemoteRoutes("leagueOfLegends", "./Routes", "leagueOfLegendsRoutes"),
     },
