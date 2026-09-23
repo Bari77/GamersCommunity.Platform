@@ -70,6 +70,10 @@ export const appRoutes: Routes = [
                     path: "/league-of-legends/sheet",
                     label: $localize`:@@core.contextBar.nav.sheet:My profile`,
                 },
+                {
+                    path: "/league-of-legends/teams",
+                    label: $localize`:@@core.contextBar.nav.teams:Teams`,
+                },
             ],
         },
         loadChildren: () => loadRemoteRoutes("leagueOfLegends", "./Routes", "leagueOfLegendsRoutes"),
