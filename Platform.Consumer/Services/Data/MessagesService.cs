@@ -1,12 +1,12 @@
 using GamersCommunity.Core.Enums;
 using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Rabbit;
+using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Serialization;
 using GamersCommunity.Core.Services;
 using Microsoft.EntityFrameworkCore;
 using Platform.Consumer.Realtime;
 using Platform.Consumer.Security;
-using Platform.Consumer.Serialization;
 using Platform.Database.Context;
 using Platform.Database.Models;
 using Serilog;

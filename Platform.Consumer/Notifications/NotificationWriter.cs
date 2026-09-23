@@ -1,3 +1,4 @@
+using GamersCommunity.Core.Realtime;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Platform.Consumer.Realtime;

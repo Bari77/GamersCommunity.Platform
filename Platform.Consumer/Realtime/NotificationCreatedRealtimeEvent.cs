@@ -1,4 +1,4 @@
-using Platform.Consumer.Serialization;
+using GamersCommunity.Core.Serialization;
 
 namespace Platform.Consumer.Realtime;
 

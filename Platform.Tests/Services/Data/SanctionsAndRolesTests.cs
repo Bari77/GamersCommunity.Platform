@@ -1,3 +1,4 @@
+using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Enums;
 using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Rabbit;

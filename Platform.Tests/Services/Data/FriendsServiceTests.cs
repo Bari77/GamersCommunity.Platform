@@ -1,3 +1,4 @@
+using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Tests;
 using Platform.Consumer.Notifications;
 using Platform.Consumer.Realtime;
