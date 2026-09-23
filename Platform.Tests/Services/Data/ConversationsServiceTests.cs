@@ -47,6 +47,25 @@ public class ConversationsServiceTests : IClassFixture<FakeDataset>
     }
 
     [Fact]
+    public async Task Ensure_guild_creates_a_locked_team_channel_from_the_lol_key()
+    {
+        var context = _dataset.CreateFakeContext();
+        var service = CreateService(context);
+
+        var json = await service.HandleAsync(GuildMessage("ENSURE_GUILD", new
+        {
+            ManagedKey = "lol:team:66666666-6666-6666-6666-666666666666",
+            Title = "T1#0001",
+            OwnerUserPublicId = OwnerPublicId,
+        }));
+
+        var created = JsonSafe.Deserialize<GuildChannelDto>(json);
+        Assert.Equal(ConversationKind.Team, created?.Kind);
+        Assert.Equal("T1#0001", created?.Title);
+        Assert.True(created?.MembershipLocked);
+    }
+
+    [Fact]
     public async Task Ensure_guild_is_idempotent_and_refreshes_the_logo()
     {
         var context = _dataset.CreateFakeContext();

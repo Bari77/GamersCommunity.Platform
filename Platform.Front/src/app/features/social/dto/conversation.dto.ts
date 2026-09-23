@@ -10,7 +10,7 @@ export interface ConversationMemberDto {
 
 export interface ConversationDto {
     publicId: string;
-    kind: "dm" | "group" | "guild" | string;
+    kind: "dm" | "group" | "guild" | "team" | string;
     title?: string | null;
     displayTitle: string;
     pictureUrl?: string | null;

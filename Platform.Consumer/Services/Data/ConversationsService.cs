@@ -463,7 +463,7 @@ public class ConversationsService(
             conversation = new Conversation
             {
                 PublicId = Guid.NewGuid(),
-                Kind = ConversationKind.Guild,
+                Kind = KindFromManagedKey(managedKey),
                 ManagedKey = managedKey,
                 Title = title,
                 PictureUrl = pictureUrl,
@@ -479,8 +479,8 @@ public class ConversationsService(
         }
         else
         {
-            if (conversation.Kind != ConversationKind.Guild)
-                throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a guild channel");
+            if (!IsManagedRosterChannel(conversation.Kind) || conversation.Kind != KindFromManagedKey(managedKey))
+                throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a roster channel");
 
             conversation.Title = title;
             conversation.PictureUrl = pictureUrl;
@@ -565,8 +565,8 @@ public class ConversationsService(
             .FirstOrDefaultAsync(c => c.ManagedKey == managedKey, ct);
         if (conversation is null)
             return;
-        if (conversation.Kind != ConversationKind.Guild)
-            throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a guild channel");
+        if (!IsManagedRosterChannel(conversation.Kind))
+            throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a roster channel");
 
         await DeleteGroupAsync(conversation, ct);
     }
@@ -596,8 +596,8 @@ public class ConversationsService(
         var key = NormalizeManagedKey(managedKey);
         var conversation = await context.Conversations.FirstOrDefaultAsync(c => c.ManagedKey == key, ct)
             ?? throw new NotFoundException("NOT_FOUND", "Guild channel not found");
-        if (conversation.Kind != ConversationKind.Guild)
-            throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a guild channel");
+        if (!IsManagedRosterChannel(conversation.Kind))
+            throw new BadRequestException("NOT_A_GUILD_CHANNEL", "This conversation cannot be managed as a roster channel");
         return conversation;
     }
 
@@ -632,9 +632,17 @@ public class ConversationsService(
 
     private static void EnsureMembershipEditable(Conversation conversation)
     {
-        if (conversation.Kind == ConversationKind.Guild)
-            throw new ForbiddenException("MEMBERSHIP_MANAGED", "Members of this channel are managed by the guild");
+        if (IsManagedRosterChannel(conversation.Kind))
+            throw new ForbiddenException("MEMBERSHIP_MANAGED", "Members of this channel are managed by the roster");
     }
+
+    private static bool IsManagedRosterChannel(string kind) =>
+        kind is ConversationKind.Guild or ConversationKind.Team;
+
+    private static string KindFromManagedKey(string key) =>
+        key.StartsWith("lol:team:", StringComparison.OrdinalIgnoreCase)
+            ? ConversationKind.Team
+            : ConversationKind.Guild;
 
     private static string NormalizeManagedKey(string? value)
     {
@@ -678,7 +686,7 @@ public class ConversationsService(
             PictureUrl = conversation.PictureUrl,
             IdOwner = conversation.IdOwner,
             IsOwner = isOwner,
-            MembershipLocked = conversation.Kind == ConversationKind.Guild,
+            MembershipLocked = IsManagedRosterChannel(conversation.Kind),
             CreationDate = conversation.CreationDate,
             LastMessage = lastContent,
             LastDate = lastDate,

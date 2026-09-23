@@ -29,7 +29,7 @@ export class ConversationMember {
 export class Conversation {
     public constructor(
         public publicId: string,
-        public kind: "dm" | "group" | "guild",
+        public kind: "dm" | "group" | "guild" | "team",
         public displayTitle: string,
         public title: string | null,
         public pictureUrl: string | null,
@@ -47,11 +47,11 @@ export class Conversation {
     ) {}
 
     public get isGroup(): boolean {
-        return this.kind === "group" || this.kind === "guild";
+        return this.kind === "group" || this.kind === "guild" || this.kind === "team";
     }
 
     public get membershipLocked(): boolean {
-        return this.kind === "guild";
+        return this.kind === "guild" || this.kind === "team";
     }
 
     public get guildCrest(): GuildChannelCrest | null {
@@ -59,7 +59,8 @@ export class Conversation {
     }
 
     public static fromDto(dto: ConversationDto): Conversation {
-        const kind = dto.kind === "guild" || dto.kind === "group" ? dto.kind : "dm";
+        const kind =
+            dto.kind === "guild" || dto.kind === "group" || dto.kind === "team" ? dto.kind : "dm";
         return new Conversation(
             dto.publicId ?? "",
             kind,
