@@ -1,42 +1,29 @@
-# GamersCommunity — product vision (locked)
+# Platform — product vision (locked)
 
-Validated architecture for the multi-game social platform.
+Facebook-like community for gamers: one identity, a site-wide social layer, and a catalogue of game remotes loaded by Native Federation. No external game APIs at launch — players enter sheet data manually.
 
-## Positioning
+## This layer owns
 
-Facebook-like community for gamers: one Platform identity, game-specific sheets/guilds/LFG/media in each Native Federation remote. No external game APIs at launch — players enter sheet data manually.
+Home feed, profile wall, friends, 1:1 DMs and group chats, site-wide events (IRL / cross-game), game catalogue, notifications, site AuthZ and sanctions.
 
-## Dual-layer architecture
+Game remotes own their hub, player sheet, organisations, LFG, moderated org wall, and in-game events. `UserGroupRole.IdGroup` references a group id owned by the game remote. Those groups are not duplicated here.
 
-| Layer | Owns |
-|-------|------|
-| **Platform.Front (shell)** | Home feed, profile wall, friends, 1:1 DMs and group chats, site-wide events (IRL / cross-game), game catalogue |
-| **Game remotes** (WoW, LoL, …) | Game hub, player sheet, characters (WoW) or champion+lane (LoL), guilds/teams, LFG, moderated org wall, in-game events |
+## Content
 
-Platform `UserGroupRole.IdGroup` references a group id owned by the game microservice (guild or team). Those groups are not duplicated in Platform. A LoL player may hold several team badges.
-
-## Content ownership
-
-| Content | Home |
-|---------|------|
+| Content | Owner |
+|---------|-------|
 | Profile wall posts | Platform |
 | Notifications | Platform |
-| Hub / guild or team posts + LFG ads | Game microservice |
 | Site events + RSVP | Platform |
-| In-game events + signup (WoW character / LoL player) | Game microservice |
+| Hub / org posts + LFG ads | Game remote |
+| In-game events + signup | Game remote |
 
-## Roadmap waves
+## Specs
 
-| Wave | Focus |
+| Spec | Focus |
 |------|--------|
-| **A** | Nebular energy theme, media home, friends / DMs / Platform events UI |
-| **E** | Site AuthZ, staff moderation, mute / ban, reports, rank management |
-| **B** | WoW player sheet + characters + profile media |
-| **C** | Guilds, moderated wall, LFG board + DM deep-link |
-| **D** | In-game events, notification center, share/SEO polish |
-| **F** | LoL player sheet + lanes + champions — [tickets](../../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front/docs/VAGUE_B.md) |
-| **G** | LoL teams (5 + coach + manager, several per player), moderated wall, LFG — [tickets](../../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front/docs/VAGUE_C.md) |
-| **H** | LoL in-game events, notifs, substitutes — [tickets](../../../GamersCommunity.Games.LeagueOfLegends/LeagueOfLegends.Front/docs/VAGUE_D.md) |
+| Home and social | Energy theme, media home, friends, DMs, site events |
+| Staff and sanctions | Site AuthZ, staff moderation, mute / ban, reports, ranks |
 
 ## Display vs technical keys
 

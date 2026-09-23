@@ -1,11 +1,11 @@
-# Vague E — AuthZ staff + sanctions
+# Spec — Staff and sanctions
 
-Site-wide moderation for Platform. Identity stays in Authentik; **authorization lives in Platform** (`UserSiteRole` / `UserGameRole`). Guild / LFG moderation stays in later game waves.
+Site-wide moderation. Identity stays in Authentik; **authorization lives here** (`UserSiteRole` / `UserGameRole`). Guild / LFG moderation stays in the game remotes.
 
 Locked decisions:
 
-- Mute does **not** block DMs or profile-wall posts. It blocks future public recruitment (enforced in Vague C when LFG ships).
-- Player reports are in this wave (E7): staff need an intake queue before bans.
+- Mute does **not** block DMs or profile-wall posts. It blocks future public recruitment (enforced by the game remote when LFG ships).
+- Player reports are in this spec (E7): staff need an intake queue before bans.
 
 ## E1 — AuthZ source of truth
 
@@ -13,7 +13,7 @@ Locked decisions:
 - [x] Consumer helper `RequireSiteRole("admin" | "moderator")` (admin implies moderator)
 - [x] Signup assigns site role `member`
 - [x] Bootstrap first admin (`AuthZ:BootstrapAdminKeycloakId` or targeted seed)
-- [x] Front `PermissionsService` + route guard `/moderation` from Platform payload (not JWT realm roles)
+- [x] Front `PermissionsService` + route guard `/moderation` from the session payload (not JWT realm roles)
 - [x] Active **ban** also blocks Messages / Posts / Friends, not only `Users.Load`
 
 ## E2 — Sanctions (extend `Banned`)
@@ -38,7 +38,7 @@ Reuse `Banned` (`BeginDate`, `EndDate`, `Entitled`, `IdModo`, `IdUserBan`). Add:
 
 - [x] Shell banner: muted by a moderator, reason, remaining time
 - [x] Notification `Kind = sanction`
-- [x] Persist + display only this wave; LFG create/update enforcement in Vague C
+- [x] Persist + display only this spec; LFG create/update enforcement is the game remote’s job
 
 ## E5 — Admin bans
 
@@ -49,9 +49,9 @@ Reuse `Banned` (`BeginDate`, `EndDate`, `Entitled`, `IdModo`, `IdUserBan`). Add:
 ## E6 — Ranks (admin only)
 
 - [x] Assign / remove `UserSiteRole` (one site role: `member` | `moderator` | `admin`)
-- [x] Assign / remove `UserGameRole` per game (WoW admin / moderator / member)
+- [x] Assign / remove `UserGameRole` per game (admin / moderator / member)
 - [x] Guardrails: cannot sanction self; moderator cannot sanction an admin; cannot remove the last admin
-- [x] Nebular ACL codes (`admin`, `moderator`, `admin_wow`, `moderator_wow`) map to these DB roles
+- [x] Nebular ACL codes (`admin`, `moderator`, plus per-game `admin_*` / `moderator_*`) map to these DB roles
 
 ## E7 — Reports
 
@@ -71,7 +71,7 @@ Reuse `Banned` (`BeginDate`, `EndDate`, `Entitled`, `IdModo`, `IdUserBan`). Add:
 | Promote / demote site roles | no | yes |
 | Per-game roles | no | yes |
 
-## Gateway resources (Vague E)
+## Gateway resources
 
 Staff checks run in the Consumer (Gateway has no role notion today): Private + `RequireSiteRole`.
 
@@ -82,9 +82,9 @@ Staff checks run in the Consumer (Gateway has no role notion today): Private + `
 | Sanctions (`Banned`) | — | — | List, Create, Update (revoke) |
 | UserSiteRoles / UserGameRoles | — | — | Update (admin) |
 
-## Out of scope for E
+## Out of scope
 
-- Guild / game-wall moderation — Vague C
-- LFG mute enforcement — Vague C (mute row already exists)
+- Guild / game-wall moderation
+- LFG mute enforcement (mute row already exists)
 - Legacy `Rank` / `Right` / `RankRight` — dropped (migration `DropLegacyRankRight`)
 - Authentik roles as authorization source — no

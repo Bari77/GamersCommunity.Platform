@@ -1,6 +1,6 @@
 # Social schema gaps — Post / LfgAd / Notification
 
-Ownership split locked in [PRODUCT_VISION.md](../../Platform.Front/docs/PRODUCT_VISION.md).
+Ownership split: profile wall on Platform, hub / LFG / in-game events on the game remotes.
 
 ## Platform
 

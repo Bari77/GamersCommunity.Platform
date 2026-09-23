@@ -1,6 +1,6 @@
-# Vague A — skin + social skeleton
+# Spec — Home and social
 
-Tickets for the first delivery wave. Theme and home foundation ship with this doc; friends / DMs / events pages are scaffolded and wired to Gateway once routes are opened.
+Theme and home foundation; friends / DMs / events pages wired once routes are opened.
 
 ## A1 — Nebular “energy” theme
 
@@ -13,7 +13,7 @@ Tickets for the first delivery wave. Theme and home foundation ship with this do
 
 - [x] Full-bleed hero video with brand + CTA overlay
 - [x] Game tiles from catalogue (`Title` / `Picture` / `UrlValue`)
-- [x] Placeholder rails for upcoming site events and hot LFG (filled in later waves)
+- [x] Placeholder rails for upcoming site events and hot LFG
 
 ## A3 — Seed labels
 
@@ -33,16 +33,16 @@ Tickets for the first delivery wave. Theme and home foundation ship with this do
 - [x] Route `/social/messages` (auth)
 - [x] Two-column layout (`nb-chat` + conversation list)
 - [x] Facebook-style messenger dock (bubble + right panel: chats / contacts)
-- [x] Backed by Platform `Messages` (1:1)
+- [x] Backed by `Messages` (1:1)
 - [x] Realtime push via SignalR (`/hubs/messenger`) after Create
 
-## A6 — Platform events UI
+## A6 — Site events UI
 
 - [x] Route `/events` list + `/events/:publicId` detail
 - [x] RSVP via `EventsUsersInterest` (`interested` / `going` / `declined`)
 - [x] Home rail consumes public `Events` list
 
-## Gateway resources (Vague A)
+## Gateway resources
 
 Open on microservice `platform`:
 
@@ -55,6 +55,6 @@ Open on microservice `platform`:
 | Posts | List (author wall) | Create, Update, Delete |
 | Notifications | — | List, Update (mark read) |
 
-## Out of scope for A
+## Out of scope
 
-Game posts, LFG board, guild moderation, WoW events — waves B–D. Site staff AuthZ / sanctions — [Vague E](./VAGUE_E.md).
+Game posts, LFG board, guild moderation, in-game events — game remotes. Site staff AuthZ / sanctions — spec Staff and sanctions.
