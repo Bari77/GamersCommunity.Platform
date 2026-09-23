@@ -29,6 +29,12 @@ cd Platform.Database
 
 Prefer putting truly shared infrastructure in **GamersCommunity.Core** or DevKit rather than forking copies across Platform and games.
 
+## Consumer bus scan
+
+- Scrutor registers `IBusService` implementations **except** those marked `[BusInternal]`.
+- Catalog-only helpers (`Cities`, `FriendStatuses`, `EventsUsersStatuses`) are `[BusInternal]`: seed/FK only, not Gateway resources.
+- Every other scannable CRUD service must have a matching Gateway route (or stay deliberately bus-only and documented in Gateway `docs/ROUTING.md`).
+
 ## Commits / push
 
 Only when the developer explicitly asks.

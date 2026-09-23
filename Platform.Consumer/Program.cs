@@ -52,9 +52,11 @@ public class Program
                 services.AddSingleton<IIntegrationEventPublisher, RabbitIntegrationEventPublisher>();
                 services.AddSingleton<IUserIdentityPublisher, UserIdentityPublisher>();
                 services.AddScoped<Platform.Consumer.Notifications.INotificationWriter, Platform.Consumer.Notifications.NotificationWriter>();
+                // Catalog-only services (Cities, FriendStatuses, EventsUsersStatuses) carry [BusInternal]
+                // and stay off the bus — seed/FK helpers, not Gateway resources.
                 services.Scan(scan => scan
                     .FromAssembliesOf(typeof(AppSettings))
-                    .AddClasses(c => c.AssignableTo<IBusService>())
+                    .AddClasses(c => c.AssignableTo<IBusService>().WithoutAttribute<BusInternalAttribute>())
                     .AsImplementedInterfaces()
                     .WithScopedLifetime());
                 services.AddScoped<HealthService>();
