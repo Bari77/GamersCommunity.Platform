@@ -76,9 +76,9 @@
             <label class="field-label" i18n="@@moderation.detail.siteRole">Site role</label>
             @if (store.detail(); as user) {
                 <nb-select [selected]="user.siteRole" (selectedChange)="changeSiteRole($event)">
-                    <nb-option value="member">member</nb-option>
-                    <nb-option value="moderator">moderator</nb-option>
-                    <nb-option value="admin">admin</nb-option>
+                    <nb-option value="member" i18n="@@moderation.role.member">Member</nb-option>
+                    <nb-option value="moderator" i18n="@@moderation.role.moderator">Moderator</nb-option>
+                    <nb-option value="admin" i18n="@@moderation.role.admin">Admin</nb-option>
                 </nb-select>
             } @else {
                 <gc-skeleton width="12rem" height="2.5rem" radius="0.25rem" />
@@ -92,9 +92,9 @@
                         (selectedChange)="changeGameRole(game.urlValue, $event)"
                     >
                         <nb-option value="" i18n="@@moderation.detail.noGameRole">None</nb-option>
-                        <nb-option value="member">member</nb-option>
-                        <nb-option value="moderator">moderator</nb-option>
-                        <nb-option value="admin">admin</nb-option>
+                        <nb-option value="member" i18n="@@moderation.role.member">Member</nb-option>
+                        <nb-option value="moderator" i18n="@@moderation.role.moderator">Moderator</nb-option>
+                        <nb-option value="admin" i18n="@@moderation.role.admin">Admin</nb-option>
                     </nb-select>
                 }
             } @else {

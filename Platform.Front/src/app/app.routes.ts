@@ -41,7 +41,7 @@ export const appRoutes: Routes = [
         canActivate: [gameAvailableGuard],
         component: GameRemoteShellComponent,
         data: {
-            breadcrumb: "World of Warcraft",
+            breadcrumb: $localize`:@@core.breadcrumb.worldOfWarcraft:World of Warcraft`,
             gameNav: [
                 {
                     path: "/world-of-warcraft/sheet",
@@ -64,7 +64,7 @@ export const appRoutes: Routes = [
         canActivate: [gameAvailableGuard],
         component: GameRemoteShellComponent,
         data: {
-            breadcrumb: "League of Legends",
+            breadcrumb: $localize`:@@core.breadcrumb.leagueOfLegends:League of Legends`,
             gameNav: [
                 {
                     path: "/league-of-legends/sheet",
