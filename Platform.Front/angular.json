@@ -131,10 +131,7 @@
                     },
                     "defaultConfiguration": "development",
                     "options": {
-                        "port": 4200,
-                        "prebundle": {
-                            "exclude": ["@bari77/gc-ui"]
-                        }
+                        "port": 4200
                     }
                 }
             },
