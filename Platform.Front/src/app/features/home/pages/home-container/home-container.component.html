@@ -51,13 +51,14 @@
         </div>
     } @else {
         <div class="home-games">
-            @for (type of gamesStore.gameTypes.value(); track type.id) {
-                @for (game of type.games; track game.id) {
+            @for (type of gamesStore.catalog(); track type.id) {
+                @for (entry of type.games; track entry.game.id) {
                     <app-game-tile
-                        [title]="game.title"
+                        [title]="entry.game.title"
                         [typeLabel]="type.entitled"
-                        [iconUrl]="assetsIcon(game.picture)"
-                        (activated)="go(game.urlValue)"
+                        [iconUrl]="assetsIcon(entry.game.picture)"
+                        [available]="entry.available"
+                        (activated)="go(entry.game.urlValue)"
                     />
                 }
             }

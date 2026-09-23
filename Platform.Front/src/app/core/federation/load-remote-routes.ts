@@ -1,6 +1,6 @@
 import { loadRemoteModule } from "@angular-architects/native-federation-v4";
 import { inject } from "@angular/core";
-import { Routes } from "@angular/router";
+import { Router, Routes } from "@angular/router";
 import { NbToastrService } from "@nebular/theme";
 
 export async function loadRemoteRoutes(
@@ -9,6 +9,7 @@ export async function loadRemoteRoutes(
     exportName: string,
 ): Promise<Routes> {
     const toastr = inject(NbToastrService);
+    const router = inject(Router);
 
     try {
         const remote = (await loadRemoteModule(remoteName, exposedModule)) as Record<string, unknown>;
@@ -19,15 +20,12 @@ export async function loadRemoteRoutes(
         return routes as Routes;
     } catch (error) {
         console.error(`[federation] Failed to load remote "${remoteName}"`, error);
-        const message =
-            typeof $localize === "function"
-                ? $localize`:@@core.federation.loadError:Could not load the game module. Is the game Front running?`
-                : "Could not load the game module. Is the game Front running?";
-        const title =
-            typeof $localize === "function"
-                ? $localize`:@@core.federation.loadErrorTitle:Game unavailable`
-                : "Game unavailable";
-        toastr.danger(message, title, { duration: 8_000 });
-        throw error;
+        toastr.danger(
+            $localize`:@@core.federation.loadError:Could not load this game.`,
+            $localize`:@@core.federation.loadErrorTitle:Game unavailable`,
+            { duration: 8_000 },
+        );
+        void router.navigateByUrl("/home");
+        return [{ path: "", pathMatch: "full", redirectTo: "/home" }];
     }
 }

@@ -1,6 +1,7 @@
 import { Component, inject, model } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Router } from "@angular/router";
+import { GameMenuItem } from "@features/games/models/game-menu.model";
 import { GamesStore } from "@features/games/stores/games.store";
 import { ModerationReportsBadgeStore } from "@features/moderation/stores/moderation-reports-badge.store";
 import { NotificationBellComponent } from "@features/notifications/components/notification-bell/notification-bell.component";
@@ -60,6 +61,7 @@ export class HeaderComponent {
 
     public search = model<string>();
     public copied = model<boolean>(false);
+    protected readonly unavailableLabel = $localize`:@@games.unavailable:Temporarily unavailable`;
 
     public constructor() {
         this.searchService.onSearchSubmit().subscribe((data: { term: string }) => {
@@ -79,5 +81,14 @@ export class HeaderComponent {
     public redirect(url: string): void {
         const path = url.startsWith("/") ? url : `/${url}`;
         void this.router.navigateByUrl(path);
+    }
+
+    public openGame(popover: { hide: () => void }, item: GameMenuItem): void {
+        if (!item.available) {
+            return;
+        }
+
+        popover.hide();
+        this.redirect(item.link);
     }
 }

@@ -7,6 +7,15 @@
         </div>
         <gc-skeleton width="1.5rem" height="1.5rem" shape="circle" />
     </div>
+} @else if (!available()) {
+    <div
+        class="game-tile game-tile--unavailable"
+        aria-disabled="true"
+        [nbTooltip]="unavailableLabel"
+        nbTooltipPlacement="top"
+    >
+        <ng-container [ngTemplateOutlet]="content" />
+    </div>
 } @else if (link(); as target) {
     <a class="game-tile" [routerLink]="target">
         <ng-container [ngTemplateOutlet]="content" />
@@ -23,5 +32,7 @@
         <span class="game-tile__type">{{ typeLabel() }}</span>
         <span class="game-tile__title gc-display">{{ title() }}</span>
     </div>
-    <nb-icon icon="arrow-forward-outline" pack="eva"></nb-icon>
+    @if (available()) {
+        <nb-icon icon="arrow-forward-outline" pack="eva"></nb-icon>
+    }
 </ng-template>

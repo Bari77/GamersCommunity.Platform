@@ -3,7 +3,7 @@
     "translations": {
         "core.layout.loading.message": "Chargement…",
         "core.layout.loading.game": "Chargement du jeu…",
-        "core.federation.loadError": "Impossible de charger le module du jeu. Le Front du jeu tourne-t-il ?",
+        "core.federation.loadError": "Impossible de charger ce jeu.",
         "core.federation.loadErrorTitle": "Jeu indisponible",
         "core.layout.offline.checking": "Vérification de la connexion…",
         "core.layout.offline.message": "Site hors ligne — actualisation automatique dans {$PH}s",

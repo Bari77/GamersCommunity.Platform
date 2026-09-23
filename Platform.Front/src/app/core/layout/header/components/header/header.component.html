@@ -141,8 +141,12 @@
                 @for (item of group.children; track item.title) {
                     <button
                         type="button"
-                        (click)="gamesPopover.hide(); redirect(item.link || item.url || '/home')"
                         class="menu-item"
+                        [class.menu-item--unavailable]="!item.available"
+                        [nbTooltip]="unavailableLabel"
+                        [nbTooltipDisabled]="item.available"
+                        nbTooltipPlacement="right"
+                        (click)="openGame(gamesPopover, item)"
                     >
                         @if (item.icon) {
                             <img [src]="item.icon" width="20" height="20" class="menu-icon" alt="" />

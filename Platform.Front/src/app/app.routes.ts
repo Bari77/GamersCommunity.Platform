@@ -1,6 +1,7 @@
 import { Routes } from "@angular/router";
 import { GameRemoteShellComponent } from "@core/federation/components/game-remote-shell/game-remote-shell.component";
 import { loadRemoteRoutes } from "@core/federation/load-remote-routes";
+import { gameAvailableGuard } from "@core/guards/game-available.guard";
 import { HomeContainerComponent } from "./features/home/pages/home-container/home-container.component";
 
 export const appRoutes: Routes = [
@@ -37,6 +38,7 @@ export const appRoutes: Routes = [
     },
     {
         path: "world-of-warcraft",
+        canActivate: [gameAvailableGuard],
         component: GameRemoteShellComponent,
         data: {
             breadcrumb: "World of Warcraft",
@@ -59,6 +61,7 @@ export const appRoutes: Routes = [
     },
     {
         path: "league-of-legends",
+        canActivate: [gameAvailableGuard],
         component: GameRemoteShellComponent,
         data: {
             breadcrumb: "League of Legends",

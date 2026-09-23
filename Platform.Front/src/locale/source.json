@@ -4,7 +4,7 @@
     "core.breadcrumb.home": "Home",
     "core.breadcrumb.events": "Events",
     "core.breadcrumb.moderation": "Moderation",
-    "core.federation.loadError": "Could not load the game module. Is the game Front running?",
+    "core.federation.loadError": "Could not load this game.",
     "core.federation.loadErrorTitle": "Game unavailable",
     "error.httpCode.internalErrorMsg": "An error occurred while processing your request. Please try again or contact an administrator.",
     "error.httpCode.internalErrorTitle": "Error",

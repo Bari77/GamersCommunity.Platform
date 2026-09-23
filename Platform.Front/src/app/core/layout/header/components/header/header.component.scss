@@ -99,6 +99,14 @@
     background-color: var(--menu-item-hover-background-color);
 }
 
+.menu-item--unavailable,
+.menu-item--unavailable:hover {
+    cursor: default;
+    filter: grayscale(1);
+    opacity: 0.55;
+    background: transparent;
+}
+
 .menu-item--skeleton {
     cursor: default;
     pointer-events: none;
