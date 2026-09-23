@@ -1,4 +1,22 @@
 /* Platform-specific global overrides (shared skin: @bari77/gc-theme) */
+
+/* Cosmic paints Open Sans on nb-layout; the workspace editor has no layout wrapper. */
+.nb-theme-cosmic nb-layout-column,
+nb-layout-column {
+    font-family: var(--gc-font-body);
+}
+
+.nb-theme-cosmic nb-layout-column h1,
+.nb-theme-cosmic nb-layout-column h2,
+.nb-theme-cosmic nb-layout-column h3,
+.nb-theme-cosmic nb-layout-column .gc-display,
+nb-layout-column h1,
+nb-layout-column h2,
+nb-layout-column h3,
+nb-layout-column .gc-display {
+    font-family: var(--gc-font-display);
+    letter-spacing: 0.04em;
+}
 .splash-msg-color-base {
     color: #9aa7ff !important;
 }
