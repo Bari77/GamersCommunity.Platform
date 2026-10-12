@@ -1,3 +1,4 @@
+using GamersCommunity.Core.Rabbit;
 using GamersCommunity.Core.Tests;
 using Platform.Consumer.Services.Data;
 using Platform.Database.Context;
@@ -7,6 +8,9 @@ namespace Platform.Tests.Services.Data
 {
     public class EventsUsersInterestsServiceTests : GenericDataServiceTests<GamersCommunityDbContext, EventsUsersInterestsService, EventsUsersInterest>, IClassFixture<FakeDataset>
     {
+        protected override CallerIdentity? TestCaller =>
+            new() { Subject = "11111111-1111-1111-1111-111111111111" };
+
         protected override List<EventsUsersInterest> GetFakeData() => [];
 
         protected override EventsUsersInterest GetNewEntity() => new()

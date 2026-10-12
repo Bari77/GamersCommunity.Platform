@@ -1,16 +1,20 @@
+using GamersCommunity.Core.Rabbit;
 using GamersCommunity.Core.Tests;
+using Microsoft.Extensions.Options;
 using Platform.Consumer.Configuration;
 using Platform.Consumer.Integration;
 using Platform.Consumer.Services.Data;
 using Platform.Consumer.Utils;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Microsoft.Extensions.Options;
 
 namespace Platform.Tests.Services.Data
 {
     public class UsersServiceTests : GenericDataServiceTests<GamersCommunityDbContext, UsersService, User>, IClassFixture<FakeDataset>
     {
+        protected override CallerIdentity? TestCaller =>
+            new() { Subject = "11111111-1111-1111-1111-111111111111" };
+
         protected override List<User> GetFakeData() => [];
 
         protected override User GetNewEntity() => new()

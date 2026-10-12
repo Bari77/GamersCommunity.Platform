@@ -61,8 +61,12 @@ jobs:
           cache: npm
           cache-dependency-path: Platform.Front/package-lock.json
 
+      # @bari77 resolved/integrity may be omitted when local packs poisoned the lock shasums
+      # (GitHub Packages E409 checksum mismatch). Re-resolve from the registry, then npm ci.
       - name: Install
-        run: npm ci
+        run: |
+          npm install --package-lock-only --ignore-scripts
+          npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PACKAGES_READ_TOKEN || secrets.GITHUB_TOKEN }}
 

@@ -149,7 +149,8 @@ namespace Platform.Tests
                     ModificationDate = DateTime.UtcNow,
                     AvatarUrl = string.Empty,
                     Mail = string.Empty,
-                    IdKeycloak = Guid.NewGuid(),
+                    // Stable Keycloak subjects so GenericDataServiceTests.TestCaller can authenticate.
+                    IdKeycloak = Guid.Parse("11111111-1111-1111-1111-111111111111"),
                     LastConnection = DateTime.UtcNow,
                 },
                 new User
@@ -162,7 +163,7 @@ namespace Platform.Tests
                     ModificationDate = DateTime.UtcNow,
                     AvatarUrl = string.Empty,
                     Mail = string.Empty,
-                    IdKeycloak = Guid.NewGuid(),
+                    IdKeycloak = Guid.Parse("22222222-2222-2222-2222-222222222222"),
                     LastConnection = DateTime.UtcNow,
                 },
                 new User
@@ -175,7 +176,7 @@ namespace Platform.Tests
                     ModificationDate = DateTime.UtcNow,
                     AvatarUrl = string.Empty,
                     Mail = string.Empty,
-                    IdKeycloak = Guid.NewGuid(),
+                    IdKeycloak = Guid.Parse("33333333-3333-3333-3333-333333333333"),
                     LastConnection = DateTime.UtcNow,
                 }
             );

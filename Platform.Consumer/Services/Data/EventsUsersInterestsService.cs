@@ -83,15 +83,15 @@ public class EventsUsersInterestsService(GamersCommunityDbContext context)
         var me = await RequireCallerUserIdAsync(message, ct);
         if (string.IsNullOrEmpty(message.Data))
             throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
+        if (message.PublicId is null && message.Id is null)
+            throw new BadRequestException("ID_MANDATORY", "Id mandatory");
 
         var request = ConsumerParamParser.ToObject<EventsUsersInterest>(message.Data);
         EnsureValidStatus(request.IdStatus);
 
         var interest = message.PublicId is Guid publicId
             ? await Context.EventsUsersInterests.FirstOrDefaultAsync(i => i.PublicId == publicId, ct)
-            : message.Id is int id
-                ? await Context.EventsUsersInterests.FirstOrDefaultAsync(i => i.Id == id, ct)
-                : null;
+            : await Context.EventsUsersInterests.FirstOrDefaultAsync(i => i.Id == message.Id!.Value, ct);
 
         if (interest is null)
             throw new NotFoundException("NOT_FOUND", "Cannot find ressource");

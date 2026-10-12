@@ -200,12 +200,13 @@ public class FriendsService(
         if (string.IsNullOrEmpty(message.Data))
             throw new BadRequestException("DATA_MANDATORY", "Data mandatory");
 
+        if (message.PublicId is null && message.Id is null)
+            throw new BadRequestException("ID_MANDATORY", "Id mandatory");
+
         var request = ConsumerParamParser.ToObject<Friend>(message.Data);
         var friend = message.PublicId is Guid publicId
             ? await Context.Friends.FirstOrDefaultAsync(f => f.PublicId == publicId, ct)
-            : message.Id is int id
-                ? await Context.Friends.FirstOrDefaultAsync(f => f.Id == id, ct)
-                : null;
+            : await Context.Friends.FirstOrDefaultAsync(f => f.Id == message.Id!.Value, ct);
 
         if (friend is null)
             throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
@@ -258,11 +259,12 @@ public class FriendsService(
     private async Task<bool> RemoveRelationAsync(BusMessage message, CancellationToken ct)
     {
         var me = await RequireCallerUserIdAsync(message, ct);
+        if (message.PublicId is null && message.Id is null)
+            throw new BadRequestException("ID_MANDATORY", "Id mandatory");
+
         var friend = message.PublicId is Guid publicId
             ? await Context.Friends.FirstOrDefaultAsync(f => f.PublicId == publicId, ct)
-            : message.Id is int id
-                ? await Context.Friends.FirstOrDefaultAsync(f => f.Id == id, ct)
-                : null;
+            : await Context.Friends.FirstOrDefaultAsync(f => f.Id == message.Id!.Value, ct);
 
         if (friend is null)
             throw new NotFoundException("NOT_FOUND", "Cannot find ressource");
