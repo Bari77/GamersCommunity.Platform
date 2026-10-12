@@ -15,7 +15,7 @@
         "build:dev": "ng build --configuration development",
         "test": "ng test --watch=false --browsers=ChromeHeadless",
         "test:watch": "ng test --watch=true",
-        "test:ci": "ng test --watch=false --browsers=ChromeHeadless --code-coverage",
+        "test:ci": "ng test --watch=false --browsers=ChromeHeadlessCI --code-coverage",
         "check:all": "npm run lint && npm run test:ci",
         "i18n": "ng extract-i18n --build-target=Platform.Front:esbuild --output-path src/locale --out-file source.json --format=json"
     },
