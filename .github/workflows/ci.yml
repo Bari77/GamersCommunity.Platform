@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Authenticate GitHub Packages (NuGet)
+        run: |
+          dotnet nuget update source github \
+            --username "${{ github.actor }}" \
+            --password "${{ secrets.GITHUB_TOKEN }}" \
+            --store-password-in-clear-text \
+            --configfile nuget.config
+
+      - name: Restore
+        run: dotnet restore GamersCommunity.Platform.sln
+
+      - name: Build
+        run: dotnet build GamersCommunity.Platform.sln -c Release --no-restore
+
+      - name: Test
+        run: dotnet test GamersCommunity.Platform.sln -c Release --no-build --verbosity normal
+
+  front:
+    name: Front (Angular)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Platform.Front
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: https://npm.pkg.github.com
+          scope: "@bari77"
+          cache: npm
+          cache-dependency-path: Platform.Front/package-lock.json
+
+      - name: Install
+        run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_OPTIONS: --max-old-space-size=4096
+
+      - name: Install Chrome
+        uses: browser-actions/setup-chrome@v1
+        id: chrome
+
+      - name: Test
+        run: npm run test:ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHROME_BIN: ${{ steps.chrome.outputs.chrome-path }}
