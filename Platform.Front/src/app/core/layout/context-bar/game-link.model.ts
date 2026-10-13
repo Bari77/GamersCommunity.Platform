@@ -8,4 +8,13 @@ export interface GameLink {
     path: string;
 
     label: string;
+
+    /** Selects a search type, for example `{ type: "guilds" }`. */
+    queryParams?: Record<string, string>;
+
+    /**
+     * Path prefix that also lights this link. A guild sheet keeps Guilds active even though the
+     * entry itself opens the search.
+     */
+    activePrefix?: string;
 }

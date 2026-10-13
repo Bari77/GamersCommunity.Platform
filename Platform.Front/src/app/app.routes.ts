@@ -48,8 +48,21 @@ export const appRoutes: Routes = [
                     label: $localize`:@@core.contextBar.nav.sheet:My profile`,
                 },
                 {
-                    path: "/world-of-warcraft/guilds",
+                    path: "/world-of-warcraft/search",
+                    queryParams: { type: "guilds" },
+                    activePrefix: "/world-of-warcraft/guilds",
                     label: $localize`:@@core.contextBar.nav.guilds:Guilds`,
+                },
+                {
+                    path: "/world-of-warcraft/search",
+                    queryParams: { type: "characters" },
+                    label: $localize`:@@core.contextBar.nav.characters:Characters`,
+                },
+                {
+                    path: "/world-of-warcraft/search",
+                    queryParams: { type: "players" },
+                    activePrefix: "/world-of-warcraft/players",
+                    label: $localize`:@@core.contextBar.nav.players:Players`,
                 },
             ],
             gameSearch: {
@@ -71,8 +84,16 @@ export const appRoutes: Routes = [
                     label: $localize`:@@core.contextBar.nav.sheet:My profile`,
                 },
                 {
-                    path: "/league-of-legends/teams",
+                    path: "/league-of-legends/search",
+                    queryParams: { type: "teams" },
+                    activePrefix: "/league-of-legends/teams",
                     label: $localize`:@@core.contextBar.nav.teams:Teams`,
+                },
+                {
+                    path: "/league-of-legends/search",
+                    queryParams: { type: "players" },
+                    activePrefix: "/league-of-legends/players",
+                    label: $localize`:@@core.contextBar.nav.players:Players`,
                 },
             ],
             gameSearch: {
