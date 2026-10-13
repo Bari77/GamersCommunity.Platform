@@ -16,7 +16,7 @@ export class EventsUsersInterestsService extends BaseService {
     }
 
     public upsert(idEvent: number, idStatus: EventRsvpStatusIdValue): Observable<number> {
-        return this.http.post<number>(this.getURL(), {
+        return this.postNumber(null, {
             idEvent,
             idStatus,
         });

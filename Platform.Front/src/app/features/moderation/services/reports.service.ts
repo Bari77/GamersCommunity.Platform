@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
 import { map, Observable } from "rxjs";
-import { CreateReportRequestDto, ReportDto, ReportListRequestDto } from "../dto/staff-user.dto";
-import { ModerationReport } from "../models/staff-user.model";
+import { CreateReportRequestDto, ReportListRequestDto } from "../dto/staff-user.dto";
+import { ModerationReport, OpenReportsCount } from "../models/staff-user.model";
 
 @Injectable({ providedIn: "root" })
 export class ReportsService extends BaseService {
@@ -11,24 +11,18 @@ export class ReportsService extends BaseService {
     }
 
     public create(request: CreateReportRequestDto): Observable<ModerationReport> {
-        return this.http.post<ReportDto>(this.getURL(), request).pipe(map((dto) => ModerationReport.fromDto(dto)));
+        return this.post(ModerationReport, null, request);
     }
 
     public list(request: ReportListRequestDto): Observable<ModerationReport[]> {
-        return this.http
-            .post<ReportDto[]>(this.getURL("actions/List"), request)
-            .pipe(map((rows) => rows.map((row) => ModerationReport.fromDto(row))));
+        return this.postList(ModerationReport, "actions/List", request);
     }
 
     public updateStatus(publicId: string, status: string): Observable<ModerationReport> {
-        return this.http
-            .put<ReportDto>(this.getURL(publicId), { status })
-            .pipe(map((dto) => ModerationReport.fromDto(dto)));
+        return this.put(ModerationReport, publicId, { status });
     }
 
     public countOpen(): Observable<number> {
-        return this.http
-            .post<{ openCount: number }>(this.getURL("actions/Count"), {})
-            .pipe(map((dto) => dto.openCount ?? 0));
+        return this.post(OpenReportsCount, "actions/Count", {}).pipe(map((result) => result.openCount));
     }
 }

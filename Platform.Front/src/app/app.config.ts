@@ -14,8 +14,6 @@ import { AuthGuard } from "@core/guards/auth.guard";
 import { UnauthGuard } from "@core/guards/unauth.guard";
 import { authTokenInterceptor } from "@core/interceptors/auth-token.interceptor";
 import { errorInterceptor } from "@core/interceptors/error.interceptor";
-import { accessControlLol } from "@core/security/league-of-legends.security";
-import { accessControlWow } from "@core/security/world-of-warcraft.security";
 import { AuthTokenService } from "@core/services/auth-token.service";
 import { PermissionsService } from "@core/services/permissions.service";
 import { RoleService } from "@core/services/role.service";
@@ -43,6 +41,7 @@ import {
     NbSelectModule,
     NbCheckboxModule,
 } from "@nebular/theme";
+import { GC_ENVIRONMENT } from "@bari77/gc-sdk";
 import { environment } from "environments/environment";
 import { catchError, firstValueFrom, of, timeout } from "rxjs";
 import { appRoutes } from "./app.routes";
@@ -50,6 +49,13 @@ import { accessControlGlobal } from "./nebular.security";
 
 export const appConfig: ApplicationConfig = {
     providers: [
+        {
+            provide: GC_ENVIRONMENT,
+            useValue: {
+                apiUrl: environment.apiUrl,
+                assetsBaseUrl: environment.assetsBaseUrl,
+            },
+        },
         provideBrowserGlobalErrorListeners(),
         provideZoneChangeDetection({
             eventCoalescing: true,
@@ -128,12 +134,10 @@ export const appConfig: ApplicationConfig = {
                 },
             }),
 
-            // Nebular Security
+            // Nebular Security — Platform shell only; game remotes own ranks/capabilities.
             NbSecurityModule.forRoot({
                 accessControl: {
                     ...accessControlGlobal,
-                    ...accessControlWow,
-                    ...accessControlLol,
                 },
             }),
         ),

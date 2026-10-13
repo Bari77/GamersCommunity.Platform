@@ -5,6 +5,10 @@ describe("gameAclSuffix", () => {
         expect(gameAclSuffix("/world-of-warcraft")).toBe("wow");
         expect(gameAclSuffix("league-of-legends")).toBe("lol");
     });
+
+    it("falls back to a slug for unknown games", () => {
+        expect(gameAclSuffix("/some-new-game")).toBe("some_new_game");
+    });
 });
 
 describe("toAclRoles", () => {

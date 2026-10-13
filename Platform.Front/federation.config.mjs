@@ -53,6 +53,7 @@ export default withNativeFederation({
     },
 
     skip: [
+        "@bari77/gc-sdk",
         "@bari77/gc-theme",
         "rxjs/ajax",
         "rxjs/fetch",

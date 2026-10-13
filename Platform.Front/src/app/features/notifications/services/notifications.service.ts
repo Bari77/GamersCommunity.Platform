@@ -15,10 +15,10 @@ export class NotificationsService extends BaseService {
     }
 
     public markRead(publicId: string): Observable<boolean> {
-        return this.http.put<boolean>(this.getURL(publicId), {});
+        return this.putBool(publicId, {});
     }
 
     public markAllRead(): Observable<number> {
-        return this.http.post<number>(this.getURL("actions/MarkAllRead"), {});
+        return this.postNumber("actions/MarkAllRead", {});
     }
 }

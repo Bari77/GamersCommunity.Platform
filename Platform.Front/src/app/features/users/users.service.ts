@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
-import { map, Observable } from "rxjs";
+import { Observable } from "rxjs";
 import { LoadRequestDto } from "./dto/load.dto";
 import { PublicUserDto } from "./dto/public-user.dto";
 import { UpdateUserRequestDto } from "./dto/update-user.dto";
@@ -23,13 +23,11 @@ export class UsersService extends BaseService {
     }
 
     public getUser(publicId: string): Observable<PublicUser> {
-        return this.get<PublicUserDto, PublicUser>(PublicUser, `${publicId}`);
+        return this.getOne<PublicUserDto, PublicUser>(PublicUser, `${publicId}`);
     }
 
     public search(query: string): Observable<PublicUser[]> {
-        return this.http
-            .post<PublicUserDto[]>(this.getURL("actions/Search"), { query })
-            .pipe(map((dtos) => dtos.map((dto) => PublicUser.fromDto(dto))));
+        return this.postList(PublicUser, "actions/Search", { query });
     }
 
     public touch(): Observable<User> {

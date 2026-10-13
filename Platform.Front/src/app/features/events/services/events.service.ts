@@ -15,6 +15,6 @@ export class EventsService extends BaseService {
     }
 
     public getByPublicId(publicId: string): Observable<CommunityEvent> {
-        return this.get<EventDto, CommunityEvent>(CommunityEvent, publicId);
+        return this.getOne<EventDto, CommunityEvent>(CommunityEvent, publicId);
     }
 }

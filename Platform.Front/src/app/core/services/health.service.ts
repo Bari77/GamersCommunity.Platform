@@ -11,6 +11,6 @@ export class HealthService extends BaseService {
     }
 
     public check(): Observable<ApiHealth> {
-        return this.get<ApiHealthDto, ApiHealth>(ApiHealth);
+        return this.getOne<ApiHealthDto, ApiHealth>(ApiHealth);
     }
 }

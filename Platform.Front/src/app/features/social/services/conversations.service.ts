@@ -15,7 +15,7 @@ export class ConversationsService extends BaseService {
     }
 
     public getByPublicId(publicId: string): Observable<Conversation> {
-        return this.get<ConversationDto, Conversation>(Conversation, publicId);
+        return this.getOne<ConversationDto, Conversation>(Conversation, publicId);
     }
 
     public create(memberIds: number[], title?: string | null, avatarId?: number | null): Observable<Conversation> {

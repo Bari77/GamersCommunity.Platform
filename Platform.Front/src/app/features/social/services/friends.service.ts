@@ -16,11 +16,11 @@ export class FriendsService extends BaseService {
     }
 
     public request(idFriendReceive: number): Observable<number> {
-        return this.http.post<number>(this.getURL(), { idFriendReceive });
+        return this.postNumber(null, { idFriendReceive });
     }
 
     public updateStatus(friend: Friend, idFriendStatus: FriendStatusIdValue): Observable<boolean> {
-        return this.http.put<boolean>(this.getURL(friend.publicId), {
+        return this.putBool(friend.publicId, {
             id: friend.id,
             publicId: friend.publicId,
             idFriendAsking: friend.idFriendAsking,

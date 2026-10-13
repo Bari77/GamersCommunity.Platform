@@ -1,3 +1,8 @@
+/**
+ * Maps Platform session roles onto Nebular role names for the shell.
+ * Game remotes do not use these for domain authorization — they own ranks / capabilities.
+ * Do not add per-game Nebular accessControl matrices in Platform for new products.
+ */
 export interface GameRoleAssignment {
     gameUrlValue: string;
     code: string;

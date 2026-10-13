@@ -1,22 +1,19 @@
-import { HttpClient } from "@angular/common/http";
-import { inject, Injectable } from "@angular/core";
-import { environment } from "environments/environment";
+import { Injectable } from "@angular/core";
+import { BaseService } from "@shared/services/base.service";
 import { Observable } from "rxjs";
 import { UpdateGameRoleRequestDto, UpdateSiteRoleRequestDto } from "../dto/staff-user.dto";
 
 @Injectable({ providedIn: "root" })
-export class UserRolesService {
-    private readonly http = inject(HttpClient);
-
-    public updateSiteRole(request: UpdateSiteRoleRequestDto): Observable<unknown> {
-        return this.http.post(this.url("usersiteroles", "actions/Update"), request);
+export class UserRolesService extends BaseService {
+    public constructor() {
+        super("/platform");
     }
 
-    public updateGameRole(request: UpdateGameRoleRequestDto): Observable<unknown> {
-        return this.http.post(this.url("usergameroles", "actions/Update"), request);
+    public updateSiteRole(request: UpdateSiteRoleRequestDto): Observable<void> {
+        return this.postVoid("usersiteroles/actions/Update", request);
     }
 
-    private url(resource: string, path: string): string {
-        return `${environment.apiUrl.replace(/\/+$/, "")}/platform/${resource}/${path}`;
+    public updateGameRole(request: UpdateGameRoleRequestDto): Observable<void> {
+        return this.postVoid("usergameroles/actions/Update", request);
     }
 }

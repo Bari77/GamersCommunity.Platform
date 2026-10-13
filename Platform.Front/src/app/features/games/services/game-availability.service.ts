@@ -8,6 +8,10 @@ interface GatewayAvailabilityDto {
     items?: { id: string; available: boolean }[];
 }
 
+/**
+ * Gateway probe outside the Platform CRUD base path — intentionally not a BaseService subclass
+ * (absolute `/gateway/availability`, not `/platform/...`).
+ */
 @Injectable({ providedIn: "root" })
 export class GameAvailabilityService {
     private readonly http = inject(HttpClient);

@@ -19,6 +19,7 @@ cd Platform.Database
 ### Front
 
 - Reusable UI → DevKit. Shell profile is **not** required to use a game workspace grid unless product says so.
+- Nebular ACL (`nebular.security.ts` / `NbSecurityModule.forRoot`) = **Platform shell resources only**. Do not register per-game `wow_*` / `lol_*` (or future game) accessControl matrices here; remotes own ranks/capabilities (AgentKit ENGINEERING_STANDARDS §5.7). Session role mapping (`toAclRoles`) may keep generic `admin_${slug}` names for shell chrome.
 
 ### Consumer bus scan
 
