@@ -14,9 +14,7 @@ export class EventsUsersInterestsStore {
             if (!loggedIn) {
                 return Promise.resolve([] as EventsUsersInterest[]);
             }
-            return firstValueFrom(
-                this.interestsService.list().pipe(catchError(() => of([] as EventsUsersInterest[]))),
-            );
+            return firstValueFrom(this.interestsService.list().pipe(catchError(() => of([] as EventsUsersInterest[]))));
         },
         defaultValue: [] as EventsUsersInterest[],
     });

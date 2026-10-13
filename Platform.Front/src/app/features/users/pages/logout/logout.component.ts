@@ -8,7 +8,7 @@ import { NbCardModule, NbSpinnerModule } from "@nebular/theme";
     selector: "app-logout",
     imports: [NbCardModule, NbAuthModule, NbSpinnerModule],
     templateUrl: "./logout.component.html",
-    styleUrls: ["./logout.component.scss"],
+    styleUrl: "./logout.component.scss",
 })
 export class LogoutComponent implements OnInit {
     public readonly usersStore = inject(UsersStore);

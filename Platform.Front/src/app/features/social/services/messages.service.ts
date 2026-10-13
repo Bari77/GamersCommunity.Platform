@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
 import { map, Observable } from "rxjs";
-import { DirectMessage, DirectMessageThread } from "../models/message.model";
+import { DirectMessage } from "../models/message.model";
+import { DirectMessageThread } from "../models/direct-message-thread.model";
 
 @Injectable({ providedIn: "root" })
 export class MessagesService extends BaseService {

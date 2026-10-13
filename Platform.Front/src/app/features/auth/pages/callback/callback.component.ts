@@ -11,7 +11,7 @@ const exchangedCodes = new Set<string>();
     standalone: true,
     imports: [NbCardModule, NbSpinnerModule],
     templateUrl: "./callback.component.html",
-    styleUrls: ["./callback.component.scss"],
+    styleUrl: "./callback.component.scss",
 })
 export class CallbackComponent implements OnInit {
     private auth = inject(NbAuthService);

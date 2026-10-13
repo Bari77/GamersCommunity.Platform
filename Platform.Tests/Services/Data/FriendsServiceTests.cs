@@ -1,60 +1,29 @@
 using GamersCommunity.Core.Rabbit;
-using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Tests;
-using Platform.Consumer.Notifications;
-using Platform.Consumer.Realtime;
 using Platform.Consumer.Services.Data;
 using Platform.Database.Context;
 using Platform.Database.Models;
 using Serilog;
 
-namespace Platform.Tests.Services.Data
+namespace Platform.Tests.Services.Data;
+
+public class FriendsServiceTests : GenericDataServiceTests<GamersCommunityDbContext, FriendsService, Friend>, IClassFixture<FakeDataset>
 {
-    public class FriendsServiceTests : GenericDataServiceTests<GamersCommunityDbContext, FriendsService, Friend>, IClassFixture<FakeDataset>
+    protected override CallerIdentity? TestCaller =>
+        new() { Subject = "11111111-1111-1111-1111-111111111111" };
+
+    protected override List<Friend> GetFakeData() => [];
+
+    protected override Friend GetNewEntity() => new()
     {
-        protected override CallerIdentity? TestCaller =>
-            new() { Subject = "11111111-1111-1111-1111-111111111111" };
+        IdFriendAsking = 1,
+        // FakeDataset already seeds 1→2; create against user 3 instead.
+        IdFriendReceive = 3,
+        IdFriendStatus = 1,
+        CreationDate = DateTime.UtcNow,
+        ModificationDate = DateTime.UtcNow,
+    };
 
-        protected override List<Friend> GetFakeData() => [];
-
-        protected override Friend GetNewEntity() => new()
-        {
-            IdFriendAsking = 1,
-            // FakeDataset already seeds 1→2; create against user 3 instead.
-            IdFriendReceive = 3,
-            IdFriendStatus = 1,
-            CreationDate = DateTime.UtcNow,
-            ModificationDate = DateTime.UtcNow,
-        };
-
-        protected override FriendsService CreateService() =>
-            new(CreateContext(), new NoopRealtimeEventPublisher(), new NoopNotificationWriter(), Log.Logger);
-    }
-
-    file sealed class NoopRealtimeEventPublisher : IRealtimeEventPublisher
-    {
-        public Task PublishAsync<T>(T payload, CancellationToken ct = default) => Task.CompletedTask;
-    }
-
-    file sealed class NoopNotificationWriter : INotificationWriter
-    {
-        public Task<Notification?> CreateAsync(
-            int idUser,
-            string kind,
-            string title,
-            string? body,
-            string? linkUrl,
-            object? payload,
-            CancellationToken ct = default) => Task.FromResult<Notification?>(null);
-
-        public Task<Notification?> UpsertUnreadAsync(
-            int idUser,
-            string kind,
-            string peerToken,
-            string title,
-            string? body,
-            string? linkUrl,
-            object payload,
-            CancellationToken ct = default) => Task.FromResult<Notification?>(null);
-    }
+    protected override FriendsService CreateService() =>
+        new(CreateContext(), new NoopRealtimeEventPublisher(), new NoopNotificationWriter(), Log.Logger);
 }

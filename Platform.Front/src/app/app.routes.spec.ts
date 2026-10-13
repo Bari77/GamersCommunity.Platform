@@ -1,8 +1,9 @@
+import { Route } from "@angular/router";
 import { gameAvailableGuard } from "@core/guards/game-available.guard";
 import { appRoutes } from "./app.routes";
 
 describe("appRoutes", () => {
-    function route(path: string) {
+    function route(path: string): Route | undefined {
         return appRoutes.find((entry) => entry.path === path);
     }
 

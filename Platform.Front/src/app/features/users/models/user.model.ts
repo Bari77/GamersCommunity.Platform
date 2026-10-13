@@ -1,13 +1,7 @@
 import { GameRoleAssignment } from "@core/security/acl-roles.util";
 import { parseUtcDate } from "@shared/utils/utc-date.util";
 import { UserDto } from "../dto/user.dto";
-
-export class ActiveMute {
-    public constructor(
-        public reason: string,
-        public endDate: Date,
-    ) {}
-}
+import { ActiveMute } from "./active-mute.model";
 
 export class User {
     public constructor(
@@ -36,9 +30,7 @@ export class User {
             dto.idKeycloak,
             dto.siteRoles ?? [],
             dto.gameRoles ?? [],
-            dto.activeMute
-                ? new ActiveMute(dto.activeMute.reason, parseUtcDate(dto.activeMute.endDate))
-                : null,
+            dto.activeMute ? new ActiveMute(dto.activeMute.reason, parseUtcDate(dto.activeMute.endDate)) : null,
         );
     }
 }

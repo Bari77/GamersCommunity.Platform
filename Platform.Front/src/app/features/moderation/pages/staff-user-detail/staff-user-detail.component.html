@@ -134,7 +134,15 @@
                                 </p>
                             </div>
                             @if (row.active && !isSelf() && (row.kind !== "ban" || permissions.canBan())) {
-                                <button type="button" nbButton size="small" ghost status="basic" (click)="revoke(row.publicId, row.kind)" i18n="@@moderation.action.lift">
+                                <button
+                                    type="button"
+                                    nbButton
+                                    size="small"
+                                    ghost
+                                    status="basic"
+                                    (click)="revoke(row.publicId, row.kind)"
+                                    i18n="@@moderation.action.lift"
+                                >
                                     Lift
                                 </button>
                             }

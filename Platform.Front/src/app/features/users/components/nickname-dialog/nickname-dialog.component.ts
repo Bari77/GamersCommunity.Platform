@@ -6,7 +6,7 @@ import { NbButtonModule, NbCardModule, NbDialogRef, NbInputModule } from "@nebul
     standalone: true,
     selector: "app-nickname-dialog",
     templateUrl: "./nickname-dialog.component.html",
-    styleUrls: ["./nickname-dialog.component.scss"],
+    styleUrl: "./nickname-dialog.component.scss",
     imports: [FormsModule, ReactiveFormsModule, NbCardModule, NbButtonModule, NbInputModule],
 })
 export class NicknameDialogComponent {

@@ -31,9 +31,15 @@
                     @for (friend of friendsStore.pendingIncoming(); track friend.publicId) {
                         <li class="friend-row">
                             @if (friend.peerAvatarUrl) {
-                                <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                <img
+                                    class="friend-row__avatar friend-row__avatar--img"
+                                    [src]="friend.peerAvatarUrl"
+                                    [alt]="friend.peerLabel"
+                                />
                             } @else {
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                <span class="friend-row__avatar" aria-hidden="true">
+                                    {{ friend.peerNickname.charAt(0) }}
+                                </span>
                             }
                             <div class="friend-row__meta">
                                 <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
@@ -108,9 +114,15 @@
                     @for (friend of friendsStore.pendingOutgoing(); track friend.publicId) {
                         <li class="friend-row">
                             @if (friend.peerAvatarUrl) {
-                                <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                <img
+                                    class="friend-row__avatar friend-row__avatar--img"
+                                    [src]="friend.peerAvatarUrl"
+                                    [alt]="friend.peerLabel"
+                                />
                             } @else {
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                <span class="friend-row__avatar" aria-hidden="true">
+                                    {{ friend.peerNickname.charAt(0) }}
+                                </span>
                             }
                             <div class="friend-row__meta">
                                 <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
@@ -166,9 +178,15 @@
                     @for (friend of friendsStore.accepted(); track friend.publicId) {
                         <li class="friend-row">
                             @if (friend.peerAvatarUrl) {
-                                <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                <img
+                                    class="friend-row__avatar friend-row__avatar--img"
+                                    [src]="friend.peerAvatarUrl"
+                                    [alt]="friend.peerLabel"
+                                />
                             } @else {
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                <span class="friend-row__avatar" aria-hidden="true">
+                                    {{ friend.peerNickname.charAt(0) }}
+                                </span>
                             }
                             <div class="friend-row__meta">
                                 <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">
@@ -243,9 +261,15 @@
                     @for (friend of friendsStore.blocked(); track friend.publicId) {
                         <li class="friend-row">
                             @if (friend.peerAvatarUrl) {
-                                <img class="friend-row__avatar friend-row__avatar--img" [src]="friend.peerAvatarUrl" [alt]="friend.peerLabel" />
+                                <img
+                                    class="friend-row__avatar friend-row__avatar--img"
+                                    [src]="friend.peerAvatarUrl"
+                                    [alt]="friend.peerLabel"
+                                />
                             } @else {
-                                <span class="friend-row__avatar" aria-hidden="true">{{ friend.peerNickname.charAt(0) }}</span>
+                                <span class="friend-row__avatar" aria-hidden="true">
+                                    {{ friend.peerNickname.charAt(0) }}
+                                </span>
                             }
                             <div class="friend-row__meta">
                                 <a class="friend-row__name" [routerLink]="['/users', friend.peerPublicId]">

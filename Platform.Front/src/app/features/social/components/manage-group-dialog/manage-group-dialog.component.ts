@@ -14,7 +14,15 @@ import { MessengerStore } from "../../stores/messenger.store";
     selector: "app-manage-group-dialog",
     templateUrl: "./manage-group-dialog.component.html",
     styleUrl: "./manage-group-dialog.component.scss",
-    imports: [FormsModule, NbCardModule, NbButtonModule, NbInputModule, NbCheckboxModule, SkeletonComponent, UserHandleComponent],
+    imports: [
+        FormsModule,
+        NbCardModule,
+        NbButtonModule,
+        NbInputModule,
+        NbCheckboxModule,
+        SkeletonComponent,
+        UserHandleComponent,
+    ],
 })
 export class ManageGroupDialogComponent {
     public readonly contactPlaceholders = [0, 1, 2, 3];

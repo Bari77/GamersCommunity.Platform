@@ -27,7 +27,9 @@ export class GameSheetsStore {
                 return Promise.resolve([] as GamePlayerSheet[]);
             }
 
-            return firstValueFrom(this.gamePlayersService.resolveCatalog(params.gameTypes, params.platformUserPublicId));
+            return firstValueFrom(
+                this.gamePlayersService.resolveCatalog(params.gameTypes, params.platformUserPublicId),
+            );
         },
         defaultValue: [] as GamePlayerSheet[],
     });

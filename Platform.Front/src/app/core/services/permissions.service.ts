@@ -1,15 +1,15 @@
-import { inject, Injectable, signal } from "@angular/core";
+import { computed, inject, Injectable, signal } from "@angular/core";
 import { toObservable } from "@angular/core/rxjs-interop";
 import { NbAclService } from "@nebular/security";
 import { GameRoleAssignment, toAclRoles } from "@core/security/acl-roles.util";
 
 @Injectable({ providedIn: "root" })
 export class PermissionsService {
+    public readonly roles = computed(() => this.$roles());
+    public readonly roles$ = toObservable(this.roles);
+
     private readonly acl = inject(NbAclService);
     private readonly $roles = signal<string[]>([]);
-
-    public readonly roles = this.$roles.asReadonly();
-    public readonly roles$ = toObservable(this.$roles);
 
     public applyFromSession(siteRoles: string[], gameRoles: GameRoleAssignment[]): void {
         this.$roles.set(toAclRoles(siteRoles, gameRoles));

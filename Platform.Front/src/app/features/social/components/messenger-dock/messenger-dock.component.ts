@@ -112,9 +112,6 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
     private lastTailPublicId: string | null = null;
     private loadingOlder = false;
     private boundScrollEl: HTMLElement | null = null;
-    private readonly handleChatScroll = (): void => {
-        this.onMessagesScroll();
-    };
 
     public constructor() {
         afterRenderEffect(() => {
@@ -212,9 +209,7 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
 
     public openSenderProfile(message: DirectMessage): void {
         const publicId =
-            message.idSender === this.usersStore.user()?.id
-                ? this.usersStore.user()?.publicId
-                : message.senderPublicId;
+            message.idSender === this.usersStore.user()?.id ? this.usersStore.user()?.publicId : message.senderPublicId;
         if (publicId) {
             this.openPeerProfile(publicId);
         }
@@ -364,6 +359,10 @@ export class MessengerDockComponent implements OnInit, OnDestroy {
         void this.router.navigate(["/users", publicId]);
         this.messengerStore.close();
     }
+
+    private readonly handleChatScroll = (): void => {
+        this.onMessagesScroll();
+    };
 
     private async tryLoadOlder(el: HTMLElement): Promise<void> {
         if (this.loadingOlder || !this.messengerStore.threadHasMore() || this.messengerStore.threadLoadingOlder()) {

@@ -9,10 +9,8 @@ import { NbButtonModule, NbDialogService, NbSelectModule, NbSpinnerModule } from
 import { SkeletonComponent } from "@bari77/gc-ui";
 import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
 import { firstValueFrom } from "rxjs";
-import {
-    SanctionDialogComponent,
-    SanctionDialogResult,
-} from "../../components/sanction-dialog/sanction-dialog.component";
+import { SanctionDialogComponent } from "../../components/sanction-dialog/sanction-dialog.component";
+import { SanctionDialogResult } from "../../components/sanction-dialog/sanction-dialog-result.model";
 import { StaffUserDetailStore } from "../../stores/staff-user-detail.store";
 
 @Component({
@@ -39,11 +37,10 @@ export class StaffUserDetailComponent {
     public readonly permissions = inject(PermissionsService);
     public readonly usersStore = inject(UsersStore);
     public readonly gamesStore = inject(GamesStore);
-    private readonly dialogs = inject(NbDialogService);
 
-    public readonly games = computed(() =>
-        (this.gamesStore.gameTypes.value() ?? []).flatMap((type) => type.games),
-    );
+    public readonly games = computed(() => (this.gamesStore.gameTypes.value() ?? []).flatMap((type) => type.games));
+
+    private readonly dialogs = inject(NbDialogService);
 
     public constructor() {
         effect(() => {

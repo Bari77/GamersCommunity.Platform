@@ -6,11 +6,7 @@ export class PromiseUtils {
      * Attend que le getter retourne false (polling).
      * Utile pour attendre la fin d'un chargement (ex. resource.isLoading() === false).
      */
-    public static waitUntilFalse(
-        getter: () => boolean,
-        intervalMs: number = 50,
-        timeoutMs?: number,
-    ): Promise<void> {
+    public static waitUntilFalse(getter: () => boolean, intervalMs: number = 50, timeoutMs?: number): Promise<void> {
         return new Promise((resolve, reject) => {
             const start = Date.now();
 

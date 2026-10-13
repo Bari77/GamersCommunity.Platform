@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
 import { Observable } from "rxjs";
-import { UpdateGameRoleRequestDto, UpdateSiteRoleRequestDto } from "../dto/staff-user.dto";
+import { UpdateSiteRoleRequestDto } from "../dto/update-site-role-request.dto";
+import { UpdateGameRoleRequestDto } from "../dto/update-game-role-request.dto";
 
 @Injectable({ providedIn: "root" })
 export class UserRolesService extends BaseService {

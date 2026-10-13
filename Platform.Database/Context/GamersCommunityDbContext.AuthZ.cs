@@ -1,5 +1,5 @@
-using Platform.Database.Models;
 using Microsoft.EntityFrameworkCore;
+using Platform.Database.Models;
 
 namespace Platform.Database.Context;
 

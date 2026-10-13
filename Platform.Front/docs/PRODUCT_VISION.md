@@ -10,19 +10,19 @@ Game remotes own their hub, player sheet, organisations, LFG, moderated org wall
 
 ## Content
 
-| Content | Owner |
-|---------|-------|
-| Profile wall posts | Platform |
-| Notifications | Platform |
-| Site events + RSVP | Platform |
+| Content                   | Owner       |
+| ------------------------- | ----------- |
+| Profile wall posts        | Platform    |
+| Notifications             | Platform    |
+| Site events + RSVP        | Platform    |
 | Hub / org posts + LFG ads | Game remote |
-| In-game events + signup | Game remote |
+| In-game events + signup   | Game remote |
 
 ## Specs
 
-| Spec | Focus |
-|------|--------|
-| Home and social | Energy theme, media home, friends, DMs, site events |
+| Spec                | Focus                                                    |
+| ------------------- | -------------------------------------------------------- |
+| Home and social     | Energy theme, media home, friends, DMs, site events      |
 | Staff and sanctions | Site AuthZ, staff moderation, mute / ban, reports, ranks |
 
 ## Display vs technical keys

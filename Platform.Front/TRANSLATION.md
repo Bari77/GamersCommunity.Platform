@@ -46,21 +46,21 @@ Until French is ready, develop and run against the **source locale** (`en-US`). 
 
 Reference / catalog rows store **lowercase snake_case** codes (`Entitled`, `Title`, `Code`, `Name`, …) so the front can build i18n IDs:
 
-| Domain | Pattern | Example seed value | Full key |
-| --- | --- | --- | --- |
-| Shell game title | `games.` + title | `world_of_warcraft` | `games.world_of_warcraft` |
-| Friend status | `friends.status.` + entitled | `pending` | `friends.status.pending` |
-| WoW class (remote) | `wow.class.` + entitled | `demon_hunter` | `wow.class.demon_hunter` |
+| Domain             | Pattern                      | Example seed value  | Full key                  |
+| ------------------ | ---------------------------- | ------------------- | ------------------------- |
+| Shell game title   | `games.` + title             | `world_of_warcraft` | `games.world_of_warcraft` |
+| Friend status      | `friends.status.` + entitled | `pending`           | `friends.status.pending`  |
+| WoW class (remote) | `wow.class.` + entitled      | `demon_hunter`      | `wow.class.demon_hunter`  |
 
 Use `$localize` with a computed message ID only when the ID is known at build time; for truly dynamic catalogs, prefer a small map of `$localize` entries or a dedicated translation helper keyed by seed code. Never rely on uppercase DB codes.
 
 ## Key naming
 
-| Type | Pattern | Example |
-| --- | --- | --- |
-| Feature / page | `feature.section.key` | `users.login.title` |
-| Layout | `core.header.*` | `core.header.games` |
-| Errors | `error.*` | `error.httpCode.notFound` |
+| Type           | Pattern               | Example                   |
+| -------------- | --------------------- | ------------------------- |
+| Feature / page | `feature.section.key` | `users.login.title`       |
+| Layout         | `core.header.*`       | `core.header.games`       |
+| Errors         | `error.*`             | `error.httpCode.notFound` |
 
 ## Folder layout
 
@@ -85,9 +85,9 @@ src/locale/
 
 ## Summary
 
-| Step | Action |
-| --- | --- |
-| Write UI copy | English only in source |
-| Mark strings | `i18n="@@…"` / `$localize` |
-| Extract | `npm run i18n` → `source.json` |
-| Translate later | Edit `source.fr.json` (etc.) |
+| Step            | Action                         |
+| --------------- | ------------------------------ |
+| Write UI copy   | English only in source         |
+| Mark strings    | `i18n="@@…"` / `$localize`     |
+| Extract         | `npm run i18n` → `source.json` |
+| Translate later | Edit `source.fr.json` (etc.)   |

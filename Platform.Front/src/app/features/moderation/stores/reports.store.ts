@@ -1,21 +1,21 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { firstValueFrom } from "rxjs";
-import { ModerationReport } from "../models/staff-user.model";
+import { ModerationReport } from "../models/moderation-report.model";
 import { ReportsService } from "../services/reports.service";
 
 @Injectable()
 export class ReportsStore {
+    public readonly rows = computed(() => this.$rows());
+    public readonly loading = computed(() => this.$loading());
+    public readonly busy = computed(() => this.$busy());
+    public readonly status = computed(() => this.$status());
+
     private readonly service = inject(ReportsService);
 
     private readonly $rows = signal<ModerationReport[]>([]);
     private readonly $loading = signal(false);
     private readonly $busy = signal(false);
     private readonly $status = signal("open");
-
-    public readonly rows = computed(() => this.$rows());
-    public readonly loading = computed(() => this.$loading());
-    public readonly busy = computed(() => this.$busy());
-    public readonly status = computed(() => this.$status());
 
     public setStatus(value: string): void {
         this.$status.set(value);

@@ -11,7 +11,6 @@ using Platform.Consumer.Realtime;
 using Platform.Consumer.Security;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Serilog;
 using ILogger = Serilog.ILogger;
 
 namespace Platform.Consumer.Services.Data;
@@ -50,10 +49,10 @@ public class ConversationsService(
                 await EnsureCallerNotBannedAsync(message, ct);
                 return JsonSafe.Serialize(await AddMembersAsync(message, ct));
             case "REMOVEMEMBERS":
-            {
-                var remaining = await RemoveMembersAsync(message, ct);
-                return remaining is null ? "null" : JsonSafe.Serialize(remaining);
-            }
+                {
+                    var remaining = await RemoveMembersAsync(message, ct);
+                    return remaining is null ? "null" : JsonSafe.Serialize(remaining);
+                }
             case "DELETE":
                 await DeleteMineAsync(message, ct);
                 return JsonSafe.Serialize(true);

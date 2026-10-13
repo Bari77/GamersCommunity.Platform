@@ -10,17 +10,17 @@ import { SplashComponent } from "../splash/splash.component";
     selector: "app-offline",
     imports: [SplashComponent],
     templateUrl: "./offline.component.html",
-    styleUrls: ["./offline.component.scss"],
+    styleUrl: "./offline.component.scss",
 })
 export class OfflineComponent {
     public readonly refreshInterval = 10;
-    public message = computed(() =>
+    public readonly message = computed(() =>
         this.paused()
             ? $localize`:@@core.layout.offline.checking:Checking connection...`
             : $localize`:@@core.layout.offline.message:Site offline — auto refresh in ${this.countdown()}s`,
     );
-    public countdown = signal<number>(this.refreshInterval);
-    private paused = signal<boolean>(false);
+    public readonly countdown = signal<number>(this.refreshInterval);
+    private readonly paused = signal<boolean>(false);
     private healthService = inject(HealthService);
     private router = inject(Router);
 

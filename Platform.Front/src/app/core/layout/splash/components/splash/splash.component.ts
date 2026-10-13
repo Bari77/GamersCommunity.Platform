@@ -6,9 +6,9 @@ import { NbIconModule, NbSpinnerModule } from "@nebular/theme";
     selector: "app-splash",
     imports: [NbSpinnerModule, NbIconModule],
     templateUrl: "./splash.component.html",
-    styleUrls: ["./splash.component.scss"],
+    styleUrl: "./splash.component.scss",
 })
 export class SplashComponent {
-    public type = input<"base" | "warning" | "error">("base");
-    public message = input<string>("");
+    public readonly type = input<"base" | "warning" | "error">("base");
+    public readonly message = input<string>("");
 }

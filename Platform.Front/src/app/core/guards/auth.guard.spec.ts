@@ -1,7 +1,7 @@
 import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { NbAuthService } from "@nebular/auth";
-import { firstValueFrom, of } from "rxjs";
+import { firstValueFrom, of, Observable } from "rxjs";
 import { AuthGuard } from "./auth.guard";
 
 describe("AuthGuard", () => {
@@ -13,7 +13,7 @@ describe("AuthGuard", () => {
         TestBed.configureTestingModule({
             providers: [
                 AuthGuard,
-                { provide: NbAuthService, useValue: { isAuthenticated: () => of(false) } },
+                { provide: NbAuthService, useValue: { isAuthenticated: (): Observable<boolean> => of(false) } },
                 { provide: Router, useValue: { navigate } },
             ],
         });
@@ -30,7 +30,7 @@ describe("AuthGuard", () => {
         TestBed.configureTestingModule({
             providers: [
                 AuthGuard,
-                { provide: NbAuthService, useValue: { isAuthenticated: () => of(true) } },
+                { provide: NbAuthService, useValue: { isAuthenticated: (): Observable<boolean> => of(true) } },
                 { provide: Router, useValue: { navigate } },
             ],
         });

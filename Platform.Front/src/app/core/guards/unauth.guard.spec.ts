@@ -2,7 +2,7 @@ import { TestBed } from "@angular/core/testing";
 import { Router } from "@angular/router";
 import { UsersStore } from "@features/users/stores/users.store";
 import { NbAuthService } from "@nebular/auth";
-import { firstValueFrom, of } from "rxjs";
+import { firstValueFrom, of, Observable } from "rxjs";
 import { UnauthGuard } from "./unauth.guard";
 
 describe("UnauthGuard", () => {
@@ -22,11 +22,11 @@ describe("UnauthGuard", () => {
                 {
                     provide: NbAuthService,
                     useValue: {
-                        isAuthenticated: () => of(authenticated),
+                        isAuthenticated: (): Observable<boolean> => of(authenticated),
                         logout,
                     },
                 },
-                { provide: UsersStore, useValue: { isLoggedIn: () => loggedIn } },
+                { provide: UsersStore, useValue: { isLoggedIn: (): boolean => loggedIn } },
                 { provide: Router, useValue: { navigate } },
             ],
         });

@@ -8,7 +8,7 @@ import { UsersStore } from "../../stores/users.store";
     selector: "app-login",
     imports: [NbLayoutModule, NbCardModule, NbButtonModule, NbIconModule, NbAlertModule, NbAuthModule],
     templateUrl: "./login.component.html",
-    styleUrls: ["./login.component.scss"],
+    styleUrl: "./login.component.scss",
 })
 export class LoginComponent {
     public readonly usersStore = inject(UsersStore);

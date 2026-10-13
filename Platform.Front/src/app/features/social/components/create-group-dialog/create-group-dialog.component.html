@@ -31,19 +31,28 @@
                             [class.is-selected]="isSelected(contact)"
                             (click)="toggle(contact)"
                         >
-                            <nb-checkbox status="control" [checked]="isSelected(contact)"></nb-checkbox>
+                            <nb-checkbox status="control" [checked]="isSelected(contact)" />
                             @if (contact.peerAvatarUrl) {
-                                <img class="create-group__avatar" [src]="contact.peerAvatarUrl" [alt]="contact.peerNickname" />
+                                <img
+                                    class="create-group__avatar"
+                                    [src]="contact.peerAvatarUrl"
+                                    [alt]="contact.peerNickname"
+                                />
                             } @else {
-                                <span class="create-group__avatar create-group__avatar--fallback">{{
-                                    contact.peerNickname.charAt(0)
-                                }}</span>
+                                <span class="create-group__avatar create-group__avatar--fallback">
+                                    {{ contact.peerNickname.charAt(0) }}
+                                </span>
                             }
-                            <app-user-handle [nickname]="contact.peerNickname" [discriminator]="contact.peerDiscriminator" />
+                            <app-user-handle
+                                [nickname]="contact.peerNickname"
+                                [discriminator]="contact.peerDiscriminator"
+                            />
                         </button>
                     </li>
                 } @empty {
-                    <li class="create-group__empty" i18n="@@social.messenger.createGroup.empty">No matching contacts.</li>
+                    <li class="create-group__empty" i18n="@@social.messenger.createGroup.empty">
+                        No matching contacts.
+                    </li>
                 }
             }
         </ul>
@@ -86,16 +95,17 @@
         }
     </nb-card-body>
     <nb-card-footer>
-        <button type="button" nbButton ghost status="basic" (click)="cancel()" i18n="@@social.messenger.createGroup.cancel">
-            Cancel
-        </button>
         <button
             type="button"
             nbButton
-            status="primary"
-            [disabled]="!canSubmit()"
-            (click)="submit()"
+            ghost
+            status="basic"
+            (click)="cancel()"
+            i18n="@@social.messenger.createGroup.cancel"
         >
+            Cancel
+        </button>
+        <button type="button" nbButton status="primary" [disabled]="!canSubmit()" (click)="submit()">
             @if (isGroup()) {
                 <span i18n="@@social.messenger.createGroup.submitGroup">Create group</span>
             } @else {

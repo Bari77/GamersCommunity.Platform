@@ -5,13 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Platform.Consumer.Configuration;
-using Platform.Consumer.Integration;
 using Platform.Consumer.Models;
 using Platform.Consumer.Security;
 using Platform.Consumer.Services.Data;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Xunit;
 
 namespace Platform.Tests.Services.Data;
 
@@ -139,9 +137,4 @@ public class UsersAuthZTests : IClassFixture<FakeDataset>
         Data = JsonConvert.SerializeObject(new { IdKeycloak = keycloak, Nickname = nickname }),
         Caller = new CallerIdentity { Subject = keycloak.ToString("D") },
     };
-}
-
-file sealed class NoopUserIdentityPublisher : IUserIdentityPublisher
-{
-    public Task PublishAsync(User user, CancellationToken ct = default) => Task.CompletedTask;
 }

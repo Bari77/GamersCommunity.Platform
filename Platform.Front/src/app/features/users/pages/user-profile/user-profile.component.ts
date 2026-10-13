@@ -1,10 +1,8 @@
 import { DatePipe } from "@angular/common";
 import { Component, computed, effect, inject, input, resource } from "@angular/core";
 import { RouterLink } from "@angular/router";
-import {
-    ReportDialogComponent,
-    ReportDialogResult,
-} from "@features/moderation/components/report-dialog/report-dialog.component";
+import { ReportDialogComponent } from "@features/moderation/components/report-dialog/report-dialog.component";
+import { ReportDialogResult } from "@features/moderation/components/report-dialog/report-dialog-result.model";
 import { ReportsService } from "@features/moderation/services/reports.service";
 import { Game } from "@features/games/models/game.model";
 import { GamePlayerSheet } from "@features/games/models/game-player-sheet.model";

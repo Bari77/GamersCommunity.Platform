@@ -61,26 +61,26 @@ Reuse `Banned` (`BeginDate`, `EndDate`, `Entitled`, `IdModo`, `IdUserBan`). Add:
 
 ## Site permission matrix
 
-| Action | Site moderator | Site admin |
-|--------|----------------|------------|
-| Access `/moderation` | yes | yes |
-| Paginated user list + filters | yes | yes |
-| Handle a report | yes | yes |
-| Mute + lift mute | yes | yes |
-| Ban / unban | no | yes |
-| Promote / demote site roles | no | yes |
-| Per-game roles | no | yes |
+| Action                        | Site moderator | Site admin |
+| ----------------------------- | -------------- | ---------- |
+| Access `/moderation`          | yes            | yes        |
+| Paginated user list + filters | yes            | yes        |
+| Handle a report               | yes            | yes        |
+| Mute + lift mute              | yes            | yes        |
+| Ban / unban                   | no             | yes        |
+| Promote / demote site roles   | no             | yes        |
+| Per-game roles                | no             | yes        |
 
 ## Gateway resources
 
 Staff checks run in the Consumer (Gateway has no role notion today): Private + `RequireSiteRole`.
 
-| Resource | Public | Private (auth) | Staff |
-|----------|--------|----------------|-------|
-| Users | Load, Search, Get | Update, Touch | StaffList |
-| Reports | — | Create | List, Update |
-| Sanctions (`Banned`) | — | — | List, Create, Update (revoke) |
-| UserSiteRoles / UserGameRoles | — | — | Update (admin) |
+| Resource                      | Public            | Private (auth) | Staff                         |
+| ----------------------------- | ----------------- | -------------- | ----------------------------- |
+| Users                         | Load, Search, Get | Update, Touch  | StaffList                     |
+| Reports                       | —                 | Create         | List, Update                  |
+| Sanctions (`Banned`)          | —                 | —              | List, Create, Update (revoke) |
+| UserSiteRoles / UserGameRoles | —                 | —              | Update (admin)                |
 
 ## Out of scope
 

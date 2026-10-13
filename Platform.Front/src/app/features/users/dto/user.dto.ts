@@ -1,12 +1,5 @@
-export interface GameRoleAssignmentDto {
-    gameUrlValue: string;
-    code: string;
-}
-
-export interface ActiveMuteDto {
-    reason: string;
-    endDate: string;
-}
+import { GameRoleAssignmentDto } from "./game-role-assignment.dto";
+import { ActiveMuteDto } from "./active-mute.dto";
 
 export interface UserDto {
     id: number;

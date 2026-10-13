@@ -1,6 +1,6 @@
-using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Rabbit;
+using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Serialization;
 using GamersCommunity.Core.Services;
 using Microsoft.EntityFrameworkCore;

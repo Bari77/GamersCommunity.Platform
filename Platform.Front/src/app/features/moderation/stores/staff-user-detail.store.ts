@@ -1,12 +1,16 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { firstValueFrom } from "rxjs";
-import { StaffUserDetail } from "../models/staff-user.model";
+import { StaffUserDetail } from "../models/staff-user-detail.model";
 import { SanctionsService } from "../services/sanctions.service";
 import { StaffUsersService } from "../services/staff-users.service";
 import { UserRolesService } from "../services/user-roles.service";
 
 @Injectable()
 export class StaffUserDetailStore {
+    public readonly detail = computed(() => this.$detail());
+    public readonly loading = computed(() => this.$loading());
+    public readonly busy = computed(() => this.$busy());
+
     private readonly users = inject(StaffUsersService);
     private readonly sanctions = inject(SanctionsService);
     private readonly roles = inject(UserRolesService);
@@ -14,10 +18,6 @@ export class StaffUserDetailStore {
     private readonly $detail = signal<StaffUserDetail | null>(null);
     private readonly $loading = signal(false);
     private readonly $busy = signal(false);
-
-    public readonly detail = computed(() => this.$detail());
-    public readonly loading = computed(() => this.$loading());
-    public readonly busy = computed(() => this.$busy());
 
     public async load(publicId: string): Promise<void> {
         this.$loading.set(true);
@@ -71,9 +71,7 @@ export class StaffUserDetailStore {
         }
         this.$busy.set(true);
         try {
-            await firstValueFrom(
-                this.roles.updateGameRole({ targetPublicId: user.publicId, gameUrlValue, code }),
-            );
+            await firstValueFrom(this.roles.updateGameRole({ targetPublicId: user.publicId, gameUrlValue, code }));
             await this.load(user.publicId);
         } finally {
             this.$busy.set(false);

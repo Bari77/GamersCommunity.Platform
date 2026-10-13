@@ -64,19 +64,17 @@ export class AuthTokenService {
     private sharedRefresh(token: NbAuthOAuth2JWTToken): Observable<boolean> {
         const refreshValue = token.getRefreshToken();
 
-        this.refresh ??= this.authService
-            .refreshToken(token.getOwnerStrategyName(), token)
-            .pipe(
-                map((result) => {
-                    if (!result.isSuccess()) {
-                        this.rememberRejection(refreshValue, result.getResponse());
-                    }
-                    return result.isSuccess();
-                }),
-                catchError(() => of(false)),
-                finalize(() => (this.refresh = null)),
-                shareReplay({ bufferSize: 1, refCount: false }),
-            );
+        this.refresh ??= this.authService.refreshToken(token.getOwnerStrategyName(), token).pipe(
+            map((result) => {
+                if (!result.isSuccess()) {
+                    this.rememberRejection(refreshValue, result.getResponse());
+                }
+                return result.isSuccess();
+            }),
+            catchError(() => of(false)),
+            finalize(() => (this.refresh = null)),
+            shareReplay({ bufferSize: 1, refCount: false }),
+        );
 
         return this.refresh;
     }

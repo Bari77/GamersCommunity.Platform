@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
 import { Observable } from "rxjs";
-import { StaffListRequestDto } from "../dto/staff-user.dto";
-import { StaffUser, StaffUserDetail } from "../models/staff-user.model";
+import { StaffListRequestDto } from "../dto/staff-list-request.dto";
+import { StaffUser } from "../models/staff-user.model";
+import { StaffUserDetail } from "../models/staff-user-detail.model";
 
 @Injectable({ providedIn: "root" })
 export class StaffUsersService extends BaseService {

@@ -12,7 +12,7 @@
 
         @if (kind === "ban") {
             <label class="field-check">
-                <nb-checkbox formControlName="permanent"></nb-checkbox>
+                <nb-checkbox formControlName="permanent" />
                 <span i18n="@@moderation.sanction.permanent">Permanent</span>
             </label>
         }
@@ -29,7 +29,14 @@
     </nb-card-body>
     <nb-card-footer>
         <button type="button" nbButton ghost (click)="cancel()" i18n="@@moderation.action.cancel">Cancel</button>
-        <button type="button" nbButton status="danger" (click)="submit()" [disabled]="form.invalid" i18n="@@moderation.action.confirm">
+        <button
+            type="button"
+            nbButton
+            status="danger"
+            (click)="submit()"
+            [disabled]="form.invalid"
+            i18n="@@moderation.action.confirm"
+        >
             Confirm
         </button>
     </nb-card-footer>

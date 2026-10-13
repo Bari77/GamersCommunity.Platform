@@ -13,8 +13,8 @@ The goal is to ensure a **clean, maintainable, and consistent codebase** for all
 | ---------------- | ------------------------------------ | ------------------------------------------------------------ |
 | Framework        | **Angular 21**                       | Using _standalone components_                                |
 | Micro-frontends  | **Native Federation**                | Shell orchestrates game remotes at runtime                   |
-| State management | **Signals API** + `resource()`     | Native Angular signal-based stores                           |
-| Routing          | **Standalone Routes** + resolvers    | `loadChildren`, `loadRemoteModule`, `resolve: { load }`    |
+| State management | **Signals API** + `resource()`       | Native Angular signal-based stores                           |
+| Routing          | **Standalone Routes** + resolvers    | `loadChildren`, `loadRemoteModule`, `resolve: { load }`      |
 | Styling          | **SCSS**                             | Per component                                                |
 | HTTP & Services  | **Angular HttpClient**               | + global interceptors                                        |
 | UI               | **Nebular 17**                       | Theme, Auth, Security                                        |
@@ -194,26 +194,26 @@ Shell routes wrap main content with `gamesResolver` to preload the games menu.
 
 ## 📦 Naming Conventions
 
-| Type        | File Naming                    | Example                     | Associated Class       |
-| ----------- | ------------------------------ | --------------------------- | ---------------------- |
-| Component   | `xxx.component.ts`             | `user-profile.component.ts` | `UserProfileComponent` |
-| Service     | `xxx.service.ts`               | `classes.service.ts`        | `ClassesService`       |
-| Store       | `xxx.store.ts`                 | `classes.store.ts`          | `ClassesStore`         |
-| Resolver    | `xxx.resolver.ts`              | `home.resolver.ts`          | `homeResolver`         |
-| Model / Dto | `xxx.model.ts` / `xxx.dto.ts`  | `class.model.ts`            | `WowClass`             |
-| Routes      | `xxx.routes.ts`                | `world-of-warcraft.routes.ts` | `worldOfWarcraftRoutes` |
+| Type        | File Naming                   | Example                       | Associated Class        |
+| ----------- | ----------------------------- | ----------------------------- | ----------------------- |
+| Component   | `xxx.component.ts`            | `user-profile.component.ts`   | `UserProfileComponent`  |
+| Service     | `xxx.service.ts`              | `classes.service.ts`          | `ClassesService`        |
+| Store       | `xxx.store.ts`                | `classes.store.ts`            | `ClassesStore`          |
+| Resolver    | `xxx.resolver.ts`             | `home.resolver.ts`            | `homeResolver`          |
+| Model / Dto | `xxx.model.ts` / `xxx.dto.ts` | `class.model.ts`              | `WowClass`              |
+| Routes      | `xxx.routes.ts`               | `world-of-warcraft.routes.ts` | `worldOfWarcraftRoutes` |
 
 ---
 
 ## 🔥 Summary
 
-| Principle            | Best Practice                                           |
-| -------------------- | ------------------------------------------------------- |
-| **Architecture**     | Shell + Native Federation remotes per game              |
-| **State**            | Signal stores with `resource()`, services for HTTP      |
-| **Routing**          | Resolvers `resolve: { load }` + lazy / remote loading   |
-| **Components**       | 100% standalone; pages inject stores directly           |
-| **Shared layer**     | BaseService, PromiseUtils, LoadingStore                 |
+| Principle        | Best Practice                                         |
+| ---------------- | ----------------------------------------------------- |
+| **Architecture** | Shell + Native Federation remotes per game            |
+| **State**        | Signal stores with `resource()`, services for HTTP    |
+| **Routing**      | Resolvers `resolve: { load }` + lazy / remote loading |
+| **Components**   | 100% standalone; pages inject stores directly         |
+| **Shared layer** | BaseService, PromiseUtils, LoadingStore               |
 
 ---
 

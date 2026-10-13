@@ -46,14 +46,14 @@ Theme and home foundation; friends / DMs / events pages wired once routes are op
 
 Open on microservice `platform`:
 
-| Resource | Public actions | Private actions |
-|----------|----------------|-----------------|
-| Events | List, Get | Create, Update, Delete |
-| Friends | — | List, Get, Create, Update |
-| Messages | — | List, Get, Create |
-| EventsUsersInterests | — | List, Get, Create, Update |
-| Posts | List (author wall) | Create, Update, Delete |
-| Notifications | — | List, Update (mark read) |
+| Resource             | Public actions     | Private actions           |
+| -------------------- | ------------------ | ------------------------- |
+| Events               | List, Get          | Create, Update, Delete    |
+| Friends              | —                  | List, Get, Create, Update |
+| Messages             | —                  | List, Get, Create         |
+| EventsUsersInterests | —                  | List, Get, Create, Update |
+| Posts                | List (author wall) | Create, Update, Delete    |
+| Notifications        | —                  | List, Update (mark read)  |
 
 ## Out of scope
 

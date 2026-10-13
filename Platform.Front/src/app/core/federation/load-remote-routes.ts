@@ -3,11 +3,7 @@ import { inject } from "@angular/core";
 import { Router, Routes } from "@angular/router";
 import { NbToastrService } from "@nebular/theme";
 
-export async function loadRemoteRoutes(
-    remoteName: string,
-    exposedModule: string,
-    exportName: string,
-): Promise<Routes> {
+export async function loadRemoteRoutes(remoteName: string, exposedModule: string, exportName: string): Promise<Routes> {
     const toastr = inject(NbToastrService);
     const router = inject(Router);
 

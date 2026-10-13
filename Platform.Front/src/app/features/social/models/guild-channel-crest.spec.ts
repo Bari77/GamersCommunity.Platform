@@ -1,8 +1,7 @@
 import { parseGuildChannelCrest } from "./guild-channel-crest";
 
 describe("parseGuildChannelCrest", () => {
-    const valid =
-        "wow-crest:v1|https://assets.example.test|Alliance|12|#aabbcc|3|#112233|#445566";
+    const valid = "wow-crest:v1|https://assets.example.test|Alliance|12|#aabbcc|3|#112233|#445566";
 
     it("returns null for unrelated picture URLs", () => {
         expect(parseGuildChannelCrest("https://cdn.example/crest.png")).toBeNull();

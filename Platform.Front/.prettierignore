@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.angular/
+coverage/
+.gc-workspace/
+package-lock.json
+src/locale/
+*.svg

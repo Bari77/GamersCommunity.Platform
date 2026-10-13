@@ -1,9 +1,8 @@
-namespace Platform.Consumer.Models
-{
-    public class UpdateUserRequest
-    {
-        public int? AvatarId { get; set; }
+namespace Platform.Consumer.Models;
 
-        public string? Nickname { get; set; }
-    }
+public class UpdateUserRequest
+{
+    public int? AvatarId { get; set; }
+
+    public string? Nickname { get; set; }
 }

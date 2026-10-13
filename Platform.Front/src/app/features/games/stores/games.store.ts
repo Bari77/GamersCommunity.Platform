@@ -4,10 +4,10 @@ import { Game } from "@features/games/models/game.model";
 import { ResourceUtils } from "@shared/utils/resource.utils";
 import { environment } from "environments/environment";
 import { firstValueFrom, interval, map, zip } from "rxjs";
-import { GameMenuGroup } from "../models/game-menu.model";
-import { GameType } from "../models/gameType.model";
+import { GameMenuGroup } from "../models/game-menu-group.model";
+import { GameType } from "../models/game-type.model";
 import { GameAvailabilityService } from "../services/game-availability.service";
-import { GameTypesService } from "../services/gameTypes.service";
+import { GameTypesService } from "../services/game-types.service";
 import { GamesService } from "../services/games.service";
 
 @Injectable({ providedIn: "root" })

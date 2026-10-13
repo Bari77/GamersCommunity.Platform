@@ -3,10 +3,7 @@ import { inject, Injectable } from "@angular/core";
 import { environment } from "environments/environment";
 import { catchError, map, Observable, of } from "rxjs";
 import { toGameApiSegment } from "../utils/game-url.util";
-
-interface GatewayAvailabilityDto {
-    items?: { id: string; available: boolean }[];
-}
+import { GatewayAvailabilityDto } from "../dto/gateway-availability.dto";
 
 /**
  * Gateway probe outside the Platform CRUD base path — intentionally not a BaseService subclass
@@ -15,6 +12,11 @@ interface GatewayAvailabilityDto {
 @Injectable({ providedIn: "root" })
 export class GameAvailabilityService {
     private readonly http = inject(HttpClient);
+
+    public static isAvailable(statuses: Map<string, boolean>, urlValue: string): boolean {
+        const status = statuses.get(toGameApiSegment(urlValue).toLowerCase());
+        return status !== false;
+    }
 
     public list(): Observable<Map<string, boolean>> {
         return this.http.get<GatewayAvailabilityDto>(`${environment.apiUrl}/gateway/availability`).pipe(
@@ -27,10 +29,5 @@ export class GameAvailabilityService {
             }),
             catchError(() => of(new Map<string, boolean>())),
         );
-    }
-
-    public static isAvailable(statuses: Map<string, boolean>, urlValue: string): boolean {
-        const status = statuses.get(toGameApiSegment(urlValue).toLowerCase());
-        return status !== false;
     }
 }

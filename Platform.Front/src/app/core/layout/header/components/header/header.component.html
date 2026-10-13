@@ -16,7 +16,7 @@
             i18n-nbTooltip="@@core.header.search"
             nbTooltipPlacement="bottom"
             type="modal-zoomin"
-        ></nb-search>
+        />
         <button
             #gamesPopover="nbPopover"
             [nbPopover]="gamesMenuTemplate"
@@ -75,7 +75,7 @@
             </div>
             <gc-skeleton width="3.75rem" height="3.75rem" shape="circle" />
         } @else if (usersStore.isLoggedIn()) {
-            <app-notification-bell></app-notification-bell>
+            <app-notification-bell />
             <div
                 [nbTooltip]="copied() ? 'Copied' : 'Copy'"
                 [nbTooltipStatus]="copied() ? 'success' : 'control'"
@@ -96,7 +96,7 @@
                 [nbContextMenu]="usersStore.menuItems()!"
                 nbContextMenuTag="header-user"
                 nbContextMenuTrigger="hover"
-            ></app-avatar>
+            />
         } @else {
             <button
                 type="button"
@@ -105,12 +105,7 @@
                 nbButton
                 ghost
             >
-                <nb-icon
-                    icon="power-outline"
-                    pack="eva"
-                    i18n-aria-label="@@core.header.login"
-                    aria-label="Login"
-                ></nb-icon>
+                <nb-icon icon="power-outline" pack="eva" i18n-aria-label="@@core.header.login" aria-label="Login" />
             </button>
         }
     </div>

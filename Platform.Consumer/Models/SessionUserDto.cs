@@ -14,15 +14,3 @@ public sealed class SessionUserDto
     public IReadOnlyList<GameRoleAssignmentDto> GameRoles { get; init; } = [];
     public ActiveMuteDto? ActiveMute { get; init; }
 }
-
-public sealed class GameRoleAssignmentDto
-{
-    public string GameUrlValue { get; init; } = "";
-    public string Code { get; init; } = "";
-}
-
-public sealed class ActiveMuteDto
-{
-    public string Reason { get; init; } = "";
-    public DateTime EndDate { get; init; }
-}

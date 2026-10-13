@@ -1,4 +1,3 @@
-using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Enums;
 using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Rabbit;
@@ -6,7 +5,6 @@ using GamersCommunity.Core.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Platform.Consumer.Configuration;
-using Platform.Consumer.Realtime;
 using Platform.Consumer.Security;
 using Platform.Consumer.Services.Data;
 using Platform.Database.Context;
@@ -219,9 +217,4 @@ public class ConversationsServiceTests : IClassFixture<FakeDataset>
         public string? PictureUrl { get; set; }
         public bool MembershipLocked { get; set; }
     }
-}
-
-file sealed class NoopRealtimeEventPublisher : IRealtimeEventPublisher
-{
-    public Task PublishAsync<T>(T payload, CancellationToken ct = default) => Task.CompletedTask;
 }

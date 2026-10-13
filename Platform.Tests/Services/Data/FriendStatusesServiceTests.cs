@@ -3,19 +3,18 @@ using Platform.Consumer.Services.Data;
 using Platform.Database.Context;
 using Platform.Database.Models;
 
-namespace Platform.Tests.Services.Data
+namespace Platform.Tests.Services.Data;
+
+public class FriendStatusesServiceTests : GenericDataServiceTests<GamersCommunityDbContext, FriendStatusesService, FriendStatus>, IClassFixture<FakeDataset>
 {
-    public class FriendStatusesServiceTests : GenericDataServiceTests<GamersCommunityDbContext, FriendStatusesService, FriendStatus>, IClassFixture<FakeDataset>
+    protected override List<FriendStatus> GetFakeData() => [];
+
+    protected override FriendStatus GetNewEntity() => new()
     {
-        protected override List<FriendStatus> GetFakeData() => [];
+        Entitled = "New friend status",
+        CreationDate = DateTime.UtcNow,
+        ModificationDate = DateTime.UtcNow,
+    };
 
-        protected override FriendStatus GetNewEntity() => new()
-        {
-            Entitled = "New friend status",
-            CreationDate = DateTime.UtcNow,
-            ModificationDate = DateTime.UtcNow,
-        };
-
-        protected override FriendStatusesService CreateService() => new(CreateContext());
-    }
+    protected override FriendStatusesService CreateService() => new(CreateContext());
 }

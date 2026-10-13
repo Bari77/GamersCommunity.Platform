@@ -27,11 +27,12 @@ import { StaffUsersStore } from "../../stores/staff-users.store";
 export class StaffUsersComponent {
     public readonly rowPlaceholders = [0, 1, 2, 3, 4];
     public readonly store = inject(StaffUsersStore);
-    private readonly router = inject(Router);
 
     public query = this.store.query();
     public siteRole = this.store.siteRole();
     public sanction = this.store.sanction();
+
+    private readonly router = inject(Router);
 
     private queryTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -57,14 +58,14 @@ export class StaffUsersComponent {
         void this.applyFilters();
     }
 
+    public open(publicId: string): void {
+        void this.router.navigate(["/moderation/users", publicId]);
+    }
+
     private async applyFilters(): Promise<void> {
         this.store.setQuery(this.query);
         this.store.setSiteRole(this.siteRole);
         this.store.setSanction(this.sanction);
         await this.store.reload();
-    }
-
-    public open(publicId: string): void {
-        void this.router.navigate(["/moderation/users", publicId]);
     }
 }

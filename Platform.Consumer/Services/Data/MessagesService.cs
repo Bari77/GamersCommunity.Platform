@@ -9,7 +9,6 @@ using Platform.Consumer.Realtime;
 using Platform.Consumer.Security;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Serilog;
 using ILogger = Serilog.ILogger;
 
 namespace Platform.Consumer.Services.Data;

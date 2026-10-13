@@ -1,8 +1,8 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
 import { Observable } from "rxjs";
-import { CreateSanctionRequestDto } from "../dto/staff-user.dto";
-import { Sanction } from "../models/staff-user.model";
+import { CreateSanctionRequestDto } from "../dto/create-sanction-request.dto";
+import { Sanction } from "../models/sanction.model";
 
 @Injectable({ providedIn: "root" })
 export class SanctionsService extends BaseService {

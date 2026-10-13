@@ -1,8 +1,10 @@
 import { Injectable } from "@angular/core";
 import { BaseService } from "@shared/services/base.service";
 import { map, Observable } from "rxjs";
-import { CreateReportRequestDto, ReportListRequestDto } from "../dto/staff-user.dto";
-import { ModerationReport, OpenReportsCount } from "../models/staff-user.model";
+import { ReportListRequestDto } from "../dto/report-list-request.dto";
+import { CreateReportRequestDto } from "../dto/create-report-request.dto";
+import { OpenReportsCount } from "../models/open-reports-count.model";
+import { ModerationReport } from "../models/moderation-report.model";
 
 @Injectable({ providedIn: "root" })
 export class ReportsService extends BaseService {

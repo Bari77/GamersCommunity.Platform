@@ -59,8 +59,8 @@ export class HeaderComponent {
     public readonly router = inject(Router);
     public toastr = inject(NbToastrService);
 
-    public search = model<string>();
-    public copied = model<boolean>(false);
+    public readonly search = model<string>();
+    public readonly copied = model<boolean>(false);
     protected readonly unavailableLabel = $localize`:@@games.unavailable:Temporarily unavailable`;
 
     public constructor() {

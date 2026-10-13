@@ -1,12 +1,4 @@
-export interface ConversationMemberDto {
-    id: number;
-    publicId: string;
-    nickname: string;
-    discriminator: string;
-    avatarUrl: string;
-    isOwner: boolean;
-    joinedAt: string;
-}
+import { ConversationMemberDto } from "./conversation-member.dto";
 
 export interface ConversationDto {
     publicId: string;

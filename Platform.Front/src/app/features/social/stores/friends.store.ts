@@ -39,9 +39,7 @@ export class FriendsStore {
             return [] as Friend[];
         }
         return this.sortRecent(
-            this.friends
-                .value()
-                .filter((f) => f.idFriendStatus === FriendStatusId.Pending && f.idFriendReceive === me),
+            this.friends.value().filter((f) => f.idFriendStatus === FriendStatusId.Pending && f.idFriendReceive === me),
         );
     });
 
@@ -51,9 +49,7 @@ export class FriendsStore {
             return [] as Friend[];
         }
         return this.sortRecent(
-            this.friends
-                .value()
-                .filter((f) => f.idFriendStatus === FriendStatusId.Pending && f.idFriendAsking === me),
+            this.friends.value().filter((f) => f.idFriendStatus === FriendStatusId.Pending && f.idFriendAsking === me),
         );
     });
 

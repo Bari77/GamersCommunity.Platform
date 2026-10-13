@@ -11,7 +11,8 @@ import { firstValueFrom } from "rxjs";
 import { MessageDto } from "../dto/message.dto";
 import { DirectMessage } from "../models/message.model";
 import { FriendsStore } from "../stores/friends.store";
-import { FriendUpdatedPayload, MessengerStore } from "../stores/messenger.store";
+import { MessengerStore } from "../stores/messenger.store";
+import { FriendUpdatedPayload } from "../models/friend-updated-payload.model";
 import { MessagesStore } from "../stores/messages.store";
 
 export type MessengerRealtimeStatus = "offline" | "connecting" | "connected";
@@ -21,6 +22,21 @@ const RETRY_CAP_MS = 30_000;
 
 @Injectable({ providedIn: "root" })
 export class MessengerRealtimeService {
+    public readonly status = computed(() => this.$status());
+    public readonly isLive = computed(() => this.$status() === "connected");
+    public readonly isConnecting = computed(() => this.$status() === "connecting");
+
+    public readonly offlineMessage = computed(() => {
+        switch (this.$status()) {
+            case "connecting":
+                return $localize`:@@social.messenger.realtime.connecting:Connecting to live whispers…`;
+            case "offline":
+                return $localize`:@@social.messenger.realtime.offline:Live whispers are unavailable. Sending is disabled until the link is restored.`;
+            default:
+                return "";
+        }
+    });
+
     private readonly authToken = inject(AuthTokenService);
     private readonly usersStore = inject(UsersStore);
     private readonly messagesStore = inject(MessagesStore);
@@ -36,21 +52,6 @@ export class MessengerRealtimeService {
     private wantConnected = false;
     private retryAttempt = 0;
     private retryTimer: ReturnType<typeof setTimeout> | null = null;
-
-    public readonly status = computed(() => this.$status());
-    public readonly isLive = computed(() => this.$status() === "connected");
-    public readonly isConnecting = computed(() => this.$status() === "connecting");
-
-    public readonly offlineMessage = computed(() => {
-        switch (this.$status()) {
-            case "connecting":
-                return $localize`:@@social.messenger.realtime.connecting:Connecting to live whispers…`;
-            case "offline":
-                return $localize`:@@social.messenger.realtime.offline:Live whispers are unavailable. Sending is disabled until the link is restored.`;
-            default:
-                return "";
-        }
-    });
 
     public constructor() {
         effect(() => {

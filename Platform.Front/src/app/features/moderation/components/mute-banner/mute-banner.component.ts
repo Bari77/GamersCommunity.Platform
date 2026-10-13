@@ -10,7 +10,7 @@ import { UsersStore } from "@features/users/stores/users.store";
     styleUrl: "./mute-banner.component.scss",
 })
 export class MuteBannerComponent {
-    private readonly usersStore = inject(UsersStore);
-
     public readonly mute = computed(() => this.usersStore.activeMute());
+
+    private readonly usersStore = inject(UsersStore);
 }

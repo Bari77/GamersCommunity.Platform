@@ -1,10 +1,4 @@
-import {
-    Component,
-    ElementRef,
-    HostListener,
-    inject,
-    signal,
-} from "@angular/core";
+import { Component, ElementRef, HostListener, inject, signal } from "@angular/core";
 import { Router } from "@angular/router";
 import { AppNotification } from "@features/notifications/models/notification.model";
 import { NotificationsStore } from "@features/notifications/stores/notifications.store";

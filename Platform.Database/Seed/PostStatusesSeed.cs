@@ -1,6 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Platform.Database.Seed;
 

@@ -12,13 +12,6 @@ import { MessagesStore } from "./messages.store";
 
 export type MessengerTab = "chats" | "contacts";
 
-export interface FriendUpdatedPayload {
-    publicId: string;
-    idFriendAsking: number;
-    idFriendReceive: number;
-    idFriendStatus: number;
-}
-
 @Injectable({ providedIn: "root" })
 export class MessengerStore {
     public readonly isOpen = computed(() => this.$open());
@@ -51,7 +44,9 @@ export class MessengerStore {
     });
 
     public readonly selectedLabel = computed(() => this.selectedConversation()?.displayTitle ?? "");
-    public readonly selectedNickname = computed(() => this.selectedConversation()?.peerNickname ?? this.selectedLabel());
+    public readonly selectedNickname = computed(
+        () => this.selectedConversation()?.peerNickname ?? this.selectedLabel(),
+    );
     public readonly selectedDiscriminator = computed(() => this.selectedConversation()?.peerDiscriminator ?? "");
     public readonly selectedPeerPublicId = computed(() => this.selectedConversation()?.peerPublicId ?? "");
     public readonly selectedPeerAvatarUrl = computed(() => {

@@ -4,8 +4,3 @@ export interface GameMenuItem {
     link: string;
     available: boolean;
 }
-
-export interface GameMenuGroup {
-    title: string;
-    children: GameMenuItem[];
-}

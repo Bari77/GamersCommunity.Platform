@@ -3,9 +3,10 @@ import { inject, Injectable } from "@angular/core";
 import { environment } from "environments/environment";
 import { catchError, forkJoin, map, Observable, of, switchMap, timeout } from "rxjs";
 import { GamePlayerResolveResultDto } from "../dto/game-player.dto";
-import { GamePlayerResolveResult, GamePlayerSheet } from "../models/game-player-sheet.model";
+import { GamePlayerSheet } from "../models/game-player-sheet.model";
+import { GamePlayerResolveResult } from "../models/game-player-resolve-result.model";
 import { Game } from "../models/game.model";
-import { GameType } from "../models/gameType.model";
+import { GameType } from "../models/game-type.model";
 import { GameAvailabilityService } from "./game-availability.service";
 import { toGameApiSegment } from "../utils/game-url.util";
 
@@ -17,12 +18,10 @@ export class GamePlayersService {
     public resolve(game: Game | string, platformUserPublicId: string): Observable<GamePlayerResolveResult> {
         const urlValue = typeof game === "string" ? game : game.urlValue;
 
-        return this.http
-            .post<GamePlayerResolveResultDto>(this.resolveURL(urlValue), { platformUserPublicId })
-            .pipe(
-                timeout(4000),
-                map((dto) => ({ playerPublicId: dto.playerPublicId, hasSheet: dto.hasSheet })),
-            );
+        return this.http.post<GamePlayerResolveResultDto>(this.resolveURL(urlValue), { platformUserPublicId }).pipe(
+            timeout(4000),
+            map((dto) => ({ playerPublicId: dto.playerPublicId, hasSheet: dto.hasSheet })),
+        );
     }
 
     public resolveCatalog(gameTypes: GameType[], platformUserPublicId: string): Observable<GamePlayerSheet[]> {

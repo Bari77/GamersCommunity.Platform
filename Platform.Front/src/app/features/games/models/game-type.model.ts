@@ -1,4 +1,4 @@
-import { GameTypeDto } from "../dto/gameType.dto";
+import { GameTypeDto } from "../dto/game-type.dto";
 import { Game } from "./game.model";
 
 export class GameType {
@@ -9,10 +9,6 @@ export class GameType {
     ) {}
 
     public static fromDto(dto: GameTypeDto): GameType {
-        return new GameType(
-            dto.id,
-            dto.entitled,
-            dto.games?.map((g) => Game.fromDto(g)) ?? [],
-        );
+        return new GameType(dto.id, dto.entitled, dto.games?.map((g) => Game.fromDto(g)) ?? []);
     }
 }

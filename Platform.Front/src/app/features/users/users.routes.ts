@@ -22,13 +22,11 @@ export const usersRoutes: Routes = [
     {
         path: "search",
         data: { breadcrumb: $localize`:@@core.breadcrumb.users.search:Player search` },
-        loadComponent: () =>
-            import("./pages/user-search/user-search.component").then((m) => m.UserSearchComponent),
+        loadComponent: () => import("./pages/user-search/user-search.component").then((m) => m.UserSearchComponent),
     },
     {
         path: ":publicId",
         data: { breadcrumb: $localize`:@@core.breadcrumb.users.profile:Profile` },
-        loadComponent: () =>
-            import("./pages/user-profile/user-profile.component").then((m) => m.UserProfileComponent),
+        loadComponent: () => import("./pages/user-profile/user-profile.component").then((m) => m.UserProfileComponent),
     },
 ];

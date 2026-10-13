@@ -1,30 +1,7 @@
 import { parseUtcDate } from "@shared/utils/utc-date.util";
-import { ConversationDto, ConversationMemberDto } from "../dto/conversation.dto";
+import { ConversationDto } from "../dto/conversation.dto";
 import { GuildChannelCrest, parseGuildChannelCrest } from "./guild-channel-crest";
-
-export class ConversationMember {
-    public constructor(
-        public id: number,
-        public publicId: string,
-        public nickname: string,
-        public discriminator: string,
-        public avatarUrl: string,
-        public isOwner: boolean,
-        public joinedAt: Date,
-    ) {}
-
-    public static fromDto(dto: ConversationMemberDto): ConversationMember {
-        return new ConversationMember(
-            Number(dto.id),
-            dto.publicId ?? "",
-            dto.nickname,
-            dto.discriminator,
-            dto.avatarUrl ?? "",
-            !!dto.isOwner,
-            parseUtcDate(dto.joinedAt),
-        );
-    }
-}
+import { ConversationMember } from "./conversation-member.model";
 
 export class Conversation {
     public constructor(
@@ -59,8 +36,7 @@ export class Conversation {
     }
 
     public static fromDto(dto: ConversationDto): Conversation {
-        const kind =
-            dto.kind === "guild" || dto.kind === "group" || dto.kind === "team" ? dto.kind : "dm";
+        const kind = dto.kind === "guild" || dto.kind === "group" || dto.kind === "team" ? dto.kind : "dm";
         return new Conversation(
             dto.publicId ?? "",
             kind,

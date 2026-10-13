@@ -47,6 +47,17 @@ export class MessagesStore {
     private readonly conversationsService = inject(ConversationsService);
     private readonly usersStore = inject(UsersStore);
 
+    private static readCreatedPublicId(value: unknown): string {
+        if (typeof value === "string") {
+            const trimmed = value.replace(/^"|"$/g, "").trim();
+            return trimmed && trimmed !== "undefined" ? trimmed : "";
+        }
+        if (value && typeof value === "object" && "publicId" in value) {
+            return MessagesStore.readCreatedPublicId((value as { publicId: unknown }).publicId);
+        }
+        return "";
+    }
+
     public reload(): void {
         if (!this.usersStore.isLoggedIn()) {
             return;
@@ -91,9 +102,10 @@ export class MessagesStore {
             return;
         }
 
-        const locals = this.$threadConversationPublicId() === conversationPublicId
-            ? this.$threadMessages().filter((message) => message.isLocal)
-            : [];
+        const locals =
+            this.$threadConversationPublicId() === conversationPublicId
+                ? this.$threadMessages().filter((message) => message.isLocal)
+                : [];
 
         this.$threadConversationPublicId.set(conversationPublicId);
         this.$threadLoading.set(true);
@@ -101,9 +113,9 @@ export class MessagesStore {
         this.$threadMessages.set(locals);
         try {
             const page = await firstValueFrom(
-                this.messagesService.listThread(conversationPublicId, undefined, THREAD_PAGE_SIZE).pipe(
-                    catchError(() => of([] as DirectMessage[])),
-                ),
+                this.messagesService
+                    .listThread(conversationPublicId, undefined, THREAD_PAGE_SIZE)
+                    .pipe(catchError(() => of([] as DirectMessage[]))),
             );
             if (this.$threadConversationPublicId() !== conversationPublicId) {
                 return;
@@ -185,9 +197,11 @@ export class MessagesStore {
         await firstValueFrom(this.messagesService.markThreadRead(conversationPublicId).pipe(catchError(() => of(0))));
 
         this.conversations.set(
-            this.conversations.value().map((conversation) =>
-                conversation.publicId === conversationPublicId ? conversation.withUnreadCount(0) : conversation,
-            ),
+            this.conversations
+                .value()
+                .map((conversation) =>
+                    conversation.publicId === conversationPublicId ? conversation.withUnreadCount(0) : conversation,
+                ),
         );
     }
 
@@ -269,9 +283,7 @@ export class MessagesStore {
     }
 
     private replaceInThread(publicId: string, next: DirectMessage): void {
-        this.$threadMessages.set(
-            this.$threadMessages().map((item) => (item.publicId === publicId ? next : item)),
-        );
+        this.$threadMessages.set(this.$threadMessages().map((item) => (item.publicId === publicId ? next : item)));
     }
 
     private unmatchedLocals(server: DirectMessage[], locals: DirectMessage[]): DirectMessage[] {
@@ -306,17 +318,9 @@ export class MessagesStore {
 
         const next = [...current];
         next.splice(index, 1);
-        this.conversations.set([previous.withPreview(message.content, message.creationDate).withUnreadCount(unreadCount), ...next]);
-    }
-
-    private static readCreatedPublicId(value: unknown): string {
-        if (typeof value === "string") {
-            const trimmed = value.replace(/^"|"$/g, "").trim();
-            return trimmed && trimmed !== "undefined" ? trimmed : "";
-        }
-        if (value && typeof value === "object" && "publicId" in value) {
-            return MessagesStore.readCreatedPublicId((value as { publicId: unknown }).publicId);
-        }
-        return "";
+        this.conversations.set([
+            previous.withPreview(message.content, message.creationDate).withUnreadCount(unreadCount),
+            ...next,
+        ]);
     }
 }

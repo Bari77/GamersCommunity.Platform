@@ -3,7 +3,7 @@ import { Router } from "@angular/router";
 import { AuthGuard } from "@core/guards/auth.guard";
 import { PermissionsService } from "@core/services/permissions.service";
 import { UsersStore } from "@features/users/stores/users.store";
-import { of } from "rxjs";
+import { of, Observable } from "rxjs";
 import { staffGuard } from "./staff.guard";
 
 describe("staffGuard", () => {
@@ -15,18 +15,16 @@ describe("staffGuard", () => {
             providers: [
                 {
                     provide: AuthGuard,
-                    useValue: { canActivate: () => of(options.authenticated) },
+                    useValue: { canActivate: (): Observable<boolean> => of(options.authenticated) },
                 },
                 {
                     provide: UsersStore,
                     useValue: {
                         ensureSession: jasmine.createSpy("ensureSession").and.resolveTo(undefined),
-                        refreshSessionFromTouch: jasmine
-                            .createSpy("refreshSessionFromTouch")
-                            .and.resolveTo(undefined),
+                        refreshSessionFromTouch: jasmine.createSpy("refreshSessionFromTouch").and.resolveTo(undefined),
                     },
                 },
-                { provide: PermissionsService, useValue: { isStaff: () => options.staff } },
+                { provide: PermissionsService, useValue: { isStaff: (): boolean => options.staff } },
                 { provide: Router, useValue: { navigate } },
             ],
         });

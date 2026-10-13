@@ -12,16 +12,9 @@ import { environment } from "environments/environment";
 @Component({
     standalone: true,
     selector: "app-profile",
-    imports: [
-        NbCardModule,
-        NbButtonModule,
-        NbSpinnerModule,
-        GameTileComponent,
-        SkeletonComponent,
-        UserHandleComponent,
-    ],
+    imports: [NbCardModule, NbButtonModule, NbSpinnerModule, GameTileComponent, SkeletonComponent, UserHandleComponent],
     templateUrl: "./profile.component.html",
-    styleUrls: ["./profile.component.scss"],
+    styleUrl: "./profile.component.scss",
 })
 export class ProfileComponent {
     public readonly usersStore = inject(UsersStore);

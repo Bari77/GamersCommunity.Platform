@@ -1,11 +1,14 @@
 import { Component, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
-import { NbButtonModule, NbCardModule, NbCheckboxModule, NbDialogRef, NbInputModule, NbSelectModule } from "@nebular/theme";
-
-export interface SanctionDialogResult {
-    reason: string;
-    endDate: Date | null;
-}
+import {
+    NbButtonModule,
+    NbCardModule,
+    NbCheckboxModule,
+    NbDialogRef,
+    NbInputModule,
+    NbSelectModule,
+} from "@nebular/theme";
+import { SanctionDialogResult } from "./sanction-dialog-result.model";
 
 @Component({
     standalone: true,
@@ -18,14 +21,14 @@ export class SanctionDialogComponent {
     public kind: "mute" | "ban" = "mute";
     public nickname = "";
 
-    private readonly dialogRef = inject(NbDialogRef<SanctionDialogComponent>);
-    private readonly fb = inject(FormBuilder);
-
+    public readonly fb = inject(FormBuilder);
     public readonly form = this.fb.group({
         reason: ["", [Validators.required, Validators.minLength(3), Validators.maxLength(255)]],
         duration: ["24h"],
         permanent: [false],
     });
+
+    private readonly dialogRef = inject(NbDialogRef<SanctionDialogComponent>);
 
     public submit(): void {
         if (this.form.invalid) {

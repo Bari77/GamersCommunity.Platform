@@ -350,19 +350,13 @@ export class UsersStore {
         return a.every((role, index) => role === b[index]);
     }
 
-    private gameRolesEqual(
-        left: User["gameRoles"],
-        right: User["gameRoles"],
-    ): boolean {
+    private gameRolesEqual(left: User["gameRoles"], right: User["gameRoles"]): boolean {
         if (left.length !== right.length) {
             return false;
         }
         const a = [...left].sort((x, y) => `${x.gameUrlValue}:${x.code}`.localeCompare(`${y.gameUrlValue}:${y.code}`));
         const b = [...right].sort((x, y) => `${x.gameUrlValue}:${x.code}`.localeCompare(`${y.gameUrlValue}:${y.code}`));
-        return a.every(
-            (role, index) =>
-                role.gameUrlValue === b[index].gameUrlValue && role.code === b[index].code,
-        );
+        return a.every((role, index) => role.gameUrlValue === b[index].gameUrlValue && role.code === b[index].code);
     }
 
     private activeMuteEqual(left: User["activeMute"], right: User["activeMute"]): boolean {

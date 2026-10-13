@@ -52,7 +52,9 @@
                                 <span i18n="@@users.profilePublic.relation.pendingOutgoing">Friend request sent</span>
                             }
                             @case ("pendingIncoming") {
-                                <span i18n="@@users.profilePublic.relation.pendingIncoming">Wants to be your friend</span>
+                                <span i18n="@@users.profilePublic.relation.pendingIncoming">
+                                    Wants to be your friend
+                                </span>
                             }
                             @case ("blockedByMe") {
                                 <span i18n="@@users.profilePublic.relation.blocked">Blocked</span>
@@ -95,17 +97,35 @@
             <div class="user-profile__actions" [nbSpinner]="friendsStore.actionLoading()">
                 @switch (relationKind(user)) {
                     @case ("none") {
-                        <button type="button" nbButton status="primary" (click)="addFriend(user)" i18n="@@users.profilePublic.action.add">
+                        <button
+                            type="button"
+                            nbButton
+                            status="primary"
+                            (click)="addFriend(user)"
+                            i18n="@@users.profilePublic.action.add"
+                        >
                             Add friend
                         </button>
                     }
                     @case ("refused") {
-                        <button type="button" nbButton status="primary" (click)="addFriend(user)" i18n="@@users.profilePublic.action.add">
+                        <button
+                            type="button"
+                            nbButton
+                            status="primary"
+                            (click)="addFriend(user)"
+                            i18n="@@users.profilePublic.action.add"
+                        >
                             Add friend
                         </button>
                     }
                     @case ("pendingOutgoing") {
-                        <button type="button" nbButton disabled status="basic" i18n="@@users.profilePublic.action.waiting">
+                        <button
+                            type="button"
+                            nbButton
+                            disabled
+                            status="basic"
+                            i18n="@@users.profilePublic.action.waiting"
+                        >
                             Request pending
                         </button>
                         <button
@@ -193,12 +213,24 @@
                         </button>
                     }
                     @case ("blockedByPeer") {
-                        <button type="button" nbButton disabled status="basic" i18n="@@users.profilePublic.relation.blocked">
+                        <button
+                            type="button"
+                            nbButton
+                            disabled
+                            status="basic"
+                            i18n="@@users.profilePublic.relation.blocked"
+                        >
                             Blocked
                         </button>
                     }
                     @case ("blocked") {
-                        <button type="button" nbButton disabled status="basic" i18n="@@users.profilePublic.relation.blocked">
+                        <button
+                            type="button"
+                            nbButton
+                            disabled
+                            status="basic"
+                            i18n="@@users.profilePublic.relation.blocked"
+                        >
                             Blocked
                         </button>
                     }

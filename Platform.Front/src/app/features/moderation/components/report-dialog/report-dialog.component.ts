@@ -1,10 +1,7 @@
 import { Component, inject } from "@angular/core";
 import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms";
 import { NbButtonModule, NbCardModule, NbDialogRef, NbInputModule } from "@nebular/theme";
-
-export interface ReportDialogResult {
-    reason: string;
-}
+import { ReportDialogResult } from "./report-dialog-result.model";
 
 @Component({
     standalone: true,
@@ -16,12 +13,12 @@ export interface ReportDialogResult {
 export class ReportDialogComponent {
     public nickname = "";
 
-    private readonly dialogRef = inject(NbDialogRef<ReportDialogComponent>);
-    private readonly fb = inject(FormBuilder);
-
+    public readonly fb = inject(FormBuilder);
     public readonly form = this.fb.group({
         reason: ["", [Validators.required, Validators.minLength(8), Validators.maxLength(1000)]],
     });
+
+    private readonly dialogRef = inject(NbDialogRef<ReportDialogComponent>);
 
     public submit(): void {
         if (this.form.invalid) {

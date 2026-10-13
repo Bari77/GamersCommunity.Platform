@@ -1,7 +1,7 @@
 import { Component, computed, input } from "@angular/core";
 import { GuildChannelCrest } from "../../models/guild-channel-crest";
 
-const pad = (index: number) => String(index).padStart(2, "0");
+const pad = (index: number): string => String(index).padStart(2, "0");
 
 /**
  * WoW tabard, drawn the same way the game front does: grey silhouettes multiplied with the guild

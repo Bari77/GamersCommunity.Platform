@@ -1,18 +1,11 @@
-using GamersCommunity.Core.Realtime;
 using GamersCommunity.Core.Enums;
 using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Rabbit;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Platform.Consumer.Configuration;
 using Platform.Consumer.Models;
-using Platform.Consumer.Notifications;
-using Platform.Consumer.Realtime;
 using Platform.Consumer.Security;
 using Platform.Consumer.Services.Data;
-using Platform.Database.Context;
 using Platform.Database.Models;
-using Xunit;
 
 namespace Platform.Tests.Services.Data;
 
@@ -112,7 +105,7 @@ public class SanctionsAndRolesTests : IClassFixture<FakeDataset>
         ctx.UserSiteRoles.Add(new UserSiteRole { IdUser = reporter.Id, IdSiteRole = 2 });
         ctx.SaveChanges();
 
-        var service = new ReportsService(ctx, new NoopRealtime());
+        var service = new ReportsService(ctx, new NoopRealtimeEventPublisher());
         var createdJson = await service.HandleAsync(new BusMessage
         {
             Type = BusServiceTypeEnum.DATA,
@@ -161,7 +154,7 @@ public class SanctionsAndRolesTests : IClassFixture<FakeDataset>
         });
         ctx.SaveChanges();
 
-        var service = new FriendsService(ctx, new NoopRealtime(), new NoopNotificationWriter(), Serilog.Log.Logger);
+        var service = new FriendsService(ctx, new NoopRealtimeEventPublisher(), new NoopNotificationWriter(), Serilog.Log.Logger);
         await Assert.ThrowsAsync<BadRequestException>(() => service.HandleAsync(new BusMessage
         {
             Type = BusServiceTypeEnum.DATA,
@@ -171,31 +164,4 @@ public class SanctionsAndRolesTests : IClassFixture<FakeDataset>
             Caller = new CallerIdentity { Subject = banned.IdKeycloak.ToString("D") },
         }, CancellationToken.None));
     }
-}
-
-file sealed class NoopRealtime : IRealtimeEventPublisher
-{
-    public Task PublishAsync<T>(T payload, CancellationToken ct = default) => Task.CompletedTask;
-}
-
-file sealed class NoopNotificationWriter : INotificationWriter
-{
-    public Task<Notification?> CreateAsync(
-        int idUser,
-        string kind,
-        string title,
-        string? body,
-        string? linkUrl,
-        object? payload,
-        CancellationToken ct = default) => Task.FromResult<Notification?>(null);
-
-    public Task<Notification?> UpsertUnreadAsync(
-        int idUser,
-        string kind,
-        string peerToken,
-        string title,
-        string? body,
-        string? linkUrl,
-        object payload,
-        CancellationToken ct = default) => Task.FromResult<Notification?>(null);
 }

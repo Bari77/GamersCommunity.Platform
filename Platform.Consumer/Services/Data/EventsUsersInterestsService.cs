@@ -2,9 +2,9 @@ using GamersCommunity.Core.Exceptions;
 using GamersCommunity.Core.Rabbit;
 using GamersCommunity.Core.Serialization;
 using GamersCommunity.Core.Services;
+using Microsoft.EntityFrameworkCore;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Platform.Consumer.Services.Data;
 

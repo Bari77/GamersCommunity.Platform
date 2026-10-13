@@ -8,5 +8,5 @@ import { Component, computed } from "@angular/core";
     styleUrl: "./footer.component.scss",
 })
 export class FooterComponent {
-    public year = computed(() => new Date().getFullYear());
+    public readonly year = computed(() => new Date().getFullYear());
 }

@@ -7,8 +7,7 @@ import { EventsService } from "../services/events.service";
 @Injectable({ providedIn: "root" })
 export class EventsStore {
     public readonly events = resource({
-        loader: () =>
-            firstValueFrom(this.eventsService.list().pipe(catchError(() => of([] as CommunityEvent[])))),
+        loader: () => firstValueFrom(this.eventsService.list().pipe(catchError(() => of([] as CommunityEvent[])))),
         defaultValue: [] as CommunityEvent[],
     });
 

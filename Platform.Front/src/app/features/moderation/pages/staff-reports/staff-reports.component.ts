@@ -6,12 +6,10 @@ import { NbButtonModule, NbDialogService, NbSelectModule, NbSpinnerModule } from
 import { SkeletonComponent } from "@bari77/gc-ui";
 import { UserHandleComponent } from "@shared/components/user-handle/user-handle.component";
 import { firstValueFrom } from "rxjs";
-import {
-    SanctionDialogComponent,
-    SanctionDialogResult,
-} from "../../components/sanction-dialog/sanction-dialog.component";
+import { SanctionDialogComponent } from "../../components/sanction-dialog/sanction-dialog.component";
+import { SanctionDialogResult } from "../../components/sanction-dialog/sanction-dialog-result.model";
 import { ModerationNavComponent } from "../../components/moderation-nav/moderation-nav.component";
-import { ModerationReport } from "../../models/staff-user.model";
+import { ModerationReport } from "../../models/moderation-report.model";
 import { SanctionsService } from "../../services/sanctions.service";
 import { ReportsStore } from "../../stores/reports.store";
 import { ModerationReportsBadgeStore } from "../../stores/moderation-reports-badge.store";
@@ -35,12 +33,13 @@ export class StaffReportsComponent {
     public readonly rowPlaceholders = [0, 1, 2, 3, 4];
     public readonly store = inject(ReportsStore);
     public readonly permissions = inject(PermissionsService);
+
+    public status = this.store.status();
+
     private readonly reportsBadge = inject(ModerationReportsBadgeStore);
     private readonly router = inject(Router);
     private readonly dialogs = inject(NbDialogService);
     private readonly sanctions = inject(SanctionsService);
-
-    public status = this.store.status();
     private lastOpenCount = -1;
 
     public constructor() {

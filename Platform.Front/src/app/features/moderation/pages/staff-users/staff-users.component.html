@@ -62,7 +62,11 @@
         <ul class="friend-list">
             @for (user of store.rows(); track user.publicId) {
                 <li class="friend-row" (click)="open(user.publicId)">
-                    <img class="friend-row__avatar friend-row__avatar--img" [src]="user.avatarUrl" [alt]="user.nickname" />
+                    <img
+                        class="friend-row__avatar friend-row__avatar--img"
+                        [src]="user.avatarUrl"
+                        [alt]="user.nickname"
+                    />
                     <div class="friend-row__meta">
                         <app-user-handle [nickname]="user.nickname" [discriminator]="user.discriminator" />
                         <span class="friend-row__status">

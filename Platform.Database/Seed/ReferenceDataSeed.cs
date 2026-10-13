@@ -1,4 +1,3 @@
-using GamersCommunity.Core.Database.Seed;
 using Microsoft.Extensions.Logging;
 using Platform.Database.Context;
 

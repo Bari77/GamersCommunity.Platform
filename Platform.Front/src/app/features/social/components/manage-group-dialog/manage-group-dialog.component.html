@@ -43,7 +43,9 @@
                             }
                             <app-user-handle [nickname]="member.nickname" [discriminator]="member.discriminator" />
                             @if (member.isOwner && !membershipLocked()) {
-                                <span class="manage-group__badge" i18n="@@social.messenger.manageGroup.owner">Owner</span>
+                                <span class="manage-group__badge" i18n="@@social.messenger.manageGroup.owner">
+                                    Owner
+                                </span>
                             }
                         </button>
                         @if (canEditMembers() && !member.isOwner) {
@@ -86,7 +88,14 @@
                         </button>
                     }
                 </div>
-                <button type="button" nbButton size="small" status="primary" (click)="saveDetails()" i18n="@@social.messenger.manageGroup.save">
+                <button
+                    type="button"
+                    nbButton
+                    size="small"
+                    status="primary"
+                    (click)="saveDetails()"
+                    i18n="@@social.messenger.manageGroup.save"
+                >
                     Save group
                 </button>
 
@@ -113,13 +122,22 @@
                     } @else {
                         @for (contact of addableContacts(); track contact.publicId) {
                             <li>
-                                <label class="manage-group__row" [class.is-selected]="isSelected(contact)" (click)="toggle(contact); $event.preventDefault()">
-                                    <nb-checkbox status="control" [checked]="isSelected(contact)"></nb-checkbox>
-                                    <app-user-handle [nickname]="contact.peerNickname" [discriminator]="contact.peerDiscriminator" />
+                                <label
+                                    class="manage-group__row"
+                                    [class.is-selected]="isSelected(contact)"
+                                    (click)="toggle(contact); $event.preventDefault()"
+                                >
+                                    <nb-checkbox status="control" [checked]="isSelected(contact)" />
+                                    <app-user-handle
+                                        [nickname]="contact.peerNickname"
+                                        [discriminator]="contact.peerDiscriminator"
+                                    />
                                 </label>
                             </li>
                         } @empty {
-                            <li class="manage-group__empty" i18n="@@social.messenger.manageGroup.noAddable">No contacts left to add.</li>
+                            <li class="manage-group__empty" i18n="@@social.messenger.manageGroup.noAddable">
+                                No contacts left to add.
+                            </li>
                         }
                     }
                 </ul>
@@ -137,7 +155,16 @@
             }
         </nb-card-body>
         <nb-card-footer>
-            <button type="button" nbButton ghost status="basic" (click)="close()" i18n="@@social.messenger.manageGroup.close">Close</button>
+            <button
+                type="button"
+                nbButton
+                ghost
+                status="basic"
+                (click)="close()"
+                i18n="@@social.messenger.manageGroup.close"
+            >
+                Close
+            </button>
         </nb-card-footer>
     </nb-card>
 }

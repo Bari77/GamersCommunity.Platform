@@ -13,17 +13,13 @@ export class NotificationsStore {
             if (!loggedIn) {
                 return Promise.resolve([] as AppNotification[]);
             }
-            return firstValueFrom(
-                this.notificationsService.list().pipe(catchError(() => of([] as AppNotification[]))),
-            );
+            return firstValueFrom(this.notificationsService.list().pipe(catchError(() => of([] as AppNotification[]))));
         },
         defaultValue: [] as AppNotification[],
     });
 
     public readonly loading = computed(() => ResourceUtils.isPending(this.notifications));
-    public readonly unreadCount = computed(
-        () => this.notifications.value().filter((item) => !item.isRead).length,
-    );
+    public readonly unreadCount = computed(() => this.notifications.value().filter((item) => !item.isRead).length);
     public readonly items = computed(() => this.notifications.value());
 
     private readonly notificationsService = inject(NotificationsService);

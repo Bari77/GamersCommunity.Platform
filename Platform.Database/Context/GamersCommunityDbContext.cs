@@ -1,7 +1,5 @@
-using System;
-using System.Collections.Generic;
-using Platform.Database.Models;
 using Microsoft.EntityFrameworkCore;
+using Platform.Database.Models;
 
 namespace Platform.Database.Context;
 
@@ -12,53 +10,53 @@ public partial class GamersCommunityDbContext : DbContext
     {
     }
 
-    public virtual DbSet<Banned> Banneds { get; set; }
+    public virtual DbSet<Banned> Banneds { get; set; } = null!;
 
-    public virtual DbSet<City> Cities { get; set; }
+    public virtual DbSet<City> Cities { get; set; } = null!;
 
-    public virtual DbSet<Country> Countries { get; set; }
+    public virtual DbSet<Country> Countries { get; set; } = null!;
 
-    public virtual DbSet<Event> Events { get; set; }
+    public virtual DbSet<Event> Events { get; set; } = null!;
 
-    public virtual DbSet<EventsUsersInterest> EventsUsersInterests { get; set; }
+    public virtual DbSet<EventsUsersInterest> EventsUsersInterests { get; set; } = null!;
 
-    public virtual DbSet<EventsUsersStatus> EventsUsersStatuses { get; set; }
+    public virtual DbSet<EventsUsersStatus> EventsUsersStatuses { get; set; } = null!;
 
-    public virtual DbSet<Friend> Friends { get; set; }
+    public virtual DbSet<Friend> Friends { get; set; } = null!;
 
-    public virtual DbSet<Conversation> Conversations { get; set; }
+    public virtual DbSet<Conversation> Conversations { get; set; } = null!;
 
-    public virtual DbSet<ConversationMember> ConversationMembers { get; set; }
+    public virtual DbSet<ConversationMember> ConversationMembers { get; set; } = null!;
 
-    public virtual DbSet<FriendStatus> FriendStatuses { get; set; }
+    public virtual DbSet<FriendStatus> FriendStatuses { get; set; } = null!;
 
-    public virtual DbSet<Game> Games { get; set; }
+    public virtual DbSet<Game> Games { get; set; } = null!;
 
-    public virtual DbSet<GameRole> GameRoles { get; set; }
+    public virtual DbSet<GameRole> GameRoles { get; set; } = null!;
 
-    public virtual DbSet<GameType> GameTypes { get; set; }
+    public virtual DbSet<GameType> GameTypes { get; set; } = null!;
 
-    public virtual DbSet<GroupRole> GroupRoles { get; set; }
+    public virtual DbSet<GroupRole> GroupRoles { get; set; } = null!;
 
-    public virtual DbSet<Message> Messages { get; set; }
+    public virtual DbSet<Message> Messages { get; set; } = null!;
 
-    public virtual DbSet<Notification> Notifications { get; set; }
+    public virtual DbSet<Notification> Notifications { get; set; } = null!;
 
-    public virtual DbSet<Post> Posts { get; set; }
+    public virtual DbSet<Post> Posts { get; set; } = null!;
 
-    public virtual DbSet<PostStatus> PostStatuses { get; set; }
+    public virtual DbSet<PostStatus> PostStatuses { get; set; } = null!;
 
-    public virtual DbSet<Report> Reports { get; set; }
+    public virtual DbSet<Report> Reports { get; set; } = null!;
 
-    public virtual DbSet<SiteRole> SiteRoles { get; set; }
+    public virtual DbSet<SiteRole> SiteRoles { get; set; } = null!;
 
-    public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<User> Users { get; set; } = null!;
 
-    public virtual DbSet<UserGameRole> UserGameRoles { get; set; }
+    public virtual DbSet<UserGameRole> UserGameRoles { get; set; } = null!;
 
-    public virtual DbSet<UserGroupRole> UserGroupRoles { get; set; }
+    public virtual DbSet<UserGroupRole> UserGroupRoles { get; set; } = null!;
 
-    public virtual DbSet<UserSiteRole> UserSiteRoles { get; set; }
+    public virtual DbSet<UserSiteRole> UserSiteRoles { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

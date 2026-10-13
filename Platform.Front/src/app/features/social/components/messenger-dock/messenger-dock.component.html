@@ -25,7 +25,7 @@
                             i18n-aria-label="@@social.messenger.back"
                             aria-label="Back"
                         >
-                            <nb-icon icon="arrow-back-outline" pack="eva"></nb-icon>
+                            <nb-icon icon="arrow-back-outline" pack="eva" />
                         </button>
                         @if (messengerStore.selectedConversation()?.guildCrest; as crest) {
                             <app-guild-channel-crest
@@ -40,15 +40,19 @@
                                 [alt]="messengerStore.selectedLabel()"
                             />
                         } @else {
-                            <span class="messenger-dock__avatar messenger-dock__avatar--header" aria-hidden="true">{{
-                                messengerStore.selectedLabel().charAt(0)
-                            }}</span>
+                            <span class="messenger-dock__avatar messenger-dock__avatar--header" aria-hidden="true">
+                                {{ messengerStore.selectedLabel().charAt(0) }}
+                            </span>
                         }
                         <h2 class="messenger-dock__title">
                             @if (messengerStore.selectedIsGroup()) {
                                 {{ messengerStore.selectedLabel() }}
                             } @else if (messengerStore.selectedPeerPublicId(); as publicId) {
-                                <button type="button" class="messenger-dock__peer-link" (click)="openPeerProfile(publicId)">
+                                <button
+                                    type="button"
+                                    class="messenger-dock__peer-link"
+                                    (click)="openPeerProfile(publicId)"
+                                >
                                     <app-user-handle
                                         [nickname]="messengerStore.selectedNickname()"
                                         [discriminator]="messengerStore.selectedDiscriminator()"
@@ -71,7 +75,7 @@
                                 i18n-aria-label="@@social.messenger.manageGroup.tooltip"
                                 aria-label="Group members"
                             >
-                                <nb-icon icon="people-outline" pack="eva"></nb-icon>
+                                <nb-icon icon="people-outline" pack="eva" />
                             </button>
                         }
                     } @else {
@@ -89,7 +93,7 @@
                                 i18n-aria-label="@@social.messenger.createGroup.tooltip"
                                 aria-label="Create a group"
                             >
-                                <nb-icon icon="plus-outline" pack="eva"></nb-icon>
+                                <nb-icon icon="plus-outline" pack="eva" />
                             </button>
                         }
                     }
@@ -103,7 +107,7 @@
                         i18n-aria-label="@@social.messenger.close"
                         aria-label="Close"
                     >
-                        <nb-icon icon="close-outline" pack="eva"></nb-icon>
+                        <nb-icon icon="close-outline" pack="eva" />
                     </button>
                 </header>
 
@@ -119,7 +123,7 @@
 
                 @if (messengerStore.selectedConversationPublicId()) {
                     <div class="messenger-dock__thread" [class.has-reply]="replyingTo() !== null">
-                        @if (messengerStore.threadBlockState() === 'blockedByMe') {
+                        @if (messengerStore.threadBlockState() === "blockedByMe") {
                             <div class="messenger-dock__block-banner" role="status">
                                 <p i18n="@@social.messenger.blockedByMe">
                                     You blocked this player. They cannot message you, and you cannot send whispers here.
@@ -135,7 +139,7 @@
                                     Unblock
                                 </button>
                             </div>
-                        } @else if (messengerStore.threadBlockState() === 'blockedByPeer') {
+                        } @else if (messengerStore.threadBlockState() === "blockedByPeer") {
                             <div class="messenger-dock__block-banner messenger-dock__block-banner--peer" role="status">
                                 <p i18n="@@social.messenger.blockedByPeer">
                                     This player blocked you. You cannot send whispers in this conversation.
@@ -144,15 +148,25 @@
                         }
 
                         @if (messengerStore.threadLoadingOlder()) {
-                            <p class="messenger-dock__hint messenger-dock__hint--compact" i18n="@@social.messenger.loadingOlder">
+                            <p
+                                class="messenger-dock__hint messenger-dock__hint--compact"
+                                i18n="@@social.messenger.loadingOlder"
+                            >
                                 Loading older whispers…
                             </p>
                         }
 
-                        <div #whisperScroll class="messenger-dock__messages" [attr.aria-busy]="messengerStore.messagesLoading()">
+                        <div
+                            #whisperScroll
+                            class="messenger-dock__messages"
+                            [attr.aria-busy]="messengerStore.messagesLoading()"
+                        >
                             @if (messengerStore.messagesLoading()) {
                                 @for (item of bubblePlaceholders; track item) {
-                                    <article class="messenger-dock__bubble messenger-dock__bubble--skeleton" [class.is-mine]="item % 2 === 1">
+                                    <article
+                                        class="messenger-dock__bubble messenger-dock__bubble--skeleton"
+                                        [class.is-mine]="item % 2 === 1"
+                                    >
                                         <gc-skeleton width="1.7rem" height="1.7rem" shape="circle" />
                                         <div class="messenger-dock__bubble-body">
                                             <gc-skeleton width="4rem" height="0.72rem" />
@@ -169,45 +183,50 @@
                                 @if (message.isSystem) {
                                     <p class="messenger-dock__event">{{ eventLabel(message) }}</p>
                                 } @else {
-                                <article
-                                    class="messenger-dock__bubble"
-                                    [class.is-mine]="message.idSender === usersStore.user()?.id"
-                                    [class.is-failed]="message.delivery === 'failed'"
-                                    [class.is-pending]="message.delivery === 'pending'"
-                                    (click)="onMessageClick($event, message)"
-                                >
-                                    @if (messageAvatar(message); as avatarUrl) {
-                                        <img class="messenger-dock__bubble-avatar" [src]="avatarUrl" alt="" />
-                                    } @else {
-                                        <span class="messenger-dock__bubble-avatar messenger-dock__bubble-avatar--fallback" aria-hidden="true">{{
-                                            messageHandle(message).charAt(0)
-                                        }}</span>
-                                    }
-                                    <div class="messenger-dock__bubble-body">
-                                        <button type="button" class="sender messenger-dock__bubble-sender">
-                                            {{ messageHandle(message) }}
-                                        </button>
-                                        @if (message.parentContent) {
-                                            <p class="messenger-dock__bubble-quote">{{ messageQuote(message) }}</p>
-                                        }
-                                        <p class="messenger-dock__bubble-text">{{ message.content }}</p>
-                                        @if (message.creationDate.getTime()) {
-                                            <time class="messenger-dock__bubble-date">{{ message.creationDate | date: "short" }}</time>
-                                        }
-                                        @if (message.delivery === "failed") {
-                                            <button
-                                                type="button"
-                                                class="messenger-dock__retry"
-                                                nbButton
-                                                size="tiny"
-                                                status="danger"
-                                                (click)="retryMessage($event, message)"
+                                    <article
+                                        class="messenger-dock__bubble"
+                                        [class.is-mine]="message.idSender === usersStore.user()?.id"
+                                        [class.is-failed]="message.delivery === 'failed'"
+                                        [class.is-pending]="message.delivery === 'pending'"
+                                        (click)="onMessageClick($event, message)"
+                                    >
+                                        @if (messageAvatar(message); as avatarUrl) {
+                                            <img class="messenger-dock__bubble-avatar" [src]="avatarUrl" alt="" />
+                                        } @else {
+                                            <span
+                                                class="messenger-dock__bubble-avatar messenger-dock__bubble-avatar--fallback"
+                                                aria-hidden="true"
                                             >
-                                                {{ retryLabel }}
-                                            </button>
+                                                {{ messageHandle(message).charAt(0) }}
+                                            </span>
                                         }
-                                    </div>
-                                </article>
+                                        <div class="messenger-dock__bubble-body">
+                                            <button type="button" class="sender messenger-dock__bubble-sender">
+                                                {{ messageHandle(message) }}
+                                            </button>
+                                            @if (message.parentContent) {
+                                                <p class="messenger-dock__bubble-quote">{{ messageQuote(message) }}</p>
+                                            }
+                                            <p class="messenger-dock__bubble-text">{{ message.content }}</p>
+                                            @if (message.creationDate.getTime()) {
+                                                <time class="messenger-dock__bubble-date">
+                                                    {{ message.creationDate | date: "short" }}
+                                                </time>
+                                            }
+                                            @if (message.delivery === "failed") {
+                                                <button
+                                                    type="button"
+                                                    class="messenger-dock__retry"
+                                                    nbButton
+                                                    size="tiny"
+                                                    status="danger"
+                                                    (click)="retryMessage($event, message)"
+                                                >
+                                                    {{ retryLabel }}
+                                                </button>
+                                            }
+                                        </div>
+                                    </article>
                                 }
                             }
                         </div>
@@ -217,7 +236,7 @@
                                     [dropFiles]="false"
                                     [messagePlaceholder]="composePlaceholder"
                                     (send)="onChatSend($event)"
-                                ></nb-chat-form>
+                                />
                             </nb-chat>
                         }
 
@@ -237,7 +256,7 @@
                                         [attr.aria-label]="cancelReplyLabel"
                                         (click)="cancelReply()"
                                     >
-                                        <nb-icon icon="close-outline" pack="eva"></nb-icon>
+                                        <nb-icon icon="close-outline" pack="eva" />
                                     </button>
                                 </div>
                             }
@@ -279,7 +298,7 @@
                     </div>
 
                     <div class="messenger-dock__body" [nbSpinner]="messengerStore.actionLoading()">
-                        @if (messengerStore.tab() === 'chats') {
+                        @if (messengerStore.tab() === "chats") {
                             @if (messengerStore.messagesLoading()) {
                                 <ul class="messenger-dock__list" aria-busy="true">
                                     @for (item of conversationPlaceholders; track item) {
@@ -299,12 +318,18 @@
                                     }
                                 </ul>
                             } @else if (messengerStore.conversations().length === 0) {
-                                <div class="messenger-dock__hint" i18n="@@social.messages.emptyList">No whispers yet.</div>
+                                <div class="messenger-dock__hint" i18n="@@social.messages.emptyList">
+                                    No whispers yet.
+                                </div>
                             } @else {
                                 <ul class="messenger-dock__list">
                                     @for (chat of messengerStore.conversations(); track chat.publicId) {
                                         <li>
-                                            <button type="button" (click)="messengerStore.selectConversation(chat.publicId)" class="messenger-dock__row">
+                                            <button
+                                                type="button"
+                                                (click)="messengerStore.selectConversation(chat.publicId)"
+                                                class="messenger-dock__row"
+                                            >
                                                 @if (chat.guildCrest; as crest) {
                                                     <app-guild-channel-crest
                                                         class="messenger-dock__avatar messenger-dock__avatar--crest"
@@ -318,9 +343,9 @@
                                                         [alt]="chat.displayTitle"
                                                     />
                                                 } @else {
-                                                    <span class="messenger-dock__avatar" aria-hidden="true">{{
-                                                        chat.displayTitle.charAt(0)
-                                                    }}</span>
+                                                    <span class="messenger-dock__avatar" aria-hidden="true">
+                                                        {{ chat.displayTitle.charAt(0) }}
+                                                    </span>
                                                 }
                                                 <span class="messenger-dock__row-text">
                                                     <span class="messenger-dock__row-title">
@@ -333,14 +358,20 @@
                                                             />
                                                         }
                                                     </span>
-                                                    <span class="messenger-dock__row-preview">{{ chat.lastMessage }}</span>
+                                                    <span class="messenger-dock__row-preview">
+                                                        {{ chat.lastMessage }}
+                                                    </span>
                                                 </span>
                                                 <span class="messenger-dock__row-meta">
                                                     @if (chat.lastDate) {
-                                                        <time class="messenger-dock__row-date">{{ chat.lastDate | date: "shortDate" }}</time>
+                                                        <time class="messenger-dock__row-date">
+                                                            {{ chat.lastDate | date: "shortDate" }}
+                                                        </time>
                                                     }
                                                     @if (chat.unreadCount > 0) {
-                                                        <span class="messenger-dock__badge">{{ chat.unreadCount }}</span>
+                                                        <span class="messenger-dock__badge">
+                                                            {{ chat.unreadCount }}
+                                                        </span>
                                                     }
                                                 </span>
                                             </button>
@@ -384,9 +415,9 @@
                                                         [alt]="contact.peerLabel"
                                                     />
                                                 } @else {
-                                                    <span class="messenger-dock__avatar" aria-hidden="true">{{
-                                                        contact.peerNickname.charAt(0)
-                                                    }}</span>
+                                                    <span class="messenger-dock__avatar" aria-hidden="true">
+                                                        {{ contact.peerNickname.charAt(0) }}
+                                                    </span>
                                                 }
                                                 <span class="messenger-dock__row-text">
                                                     @if (contact.peerPublicId) {
@@ -409,15 +440,33 @@
                                                         </span>
                                                     }
                                                     @if (messengerStore.isIncomingPending(contact)) {
-                                                        <span class="messenger-dock__row-preview" i18n="@@social.friends.section.incoming"
-                                                            >Incoming requests</span
+                                                        <span
+                                                            class="messenger-dock__row-preview"
+                                                            i18n="@@social.friends.section.incoming"
                                                         >
+                                                            Incoming requests
+                                                        </span>
                                                     } @else if (messengerStore.isOutgoingPending(contact)) {
-                                                        <span class="messenger-dock__row-preview" i18n="@@friends.status.pending">Pending</span>
+                                                        <span
+                                                            class="messenger-dock__row-preview"
+                                                            i18n="@@friends.status.pending"
+                                                        >
+                                                            Pending
+                                                        </span>
                                                     } @else if (messengerStore.isAccepted(contact)) {
-                                                        <span class="messenger-dock__row-preview" i18n="@@friends.status.accepted">Accepted</span>
+                                                        <span
+                                                            class="messenger-dock__row-preview"
+                                                            i18n="@@friends.status.accepted"
+                                                        >
+                                                            Accepted
+                                                        </span>
                                                     } @else if (messengerStore.isBlocked(contact)) {
-                                                        <span class="messenger-dock__row-preview" i18n="@@friends.status.blocked">Blocked</span>
+                                                        <span
+                                                            class="messenger-dock__row-preview"
+                                                            i18n="@@friends.status.blocked"
+                                                        >
+                                                            Blocked
+                                                        </span>
                                                     }
                                                 </span>
                                             </div>
@@ -527,7 +576,7 @@
             i18n-aria-label="@@social.messenger.toggle"
             aria-label="Open whispers"
         >
-            <nb-icon [icon]="messengerStore.isOpen() ? 'close-outline' : 'message-circle-outline'" pack="eva"></nb-icon>
+            <nb-icon [icon]="messengerStore.isOpen() ? 'close-outline' : 'message-circle-outline'" pack="eva" />
             @if (!messengerStore.isOpen() && messengerStore.totalBadgeCount() > 0) {
                 <span class="messenger-dock__fab-badge">{{ messengerStore.totalBadgeCount() }}</span>
             }

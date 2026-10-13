@@ -5,6 +5,12 @@ import { StaffUsersService } from "../services/staff-users.service";
 
 @Injectable()
 export class StaffUsersStore {
+    public readonly rows = computed(() => this.$rows());
+    public readonly loading = computed(() => this.$loading());
+    public readonly query = computed(() => this.$query());
+    public readonly siteRole = computed(() => this.$siteRole());
+    public readonly sanction = computed(() => this.$sanction());
+
     private readonly service = inject(StaffUsersService);
 
     private readonly $rows = signal<StaffUser[]>([]);
@@ -12,12 +18,6 @@ export class StaffUsersStore {
     private readonly $query = signal("");
     private readonly $siteRole = signal("");
     private readonly $sanction = signal("");
-
-    public readonly rows = computed(() => this.$rows());
-    public readonly loading = computed(() => this.$loading());
-    public readonly query = computed(() => this.$query());
-    public readonly siteRole = computed(() => this.$siteRole());
-    public readonly sanction = computed(() => this.$sanction());
 
     public setQuery(value: string): void {
         this.$query.set(value);

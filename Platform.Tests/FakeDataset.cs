@@ -1,424 +1,423 @@
 using GamersCommunity.Core.Tests;
+using Microsoft.EntityFrameworkCore;
 using Platform.Consumer.Utils;
 using Platform.Database.Context;
 using Platform.Database.Models;
-using Microsoft.EntityFrameworkCore;
 
-namespace Platform.Tests
+namespace Platform.Tests;
+
+public class FakeDataset : IFakeDataset<GamersCommunityDbContext>
 {
-    public class FakeDataset : IFakeDataset<GamersCommunityDbContext>
+    /// <summary>
+    /// Creates a new in-memory <see cref="GamersCommunityDbContext"/> with a unique database name and fill with basic fake data.
+    /// </summary>
+    public GamersCommunityDbContext CreateFakeContext() => SeedFakeData(new GamersCommunityDbContext(
+        new DbContextOptionsBuilder<GamersCommunityDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options
+        ));
+
+    /// <summary>
+    /// Seeds the full test dataset required across all services (relations, dependencies, etc.).
+    /// </summary>
+    private GamersCommunityDbContext SeedFakeData(GamersCommunityDbContext ctx)
     {
-        /// <summary>
-        /// Creates a new in-memory <see cref="GamersCommunityDbContext"/> with a unique database name and fill with basic fake data.
-        /// </summary>
-        public GamersCommunityDbContext CreateFakeContext() => SeedFakeData(new GamersCommunityDbContext(
-            new DbContextOptionsBuilder<GamersCommunityDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options
-            ));
+        ctx.ChangeTracker.AutoDetectChangesEnabled = false;
 
-        /// <summary>
-        /// Seeds the full test dataset required across all services (relations, dependencies, etc.).
-        /// </summary>
-        private GamersCommunityDbContext SeedFakeData(GamersCommunityDbContext ctx)
-        {
-            ctx.ChangeTracker.AutoDetectChangesEnabled = false;
+        #region GameTypes
 
-            #region GameTypes
+        ctx.GameTypes.AddRange(
+            new GameType
+            {
+                Id = 1,
+                Entitled = "Game type A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new GameType
+            {
+                Id = 2,
+                Entitled = "Game type B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.GameTypes.AddRange(
-                new GameType
-                {
-                    Id = 1,
-                    Entitled = "Game type A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new GameType
-                {
-                    Id = 2,
-                    Entitled = "Game type B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region Games
 
-            #region Games
+        ctx.Games.AddRange(
+            new Game
+            {
+                Id = 1,
+                Title = "Game A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                IdType = 1,
+                Picture = string.Empty,
+                UrlValue = "/world-of-warcraft",
+            },
+            new Game
+            {
+                Id = 2,
+                Title = "Game B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                IdType = 2,
+                Picture = string.Empty,
+                UrlValue = "/game-b",
+            }
+        );
 
-            ctx.Games.AddRange(
-                new Game
-                {
-                    Id = 1,
-                    Title = "Game A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    IdType = 1,
-                    Picture = string.Empty,
-                    UrlValue = "/world-of-warcraft",
-                },
-                new Game
-                {
-                    Id = 2,
-                    Title = "Game B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    IdType = 2,
-                    Picture = string.Empty,
-                    UrlValue = "/game-b",
-                }
-            );
+        #endregion
 
-            #endregion
+        #region Countries
 
-            #region Countries
+        ctx.Countries.AddRange(
+            new Country
+            {
+                Id = 1,
+                Name = "Country A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow
+            },
+            new Country
+            {
+                Id = 2,
+                Name = "Country B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow
+            }
+        );
 
-            ctx.Countries.AddRange(
-                new Country
-                {
-                    Id = 1,
-                    Name = "Country A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow
-                },
-                new Country
-                {
-                    Id = 2,
-                    Name = "Country B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow
-                }
-            );
+        #endregion
 
-            #endregion
+        #region Cities
 
-            #region Cities
+        ctx.Cities.AddRange(
+            new City
+            {
+                Id = 1,
+                Name = "City A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                IdCountry = 1,
+            },
+            new City
+            {
+                Id = 2,
+                Name = "City B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                IdCountry = 2,
+            }
+        );
 
-            ctx.Cities.AddRange(
-                new City
-                {
-                    Id = 1,
-                    Name = "City A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    IdCountry = 1,
-                },
-                new City
-                {
-                    Id = 2,
-                    Name = "City B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    IdCountry = 2,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region SiteRoles
 
-            #region SiteRoles
+        ctx.SiteRoles.AddRange(
+            new SiteRole { Id = 1, Code = "admin" },
+            new SiteRole { Id = 2, Code = "moderator" },
+            new SiteRole { Id = 3, Code = "member" }
+        );
 
-            ctx.SiteRoles.AddRange(
-                new SiteRole { Id = 1, Code = "admin" },
-                new SiteRole { Id = 2, Code = "moderator" },
-                new SiteRole { Id = 3, Code = "member" }
-            );
+        #endregion
 
-            #endregion
+        #region GameRoles
 
-            #region GameRoles
+        ctx.GameRoles.AddRange(
+            new GameRole { Id = 1, IdGame = 1, Code = "admin" },
+            new GameRole { Id = 2, IdGame = 1, Code = "moderator" },
+            new GameRole { Id = 3, IdGame = 1, Code = "member" }
+        );
 
-            ctx.GameRoles.AddRange(
-                new GameRole { Id = 1, IdGame = 1, Code = "admin" },
-                new GameRole { Id = 2, IdGame = 1, Code = "moderator" },
-                new GameRole { Id = 3, IdGame = 1, Code = "member" }
-            );
+        #endregion
 
-            #endregion
+        #region Users
 
-            #region Users
+        ctx.Users.AddRange(
+            new User
+            {
+                Id = 1,
+                PublicId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                Nickname = "User A",
+                Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                AvatarUrl = string.Empty,
+                Mail = string.Empty,
+                // Stable Keycloak subjects so GenericDataServiceTests.TestCaller can authenticate.
+                IdKeycloak = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                LastConnection = DateTime.UtcNow,
+            },
+            new User
+            {
+                Id = 2,
+                PublicId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                Nickname = "User B",
+                Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                AvatarUrl = string.Empty,
+                Mail = string.Empty,
+                IdKeycloak = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                LastConnection = DateTime.UtcNow,
+            },
+            new User
+            {
+                Id = 3,
+                PublicId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
+                Nickname = "User C",
+                Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                AvatarUrl = string.Empty,
+                Mail = string.Empty,
+                IdKeycloak = Guid.Parse("33333333-3333-3333-3333-333333333333"),
+                LastConnection = DateTime.UtcNow,
+            }
+        );
 
-            ctx.Users.AddRange(
-                new User
-                {
-                    Id = 1,
-                    PublicId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                    Nickname = "User A",
-                    Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    AvatarUrl = string.Empty,
-                    Mail = string.Empty,
-                    // Stable Keycloak subjects so GenericDataServiceTests.TestCaller can authenticate.
-                    IdKeycloak = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    LastConnection = DateTime.UtcNow,
-                },
-                new User
-                {
-                    Id = 2,
-                    PublicId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
-                    Nickname = "User B",
-                    Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    AvatarUrl = string.Empty,
-                    Mail = string.Empty,
-                    IdKeycloak = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    LastConnection = DateTime.UtcNow,
-                },
-                new User
-                {
-                    Id = 3,
-                    PublicId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc"),
-                    Nickname = "User C",
-                    Discriminator = DiscriminatorHelper.GetRandomDiscriminator(),
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    AvatarUrl = string.Empty,
-                    Mail = string.Empty,
-                    IdKeycloak = Guid.Parse("33333333-3333-3333-3333-333333333333"),
-                    LastConnection = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region Events
 
-            #region Events
+        ctx.Events.AddRange(
+            new Event
+            {
+                Id = 1,
+                Title = "Event A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                Active = false,
+                BeginDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(7),
+                Description = string.Empty,
+                Address = null,
+                NumAddress = null,
+                IdCity = 1,
+                Image = null,
+                Link = null,
+                PlaceName = null,
+                Places = null,
+            },
+            new Event
+            {
+                Id = 2,
+                Title = "Event B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+                Active = false,
+                BeginDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(7),
+                Description = string.Empty,
+                Address = null,
+                NumAddress = null,
+                IdCity = 2,
+                Image = null,
+                Link = null,
+                PlaceName = null,
+                Places = null,
+            }
+        );
 
-            ctx.Events.AddRange(
-                new Event
-                {
-                    Id = 1,
-                    Title = "Event A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    Active = false,
-                    BeginDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddDays(7),
-                    Description = string.Empty,
-                    Address = null,
-                    NumAddress = null,
-                    IdCity = 1,
-                    Image = null,
-                    Link = null,
-                    PlaceName = null,
-                    Places = null,
-                },
-                new Event
-                {
-                    Id = 2,
-                    Title = "Event B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                    Active = false,
-                    BeginDate = DateTime.UtcNow,
-                    EndDate = DateTime.UtcNow.AddDays(7),
-                    Description = string.Empty,
-                    Address = null,
-                    NumAddress = null,
-                    IdCity = 2,
-                    Image = null,
-                    Link = null,
-                    PlaceName = null,
-                    Places = null,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region EventsUsersStatuses
 
-            #region EventsUsersStatuses
+        ctx.EventsUsersStatuses.AddRange(
+            new EventsUsersStatus
+            {
+                Id = 1,
+                Entitled = "Status A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new EventsUsersStatus
+            {
+                Id = 2,
+                Entitled = "Status B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new EventsUsersStatus
+            {
+                Id = 3,
+                Entitled = "Status C",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.EventsUsersStatuses.AddRange(
-                new EventsUsersStatus
-                {
-                    Id = 1,
-                    Entitled = "Status A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new EventsUsersStatus
-                {
-                    Id = 2,
-                    Entitled = "Status B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new EventsUsersStatus
-                {
-                    Id = 3,
-                    Entitled = "Status C",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region EventsUsersInterests
 
-            #region EventsUsersInterests
+        ctx.EventsUsersInterests.AddRange(
+            new EventsUsersInterest
+            {
+                Id = 1,
+                IdEvent = 1,
+                IdUser = 1,
+                IdStatus = 1,
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new EventsUsersInterest
+            {
+                Id = 2,
+                IdEvent = 1,
+                IdUser = 2,
+                IdStatus = 2,
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.EventsUsersInterests.AddRange(
-                new EventsUsersInterest
-                {
-                    Id = 1,
-                    IdEvent = 1,
-                    IdUser = 1,
-                    IdStatus = 1,
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new EventsUsersInterest
-                {
-                    Id = 2,
-                    IdEvent = 1,
-                    IdUser = 2,
-                    IdStatus = 2,
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region FriendStatuses
 
-            #region FriendStatuses
+        ctx.FriendStatuses.AddRange(
+            new FriendStatus
+            {
+                Id = 1,
+                Entitled = "Friend status A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new FriendStatus
+            {
+                Id = 2,
+                Entitled = "Friend status B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new FriendStatus
+            {
+                Id = 3,
+                Entitled = "Friend status C",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.FriendStatuses.AddRange(
-                new FriendStatus
-                {
-                    Id = 1,
-                    Entitled = "Friend status A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new FriendStatus
-                {
-                    Id = 2,
-                    Entitled = "Friend status B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new FriendStatus
-                {
-                    Id = 3,
-                    Entitled = "Friend status C",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region Friends
 
-            #region Friends
+        ctx.Friends.AddRange(
+            new Friend
+            {
+                Id = 1,
+                IdFriendAsking = 1,
+                IdFriendReceive = 2,
+                IdFriendStatus = 1,
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new Friend
+            {
+                Id = 2,
+                IdFriendAsking = 2,
+                IdFriendReceive = 3,
+                IdFriendStatus = 2,
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.Friends.AddRange(
-                new Friend
-                {
-                    Id = 1,
-                    IdFriendAsking = 1,
-                    IdFriendReceive = 2,
-                    IdFriendStatus = 1,
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new Friend
-                {
-                    Id = 2,
-                    IdFriendAsking = 2,
-                    IdFriendReceive = 3,
-                    IdFriendStatus = 2,
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        #region Messages
 
-            #region Messages
+        ctx.Conversations.AddRange(
+            new Conversation
+            {
+                Id = 1,
+                Kind = ConversationKind.Dm,
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new Conversation
+            {
+                Id = 2,
+                Kind = ConversationKind.Dm,
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.Conversations.AddRange(
-                new Conversation
-                {
-                    Id = 1,
-                    Kind = ConversationKind.Dm,
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new Conversation
-                {
-                    Id = 2,
-                    Kind = ConversationKind.Dm,
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        var joined = DateTime.UtcNow.AddDays(-1);
+        ctx.ConversationMembers.AddRange(
+            new ConversationMember
+            {
+                IdConversation = 1,
+                IdUser = 1,
+                JoinedAt = joined,
+                LastReadAt = joined,
+                CreationDate = joined,
+                ModificationDate = joined,
+            },
+            new ConversationMember
+            {
+                IdConversation = 1,
+                IdUser = 2,
+                JoinedAt = joined,
+                LastReadAt = joined,
+                CreationDate = joined,
+                ModificationDate = joined,
+            },
+            new ConversationMember
+            {
+                IdConversation = 2,
+                IdUser = 2,
+                JoinedAt = joined,
+                LastReadAt = joined,
+                CreationDate = joined,
+                ModificationDate = joined,
+            },
+            new ConversationMember
+            {
+                IdConversation = 2,
+                IdUser = 3,
+                JoinedAt = joined,
+                LastReadAt = joined,
+                CreationDate = joined,
+                ModificationDate = joined,
+            }
+        );
 
-            var joined = DateTime.UtcNow.AddDays(-1);
-            ctx.ConversationMembers.AddRange(
-                new ConversationMember
-                {
-                    IdConversation = 1,
-                    IdUser = 1,
-                    JoinedAt = joined,
-                    LastReadAt = joined,
-                    CreationDate = joined,
-                    ModificationDate = joined,
-                },
-                new ConversationMember
-                {
-                    IdConversation = 1,
-                    IdUser = 2,
-                    JoinedAt = joined,
-                    LastReadAt = joined,
-                    CreationDate = joined,
-                    ModificationDate = joined,
-                },
-                new ConversationMember
-                {
-                    IdConversation = 2,
-                    IdUser = 2,
-                    JoinedAt = joined,
-                    LastReadAt = joined,
-                    CreationDate = joined,
-                    ModificationDate = joined,
-                },
-                new ConversationMember
-                {
-                    IdConversation = 2,
-                    IdUser = 3,
-                    JoinedAt = joined,
-                    LastReadAt = joined,
-                    CreationDate = joined,
-                    ModificationDate = joined,
-                }
-            );
+        ctx.Messages.AddRange(
+            new Message
+            {
+                PublicId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
+                IdConversation = 1,
+                IdSender = 1,
+                Content = "Content A",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            },
+            new Message
+            {
+                PublicId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
+                IdConversation = 2,
+                IdSender = 2,
+                Content = "Content B",
+                CreationDate = DateTime.UtcNow,
+                ModificationDate = DateTime.UtcNow,
+            }
+        );
 
-            ctx.Messages.AddRange(
-                new Message
-                {
-                    PublicId = Guid.Parse("11111111-1111-1111-1111-111111111111"),
-                    IdConversation = 1,
-                    IdSender = 1,
-                    Content = "Content A",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                },
-                new Message
-                {
-                    PublicId = Guid.Parse("22222222-2222-2222-2222-222222222222"),
-                    IdConversation = 2,
-                    IdSender = 2,
-                    Content = "Content B",
-                    CreationDate = DateTime.UtcNow,
-                    ModificationDate = DateTime.UtcNow,
-                }
-            );
+        #endregion
 
-            #endregion
+        ctx.ChangeTracker.AutoDetectChangesEnabled = true;
 
-            ctx.ChangeTracker.AutoDetectChangesEnabled = true;
+        ctx.SaveChanges();
 
-            ctx.SaveChanges();
-
-            return ctx;
-        }
+        return ctx;
     }
 }

@@ -12,7 +12,15 @@ import { FriendsStore } from "../../stores/friends.store";
     selector: "app-create-group-dialog",
     templateUrl: "./create-group-dialog.component.html",
     styleUrl: "./create-group-dialog.component.scss",
-    imports: [FormsModule, NbCardModule, NbButtonModule, NbInputModule, NbCheckboxModule, SkeletonComponent, UserHandleComponent],
+    imports: [
+        FormsModule,
+        NbCardModule,
+        NbButtonModule,
+        NbInputModule,
+        NbCheckboxModule,
+        SkeletonComponent,
+        UserHandleComponent,
+    ],
 })
 export class CreateGroupDialogComponent {
     public readonly contactPlaceholders = [0, 1, 2, 3];

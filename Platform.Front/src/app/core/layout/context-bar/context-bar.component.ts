@@ -3,24 +3,8 @@ import { FormsModule } from "@angular/forms";
 import { ActivatedRouteSnapshot, NavigationEnd, Router, RouterLink, RouterLinkActive } from "@angular/router";
 import { BreadcrumbComponent } from "@bari77/gc-ui";
 import { NbFormFieldModule, NbIconModule, NbInputModule } from "@nebular/theme";
-
-/**
- * Destination a game route offers to the shell, be it a section or a search page. Declared in the
- * route `data` of the game, next to its breadcrumb, so the shell never has to load a remote to
- * know what that game offers.
- */
-export interface GameLink {
-    /** Absolute route, since a game declares its own prefix. */
-    path: string;
-
-    label: string;
-}
-
-interface ContextBarState {
-    hasTrail: boolean;
-    nav: GameLink[];
-    search: GameLink | null;
-}
+import { GameLink } from "./game-link.model";
+import { ContextBarState } from "./context-bar-state.model";
 
 function isGameLink(value: unknown): value is GameLink {
     return (
@@ -65,12 +49,12 @@ export class ContextBarComponent {
     protected readonly navLabel = $localize`:@@core.contextBar.sections:Game sections`;
     protected readonly term = signal("");
 
-    private readonly router = inject(Router);
-    private readonly state = signal<ContextBarState>(this.read());
-
     protected readonly hasTrail = computed(() => this.state().hasTrail);
     protected readonly gameNav = computed(() => this.state().nav);
     protected readonly gameSearch = computed(() => this.state().search);
+
+    private readonly router = inject(Router);
+    private readonly state = signal<ContextBarState>(this.read());
 
     public constructor() {
         const subscription = this.router.events.subscribe((event) => {
