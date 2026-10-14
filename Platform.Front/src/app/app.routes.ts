@@ -56,18 +56,13 @@ export const appRoutes: Routes = [
                 {
                     path: "/world-of-warcraft/search",
                     queryParams: { type: "characters" },
-                    label: $localize`:@@core.contextBar.nav.characters:Characters`,
-                },
-                {
-                    path: "/world-of-warcraft/search",
-                    queryParams: { type: "players" },
                     activePrefix: "/world-of-warcraft/players",
-                    label: $localize`:@@core.contextBar.nav.players:Players`,
+                    label: $localize`:@@core.contextBar.nav.characters:Characters`,
                 },
             ],
             gameSearch: {
                 path: "/world-of-warcraft/search",
-                label: $localize`:@@core.contextBar.search.worldOfWarcraft:Search a character, a player or a guild`,
+                label: $localize`:@@core.contextBar.search.worldOfWarcraft:Search a character or a guild`,
             },
         },
         loadChildren: () => loadRemoteRoutes("worldOfWarcraft", "./Routes", "worldOfWarcraftRoutes"),
