@@ -98,7 +98,7 @@ When a message id is also the prefix of a longer id, its text lives on `.label` 
 | Extract         | `npm run i18n` → `src/locale/en-US/` |
 | Translate later | Edit `src/locale/fr-FR/`             |
 
-Babelary (`gc-platform`, source `en-US`, target `fr-FR`) reads the folders. The token stays in `BABELARY_TOKEN`.
+Babelary (`gc-platform`, source `en-US`, target `fr-FR`) reads the folders with `files: "{locale}/{name}.json"`. The token stays in `BABELARY_TOKEN`.
 
 | Step                     | Action                           |
 | ------------------------ | -------------------------------- |

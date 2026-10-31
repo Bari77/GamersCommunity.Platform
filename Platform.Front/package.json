@@ -55,7 +55,7 @@
         "@angular/cli": "21.2.15",
         "@angular/compiler-cli": "21.2.17",
         "@angular/localize": "21.2.17",
-        "@bari77/babelary": "0.2.1",
+        "@bari77/babelary": "0.3.0",
         "@bari77/gc-lint": "^2.1.0",
         "@softarc/native-federation-orchestrator": "^4.2.2",
         "@types/jasmine": "5.1.13",
