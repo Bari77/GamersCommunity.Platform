@@ -111,7 +111,7 @@
                             "i18nMissingTranslation": "warning"
                         },
                         "fr": {
-                            "localize": ["fr"]
+                            "localize": ["fr-FR"]
                         }
                     },
                     "defaultConfiguration": "production"
@@ -141,8 +141,8 @@
             "i18n": {
                 "sourceLocale": "en-US",
                 "locales": {
-                    "fr": {
-                        "translation": "src/locale/source.fr.json"
+                    "fr-FR": {
+                        "translation": "src/locale/fr-FR.json"
                     }
                 }
             }

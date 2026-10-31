@@ -1,0 +1,21 @@
+{
+    "events": {
+        "detail": {
+            "back": "Retour aux événements",
+            "link": "Lien externe",
+            "missing": "Événement introuvable.",
+            "rsvp": {
+                "declined": "Décliné",
+                "going": "J’y vais",
+                "interested": "Intéressé"
+            },
+            "rsvpLabel": "Votre RSVP",
+            "rsvpLogin": "Connectez-vous pour répondre à cet événement."
+        },
+        "list": {
+            "empty": "Aucun événement publié pour l’instant.",
+            "lead": "Rassemblements site et cross-jeux — RSVP sur la fiche.",
+            "title": "Événements communauté"
+        }
+    }
+}

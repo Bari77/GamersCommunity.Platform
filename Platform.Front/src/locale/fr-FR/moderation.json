@@ -1,0 +1,81 @@
+{
+    "moderation": {
+        "action": {
+            "ban": " Bannir ",
+            "cancel": "Annuler",
+            "confirm": " Confirmer ",
+            "lift": " Lever ",
+            "mute": " Rendre muet "
+        },
+        "detail": {
+            "back": "Retour à l'annuaire",
+            "lastSeen": "Dernière connexion",
+            "noGameRole": "Aucun",
+            "noSanctions": "Aucun historique de sanction.",
+            "profile": " Profil public ",
+            "ranks": "Rangs",
+            "sanctions": "Sanctions",
+            "siteRole": "Rôle sur le site"
+        },
+        "duration": {
+            "1h": "1 heure",
+            "24h": "24 heures",
+            "30d": "30 jours",
+            "7d": "7 jours"
+        },
+        "filter": {
+            "any": "Tous les rôles",
+            "anySanction": "Toutes les sanctions"
+        },
+        "mute": {
+            "bannerTitle": "Un modérateur vous a rendu muet",
+            "until": "Jusqu'au {$INTERPOLATION}"
+        },
+        "nav": {
+            "reports": " Signalements {$START_BLOCK_IF}{$START_TAG_SPAN}{$INTERPOLATION}{$CLOSE_TAG_SPAN}{$CLOSE_BLOCK_IF}",
+            "users": " Utilisateurs "
+        },
+        "report": {
+            "reason": "Pourquoi signalez-vous ce joueur ?",
+            "sent": "Merci, le staff va l'examiner.",
+            "sentTitle": "Signalement envoyé",
+            "submit": " Envoyer le signalement ",
+            "title": "Signaler {$INTERPOLATION}"
+        },
+        "reports": {
+            "actioned": "Traités",
+            "by": "Signalé par",
+            "dismiss": " Rejeter ",
+            "dismissed": "Rejetés",
+            "empty": "Aucun signalement dans cette file.",
+            "lead": "Examinez les signalements, puis rendez muet, bannissez ou rejetez.",
+            "open": "Ouverts",
+            "title": "Signalements"
+        },
+        "role": {
+            "admin": "Admin",
+            "member": "Membre",
+            "moderator": "Modérateur"
+        },
+        "sanction": {
+            "active": "active",
+            "banTitle": "Bannir {$INTERPOLATION}",
+            "banned": "Banni",
+            "duration": "Durée",
+            "muteTitle": "Rendre muet {$INTERPOLATION}",
+            "muted": "Muet",
+            "none": "Aucune",
+            "permanent": "Permanent",
+            "permanentShort": "permanente",
+            "reason": "Motif"
+        },
+        "users": {
+            "empty": "Aucun joueur ne correspond à ces filtres.",
+            "lead": "Recherchez des joueurs, filtrez par rôle ou sanction, puis ouvrez une fiche.",
+            "query": "pseudo#1234",
+            "role": "Rôle",
+            "sanction": "Sanction",
+            "title": "Annuaire du staff"
+        }
+    }
+}

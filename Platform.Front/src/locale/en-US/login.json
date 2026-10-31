@@ -1,0 +1,11 @@
+{
+    "login": {
+        "action": {
+            "google": " Continue with Google ",
+            "login": " Log in ",
+            "signup": " Sign up "
+        },
+        "anyAccount": "Any account?",
+        "title": "Login"
+    }
+}

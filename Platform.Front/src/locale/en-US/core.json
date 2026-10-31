@@ -1,0 +1,64 @@
+{
+    "core": {
+        "breadcrumb": {
+            "event": "Event",
+            "events": "Events",
+            "friends": "Friends",
+            "home": "Home",
+            "leagueOfLegends": "League of Legends",
+            "login": "Sign in",
+            "moderation": {
+                "label": "Moderation",
+                "reports": "Reports",
+                "user": "User",
+                "users": "Users"
+            },
+            "profile": "My profile",
+            "users": {
+                "profile": "Profile",
+                "search": "Player search"
+            },
+            "worldOfWarcraft": "World of Warcraft"
+        },
+        "contextBar": {
+            "nav": {
+                "characters": "Characters",
+                "guilds": "Guilds",
+                "players": "Players",
+                "sheet": "My profile",
+                "teams": "Teams"
+            },
+            "search": {
+                "leagueOfLegends": "Search a player or a team",
+                "worldOfWarcraft": "Search a character or a guild"
+            },
+            "sections": "Game sections"
+        },
+        "copyright": "© {$INTERPOLATION}",
+        "federation": {
+            "loadError": "Could not load this game.",
+            "loadErrorTitle": "Game unavailable"
+        },
+        "header": {
+            "events": " Events ",
+            "friends": " Friends ",
+            "games": " Games ",
+            "home": "Home",
+            "login": "Login",
+            "menu": {
+                "logout": "Logout",
+                "profile": "Profile"
+            },
+            "moderation": " Moderation {$START_BLOCK_IF}{$START_TAG_SPAN}{$INTERPOLATION}{$CLOSE_TAG_SPAN}{$CLOSE_BLOCK_IF}",
+            "notifications": "Notifications",
+            "search": "Search"
+        },
+        "layout": {
+            "offline": {
+                "checking": "Checking connection...",
+                "message": "Site offline — auto refresh in {$PH}s"
+            }
+        },
+        "title": "Gamers Community"
+    }
+}

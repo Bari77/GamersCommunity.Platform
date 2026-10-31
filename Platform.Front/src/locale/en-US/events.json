@@ -1,0 +1,21 @@
+{
+    "events": {
+        "detail": {
+            "back": "Back to events",
+            "link": " External link ",
+            "missing": "Event not found.",
+            "rsvp": {
+                "declined": " Declined ",
+                "going": " Going ",
+                "interested": " Interested "
+            },
+            "rsvpLabel": "Your RSVP",
+            "rsvpLogin": "Log in to RSVP to this event."
+        },
+        "list": {
+            "empty": "No events published yet. Check back soon.",
+            "lead": "Site-wide and cross-game gatherings — RSVP from the detail page.",
+            "title": "Community events"
+        }
+    }
+}

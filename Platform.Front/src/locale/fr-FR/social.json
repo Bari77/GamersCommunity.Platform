@@ -1,0 +1,89 @@
+{
+    "social": {
+        "friends": {
+            "action": {
+                "accept": "Accepter",
+                "block": "Bloquer",
+                "message": "Message",
+                "refuse": "Refuser",
+                "remove": " Retirer ",
+                "unblock": "Débloquer"
+            },
+            "empty": {
+                "accepted": "Pas encore d’amis.",
+                "blocked": "Aucun joueur bloqué.",
+                "incoming": "Aucune demande en attente.",
+                "outgoing": "Aucune demande envoyée."
+            },
+            "lead": "Demandes en attente, votre crew et joueurs bloqués.",
+            "section": {
+                "accepted": "Amis",
+                "blocked": "Bloqués",
+                "incoming": "Demandes reçues",
+                "outgoing": "Demandes envoyées"
+            },
+            "title": "Amis"
+        },
+        "messages": {
+            "emptyList": "Aucun whisper pour l’instant.",
+            "placeholder": "Vos whispers apparaîtront ici."
+        },
+        "messenger": {
+            "back": "Retour",
+            "blockedByMe": "Vous avez bloqué ce joueur. Il ne peut plus vous écrire, et vous ne pouvez pas chuchoter ici.",
+            "blockedByPeer": "Ce joueur vous a bloqué. Vous ne pouvez pas envoyer de whispers dans cette conversation.",
+            "cancelReply": "Annuler la réponse",
+            "close": "Fermer",
+            "compose": "Chuchoter quelque chose…",
+            "contactsEmpty": "Aucun ami ni demande pour l’instant.",
+            "createGroup": {
+                "cancel": " Annuler ",
+                "dmHint": " Un seul contact sélectionné — cela ouvrira un message privé. ",
+                "empty": "Aucun contact correspondant.",
+                "name": "Nom du groupe (facultatif)",
+                "namePlaceholder": "Laissez vide pour utiliser les noms des membres",
+                "needTwo": " Sélectionnez au moins deux contacts pour créer un groupe. ",
+                "picture": "Image (facultative)",
+                "search": "Rechercher des contacts",
+                "submitDm": "Ouvrir la discussion",
+                "submitGroup": "Créer le groupe",
+                "title": "Créer un groupe",
+                "tooltip": "Créer un groupe"
+            },
+            "event": {
+                "joined": "{$handle} a rejoint le groupe.",
+                "left": "{$handle} a quitté le groupe."
+            },
+            "loadingOlder": "Chargement des whispers précédents…",
+            "manageGroup": {
+                "add": "Ajouter des contacts",
+                "addSelected": " Ajouter au groupe ",
+                "close": "Fermer",
+                "deleteCancel": " Annuler ",
+                "deleteConfirm": " Supprimer le groupe ",
+                "deleteTitle": "Supprimer ce groupe ?",
+                "deleteWarning": " Retirer le dernier membre supprimera ce groupe pour tout le monde. Cette action est irréversible. ",
+                "guildManaged": " Les membres de ce canal suivent le roster équipe ou guilde et ne peuvent pas être modifiés ici. ",
+                "noAddable": "Plus aucun contact à ajouter.",
+                "owner": "Propriétaire",
+                "remove": " Retirer ",
+                "save": " Enregistrer le groupe ",
+                "title": "Membres du groupe",
+                "tooltip": "Membres du groupe"
+            },
+            "newMessages": "Nouveaux messages",
+            "realtime": {
+                "connecting": "Connexion aux whispers en direct…",
+                "offline": "Les whispers en direct sont indisponibles. L’envoi est désactivé jusqu’au rétablissement de la liaison."
+            },
+            "replying": "Réponse à",
+            "retry": "Réessayer",
+            "tab": {
+                "chats": "Discussions",
+                "contacts": "Contacts"
+            },
+            "title": "Whispers",
+            "toggle": "Ouvrir les whispers"
+        }
+    }
+}

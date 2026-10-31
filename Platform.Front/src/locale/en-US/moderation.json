@@ -1,0 +1,81 @@
+{
+    "moderation": {
+        "action": {
+            "ban": " Ban ",
+            "cancel": "Cancel",
+            "confirm": " Confirm ",
+            "lift": " Lift ",
+            "mute": " Mute "
+        },
+        "detail": {
+            "back": "Back to directory",
+            "lastSeen": "Last connection",
+            "noGameRole": "None",
+            "noSanctions": "No sanction history.",
+            "profile": " Public profile ",
+            "ranks": "Ranks",
+            "sanctions": "Sanctions",
+            "siteRole": "Site role"
+        },
+        "duration": {
+            "1h": "1 hour",
+            "24h": "24 hours",
+            "30d": "30 days",
+            "7d": "7 days"
+        },
+        "filter": {
+            "any": "Any role",
+            "anySanction": "Any sanction"
+        },
+        "mute": {
+            "bannerTitle": "A moderator muted you",
+            "until": "Until {$INTERPOLATION}"
+        },
+        "nav": {
+            "reports": " Reports {$START_BLOCK_IF}{$START_TAG_SPAN}{$INTERPOLATION}{$CLOSE_TAG_SPAN}{$CLOSE_BLOCK_IF}",
+            "users": " Users "
+        },
+        "report": {
+            "reason": "Why are you reporting this player?",
+            "sent": "Thanks, the staff will review it.",
+            "sentTitle": "Report sent",
+            "submit": " Send report ",
+            "title": "Report {$INTERPOLATION}"
+        },
+        "reports": {
+            "actioned": "Actioned",
+            "by": "Reported by",
+            "dismiss": " Dismiss ",
+            "dismissed": "Dismissed",
+            "empty": "No reports in this queue.",
+            "lead": "Review player reports, then mute, ban, or dismiss.",
+            "open": "Open",
+            "title": "Reports"
+        },
+        "role": {
+            "admin": "Admin",
+            "member": "Member",
+            "moderator": "Moderator"
+        },
+        "sanction": {
+            "active": "active",
+            "banTitle": "Ban {$INTERPOLATION}",
+            "banned": "Banned",
+            "duration": "Duration",
+            "muteTitle": "Mute {$INTERPOLATION}",
+            "muted": "Muted",
+            "none": "None",
+            "permanent": "Permanent",
+            "permanentShort": "permanent",
+            "reason": "Reason"
+        },
+        "users": {
+            "empty": "No players match these filters.",
+            "lead": "Search players, filter by role or sanction, then open a file.",
+            "query": "nick#1234",
+            "role": "Role",
+            "sanction": "Sanction",
+            "title": "Staff directory"
+        }
+    }
+}

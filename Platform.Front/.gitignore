@@ -38,6 +38,9 @@ testem.log
 /typings
 __screenshots__/
 
+# Catalogs concatenated by prebuild.js. Sources live in src/locale/<locale>/.
+/src/locale/*.json
+
 # System files
 .DS_Store
 Thumbs.db

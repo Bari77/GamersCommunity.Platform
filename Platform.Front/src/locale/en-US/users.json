@@ -1,0 +1,44 @@
+{
+    "users": {
+        "nicknameDialog": {
+            "cancel": "Cancel",
+            "confirm": " Confirm ",
+            "header": "Choose your nickname",
+            "placeholder": "Nickname"
+        },
+        "profile": {
+            "avatarSection": "Choose your avatar",
+            "gamesEmpty": " You have no game profile yet. Open a game to create one. ",
+            "gamesSection": "My game profiles",
+            "saveAvatar": " Save avatar ",
+            "title": "Profile"
+        },
+        "profilePublic": {
+            "action": {
+                "add": " Add friend ",
+                "report": " Report ",
+                "waiting": " Request pending "
+            },
+            "games": "Games",
+            "lastSeen": "Last seen",
+            "loginToAdd": " Log in to add this player ",
+            "missing": "Player not found.",
+            "online": "Online",
+            "relation": {
+                "blocked": "Blocked",
+                "friends": "Friends",
+                "none": "Not in your friends list",
+                "pendingIncoming": "Wants to be your friend",
+                "pendingOutgoing": "Friend request sent"
+            }
+        },
+        "search": {
+            "empty": "No players found.",
+            "emptyQuery": "Enter a term in the header search.",
+            "hint": "Search by nickname or nickname#discriminator.",
+            "openProfile": "View profile",
+            "resultsFor": "Results for",
+            "title": "Player search"
+        }
+    }
+}

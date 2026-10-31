@@ -1,0 +1,17 @@
+{
+    "home": {
+        "games": {
+            "lead": "Entrez dans un hub — fiches, guildes et LFG vivent dans chaque jeu.",
+            "title": "Jeux"
+        },
+        "hero": {
+            "cta": {
+                "games": "Explorer les jeux",
+                "join": "Rejoindre la communauté"
+            },
+            "eyebrow": "Gamers Community",
+            "lead": "Profils, guildes, annonces LFG et événements — un hub pour chaque jeu.",
+            "title": "Jouez ensemble. Partagez plus fort."
+        }
+    }
+}

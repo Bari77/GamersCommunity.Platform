@@ -5,7 +5,7 @@
 **English (`en-US`) is the only language in source code** (templates, `$localize` default text, comments).
 
 - Do **not** put French (or any other locale) in HTML/TS sources.
-- French (and other locales) live only in translation files under `src/locale/` (e.g. `source.fr.json`), filled later.
+- French (and other locales) live only in translation files under `src/locale/` (e.g. `fr-FR.json`), filled later.
 - `angular.json` → `i18n.sourceLocale: "en-US"`.
 
 Game remotes (e.g. WorldOfWarcraft.Front) own their own i18n catalogs with a scoped key prefix (`wow.*`). The shell does not ship remote strings.
@@ -32,15 +32,15 @@ Always use stable custom IDs: `@@feature.section.key`.
 npm run i18n
 ```
 
-Writes / updates `src/locale/source.json` (English reference catalog).
+Extracts `src/locale/en-US.json`, then folds the ids back into `src/locale/en-US/` and `src/locale/fr-FR/`. A new French id keeps the English text until it is translated.
 
 ## Adding a locale later (e.g. French)
 
-1. Start from `source.json` (or keep evolving `source.fr.json`).
+1. Start from `en-US.json` (or keep evolving `fr-FR.json`).
 2. Translate values only — keep the same keys.
-3. Register the file under `angular.json` → `i18n.locales` (already done for `fr`).
+3. Register the file under `angular.json` → `i18n.locales` (already done for `fr-FR`).
 
-Until French is ready, develop and run against the **source locale** (`en-US`). The existing `source.fr.json` may lag behind; refresh it when starting the FR effort.
+Until French is ready, develop and run against the **source locale** (`en-US`). The existing `fr-FR.json` may lag behind; refresh it when starting the FR effort.
 
 ## Dynamic keys from database seeds
 
@@ -66,9 +66,15 @@ Use `$localize` with a computed message ID only when the ID is known at build ti
 
 ```
 src/locale/
-  source.json       # extracted EN catalog (reference)
-  source.fr.json    # French translations (deferred / incomplete OK)
+  en-US/        # English sources, one JSON file per area
+  fr-FR/        # French translations, same files
+  en-US.json    # generated catalog read by the Angular compiler
+  fr-FR.json    # generated catalog
 ```
+
+`node prebuild.js` concatenates each folder into the catalog Angular compiles. The `prebuild` npm script runs it before `npm run build`. Edit the files inside `en-US/` and `fr-FR/`.
+
+When a message id is also the prefix of a longer id, its text lives on `.label` (`core.breadcrumb.moderation.label` next to `core.breadcrumb.moderation.users`). A JSON object cannot be both a string and a group.
 
 ## angular.json (reference)
 
@@ -76,8 +82,8 @@ src/locale/
 "i18n": {
   "sourceLocale": "en-US",
   "locales": {
-    "fr": {
-      "translation": "src/locale/source.fr.json"
+    "fr-FR": {
+      "translation": "src/locale/fr-FR.json"
     }
   }
 }
@@ -85,9 +91,17 @@ src/locale/
 
 ## Summary
 
-| Step            | Action                         |
-| --------------- | ------------------------------ |
-| Write UI copy   | English only in source         |
-| Mark strings    | `i18n="@@…"` / `$localize`     |
-| Extract         | `npm run i18n` → `source.json` |
-| Translate later | Edit `source.fr.json` (etc.)   |
+| Step            | Action                               |
+| --------------- | ------------------------------------ |
+| Write UI copy   | English only in source               |
+| Mark strings    | `i18n="@@…"` / `$localize`           |
+| Extract         | `npm run i18n` → `src/locale/en-US/` |
+| Translate later | Edit `src/locale/fr-FR/`             |
+
+Babelary (`gc-platform`, source `en-US`, target `fr-FR`) reads the folders. The token stays in `BABELARY_TOKEN`.
+
+| Step                     | Action                           |
+| ------------------------ | -------------------------------- |
+| Send the English catalog | `npm run i18n:push:sources`      |
+| Send French              | `npm run i18n:push:translations` |
+| Bring translations back  | `npm run i18n:pull`              |

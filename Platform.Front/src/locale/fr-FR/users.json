@@ -1,0 +1,44 @@
+{
+    "users": {
+        "nicknameDialog": {
+            "cancel": "Annuler",
+            "confirm": "Confirmer",
+            "header": "Choisissez votre pseudo",
+            "placeholder": "Pseudo"
+        },
+        "profile": {
+            "avatarSection": "Choisissez votre avatar",
+            "gamesEmpty": "Vous n'avez pas encore de fiche de jeu. Ouvrez un jeu pour en créer une.",
+            "gamesSection": "Mes fiches de jeu",
+            "saveAvatar": "Enregistrer l'avatar",
+            "title": "Profil"
+        },
+        "profilePublic": {
+            "action": {
+                "add": "Ajouter en ami",
+                "report": " Signaler ",
+                "waiting": "Demande en attente"
+            },
+            "games": "Jeux",
+            "lastSeen": "Dernière connexion",
+            "loginToAdd": "Connectez-vous pour ajouter ce joueur",
+            "missing": "Joueur introuvable.",
+            "online": "En ligne",
+            "relation": {
+                "blocked": "Bloqué",
+                "friends": "Amis",
+                "none": "Pas dans votre liste d’amis",
+                "pendingIncoming": "Veut être votre ami",
+                "pendingOutgoing": "Demande d’ami envoyée"
+            }
+        },
+        "search": {
+            "empty": "Aucun joueur trouvé.",
+            "emptyQuery": "Saisissez un terme dans la recherche du header.",
+            "hint": "Recherchez par pseudo ou pseudo#discriminateur.",
+            "openProfile": "Voir le profil",
+            "resultsFor": "Résultats pour",
+            "title": "Recherche de joueurs"
+        }
+    }
+}

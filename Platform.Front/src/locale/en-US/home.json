@@ -1,0 +1,17 @@
+{
+    "home": {
+        "games": {
+            "lead": "Jump into a hub — sheets, guilds and LFG live inside each game.",
+            "title": "Games"
+        },
+        "hero": {
+            "cta": {
+                "games": " Explore games ",
+                "join": " Join the community "
+            },
+            "eyebrow": "Gamers Community",
+            "lead": " Profiles, guilds, LFG boards and events — one hub for every game you play. ",
+            "title": "Play together. Share louder."
+        }
+    }
+}

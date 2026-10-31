@@ -1,0 +1,9 @@
+{
+    "friends": {
+        "status": {
+            "accepted": "Accepté",
+            "blocked": "Bloqué",
+            "pending": "En attente"
+        }
+    }
+}

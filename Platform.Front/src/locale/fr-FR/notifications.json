@@ -1,0 +1,27 @@
+{
+    "notifications": {
+        "empty": "Aucune notification pour le moment.",
+        "friendAccepted": {
+            "body": "{$name} a accepté votre demande",
+            "title": "Demande d’ami acceptée"
+        },
+        "friendRequest": {
+            "body": "{$name} veut vous ajouter",
+            "title": "Demande d’ami"
+        },
+        "markAllRead": "Tout marquer lu",
+        "sanction": {
+            "mute": {
+                "body": "Un modérateur vous a rendu muet : {$reason}",
+                "title": "Vous avez été rendu muet"
+            }
+        },
+        "time": {
+            "days": "il y a {$days} j",
+            "hours": "il y a {$hours} h",
+            "justNow": "À l’instant",
+            "minutes": "il y a {$mins} min"
+        },
+        "title": "Notifications"
+    }
+}

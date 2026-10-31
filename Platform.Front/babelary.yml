@@ -1,0 +1,4 @@
+base_url: https://babelary.bariserv.net
+project: gc-platform
+source_locale: en-US
+base_path: ./src/locale

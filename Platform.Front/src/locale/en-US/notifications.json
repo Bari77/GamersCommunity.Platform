@@ -1,0 +1,27 @@
+{
+    "notifications": {
+        "empty": "No notifications yet.",
+        "friendAccepted": {
+            "body": "{$name} accepted your request",
+            "title": "Friend request accepted"
+        },
+        "friendRequest": {
+            "body": "{$name} wants to add you",
+            "title": "Friend request"
+        },
+        "markAllRead": " Mark all read ",
+        "sanction": {
+            "mute": {
+                "body": "A moderator muted you: {$reason}",
+                "title": "You were muted"
+            }
+        },
+        "time": {
+            "days": "{$days}d ago",
+            "hours": "{$hours}h ago",
+            "justNow": "Just now",
+            "minutes": "{$mins}m ago"
+        },
+        "title": "Notifications"
+    }
+}

@@ -33,7 +33,7 @@ export const appRoutes: Routes = [
     },
     {
         path: "moderation",
-        data: { breadcrumb: $localize`:@@core.breadcrumb.moderation:Moderation` },
+        data: { breadcrumb: $localize`:@@core.breadcrumb.moderation.label:Moderation` },
         loadChildren: () => import("./features/moderation/moderation.routes").then((r) => r.moderationRoutes),
     },
     {

@@ -1,0 +1,89 @@
+{
+    "social": {
+        "friends": {
+            "action": {
+                "accept": " Accept ",
+                "block": " Block ",
+                "message": " Message ",
+                "refuse": " Refuse ",
+                "remove": " Remove ",
+                "unblock": " Unblock "
+            },
+            "empty": {
+                "accepted": "No friends yet.",
+                "blocked": "No blocked players.",
+                "incoming": "No pending requests.",
+                "outgoing": "No outgoing requests."
+            },
+            "lead": "Pending requests, your crew, and blocked players.",
+            "section": {
+                "accepted": "Friends",
+                "blocked": "Blocked",
+                "incoming": "Incoming requests",
+                "outgoing": "Sent requests"
+            },
+            "title": "Friends"
+        },
+        "messages": {
+            "emptyList": "No whispers yet.",
+            "placeholder": "Your whispers will appear here."
+        },
+        "messenger": {
+            "back": "Back",
+            "blockedByMe": " You blocked this player. They cannot message you, and you cannot send whispers here. ",
+            "blockedByPeer": " This player blocked you. You cannot send whispers in this conversation. ",
+            "cancelReply": "Cancel reply",
+            "close": "Close",
+            "compose": "Whisper something…",
+            "contactsEmpty": " No friends or requests yet. ",
+            "createGroup": {
+                "cancel": " Cancel ",
+                "dmHint": " One contact selected — this will open a direct whisper. ",
+                "empty": "No matching contacts.",
+                "name": "Group name (optional)",
+                "namePlaceholder": "Leave empty to use member names",
+                "needTwo": " Select at least two contacts to create a group. ",
+                "picture": "Picture (optional)",
+                "search": "Search contacts",
+                "submitDm": "Open chat",
+                "submitGroup": "Create group",
+                "title": "Create a group",
+                "tooltip": "Create a group"
+            },
+            "event": {
+                "joined": "{$handle} joined the group.",
+                "left": "{$handle} left the group."
+            },
+            "loadingOlder": " Loading older whispers… ",
+            "manageGroup": {
+                "add": "Add contacts",
+                "addSelected": " Add to group ",
+                "close": "Close",
+                "deleteCancel": " Cancel ",
+                "deleteConfirm": " Delete group ",
+                "deleteTitle": "Delete this group?",
+                "deleteWarning": " Removing the last member will delete this group for everyone. This cannot be undone. ",
+                "guildManaged": " Members of this channel follow the team or guild roster and cannot be edited here. ",
+                "noAddable": "No contacts left to add.",
+                "owner": "Owner",
+                "remove": " Remove ",
+                "save": " Save group ",
+                "title": "Group members",
+                "tooltip": "Group members"
+            },
+            "newMessages": "New messages",
+            "realtime": {
+                "connecting": "Connecting to live whispers…",
+                "offline": "Live whispers are unavailable. Sending is disabled until the link is restored."
+            },
+            "replying": "Replying",
+            "retry": "Retry",
+            "tab": {
+                "chats": "Chats",
+                "contacts": "Contacts"
+            },
+            "title": "Whispers",
+            "toggle": "Open whispers"
+        }
+    }
+}

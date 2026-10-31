@@ -1,0 +1,64 @@
+{
+    "core": {
+        "breadcrumb": {
+            "event": "Événement",
+            "events": "Événements",
+            "friends": "Amis",
+            "home": "Accueil",
+            "leagueOfLegends": "League of Legends",
+            "login": "Connexion",
+            "moderation": {
+                "label": "Modération",
+                "reports": "Signalements",
+                "user": "Utilisateur",
+                "users": "Utilisateurs"
+            },
+            "profile": "Mon profil",
+            "users": {
+                "profile": "Profil",
+                "search": "Recherche de joueurs"
+            },
+            "worldOfWarcraft": "World of Warcraft"
+        },
+        "contextBar": {
+            "nav": {
+                "characters": "Personnages",
+                "guilds": "Guildes",
+                "players": "Joueurs",
+                "sheet": "Ma fiche",
+                "teams": "Équipes"
+            },
+            "search": {
+                "leagueOfLegends": "Rechercher un joueur ou une équipe",
+                "worldOfWarcraft": "Rechercher un personnage ou une guilde"
+            },
+            "sections": "Sections du jeu"
+        },
+        "copyright": "© {$INTERPOLATION}",
+        "federation": {
+            "loadError": "Impossible de charger ce jeu.",
+            "loadErrorTitle": "Jeu indisponible"
+        },
+        "header": {
+            "events": "Événements",
+            "friends": "Amis",
+            "games": "Jeux",
+            "home": "Accueil",
+            "login": "Connexion",
+            "menu": {
+                "logout": "Déconnexion",
+                "profile": "Profil"
+            },
+            "moderation": " Modération {$START_BLOCK_IF}{$START_TAG_SPAN}{$INTERPOLATION}{$CLOSE_TAG_SPAN}{$CLOSE_BLOCK_IF}",
+            "notifications": "Notifications",
+            "search": "Rechercher"
+        },
+        "layout": {
+            "offline": {
+                "checking": "Vérification de la connexion…",
+                "message": "Site hors ligne — actualisation automatique dans {$PH}s"
+            }
+        },
+        "title": "Gamers Community"
+    }
+}

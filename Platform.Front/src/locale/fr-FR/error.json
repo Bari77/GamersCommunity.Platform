@@ -1,0 +1,25 @@
+{
+    "error": {
+        "httpCode": {
+            "badRequest": "Veuillez corriger les données avant de les envoyer.",
+            "badRequestTitle": "Données incorrectes",
+            "banned": "Ce compte est banni.",
+            "bannedTitle": "Compte banni",
+            "forbiddenMsg": "Vous n'avez pas les autorisations nécessaires.",
+            "forbiddenTitle": "Accès refusé",
+            "internalErrorMsg": "Une erreur s'est produite. Veuillez réessayer ou contacter un administrateur.",
+            "internalErrorTitle": "Erreur",
+            "notFound": "La ressource demandée est introuvable.",
+            "notFoundTitle": "Introuvable",
+            "offlineMsg": "Le site est actuellement indisponible.",
+            "offlineTitle": "Erreur réseau",
+            "unauthorizedMsg": "Veuillez vous reconnecter.",
+            "unauthorizedTitle": "Session expirée"
+        },
+        "nicknameDialog": {
+            "nicknameMaxLength": "Le pseudo est trop long.",
+            "nicknamePattern": "Le pseudo contient des caractères invalides.",
+            "nicknameRequired": "Le pseudo est obligatoire."
+        }
+    }
+}

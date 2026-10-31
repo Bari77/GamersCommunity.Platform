@@ -1,0 +1,25 @@
+{
+    "error": {
+        "httpCode": {
+            "badRequest": "Please correct the data before sending it.",
+            "badRequestTitle": "Incorrect data",
+            "banned": "This account is banned.",
+            "bannedTitle": "Account banned",
+            "forbiddenMsg": "You do not have the necessary authorizations.",
+            "forbiddenTitle": "Access denied",
+            "internalErrorMsg": "An error occurred while processing your request. Please try again or contact an administrator.",
+            "internalErrorTitle": "Error",
+            "notFound": "The requested resource could not be found.",
+            "notFoundTitle": "Not found",
+            "offlineMsg": "The site is currently unavailable.",
+            "offlineTitle": "Network error",
+            "unauthorizedMsg": "Please log in again.",
+            "unauthorizedTitle": "Session expired"
+        },
+        "nicknameDialog": {
+            "nicknameMaxLength": " Maximum 50 characters. ",
+            "nicknamePattern": " Only letters, numbers, \"_\" and \"-\" are allowed. ",
+            "nicknameRequired": "Nickname is required."
+        }
+    }
+}
