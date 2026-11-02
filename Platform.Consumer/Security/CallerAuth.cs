@@ -61,6 +61,25 @@ public static class CallerAuth
             throw new BadRequestException("BANNED", "Banned account");
     }
 
+    /// <summary>
+    /// Reads the caller's active sanctions once. A ban fails the call. The returned mute is the one
+    /// <see cref="ActiveMuteAsync"/> would load, so a session does not query <c>Banned</c> twice.
+    /// </summary>
+    public static async Task<Banned?> RejectBanAndLoadMuteAsync(
+        GamersCommunityDbContext context,
+        int userId,
+        CancellationToken ct)
+    {
+        var sanctions = await ActiveSanctions(context, userId)
+            .OrderByDescending(s => s.EndDate)
+            .ToListAsync(ct);
+
+        if (sanctions.Any(s => s.Kind == SanctionKinds.Ban))
+            throw new BadRequestException("BANNED", "Banned account");
+
+        return sanctions.FirstOrDefault(s => s.Kind == SanctionKinds.Mute);
+    }
+
     public static Task<bool> HasActiveBanAsync(
         GamersCommunityDbContext context,
         int userId,

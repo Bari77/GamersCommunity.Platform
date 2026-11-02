@@ -70,10 +70,7 @@ public class UsersService(
                 var user = await Context.Users.FirstOrDefaultAsync(f => f.IdKeycloak == idKeycloak, ct);
 
                 if (user != null)
-                {
-                    await CallerAuth.EnsureNotBannedAsync(Context, user.Id, ct);
-                    return JsonSafe.Serialize(await ToSessionAsync(await LoginAsync(user, ct), ct));
-                }
+                    return JsonSafe.Serialize(await OpenSessionAsync(user, rejectBan: true, ct));
 
                 if (string.IsNullOrEmpty(info.Nickname))
                 {
@@ -136,8 +133,7 @@ public class UsersService(
     private async Task<SessionUserDto> TouchPresenceAsync(BusMessage message, CancellationToken ct)
     {
         var user = await CallerAuth.RequireUserAsync(Context, message, ct);
-        await CallerAuth.EnsureNotBannedAsync(Context, user.Id, ct);
-        return await ToSessionAsync(await LoginAsync(user, ct), ct);
+        return await OpenSessionAsync(user, rejectBan: true, ct);
     }
 
     private async Task<List<StaffUserDto>> StaffListAsync(BusMessage message, CancellationToken ct)
@@ -434,53 +430,51 @@ public class UsersService(
         entity.ModificationDate = DateTime.UtcNow;
 
         await CreateAsync(entity, ct);
-        await AssignSignupRoleAsync(entity, ct);
-        return await ToSessionAsync(await LoginAsync(entity, ct), ct);
+        return await OpenSessionAsync(entity, rejectBan: false, ct);
     }
 
     /// <summary>
-    /// Updates an existing user's connection-related data when they log in.
-    /// This method refreshes the <see cref="User.LastConnection"/> and <see cref="User.ModificationDate"/> fields,
-    /// persists the changes, and retrieves the updated user from the database.
+    /// Opens a session for a user already loaded by the caller. A ban check and the mute share one
+    /// read of <c>Banned</c>. Site role codes are loaded once and reused on the session.
     /// </summary>
-    /// <param name="entity">The existing user entity to update.</param>
-    /// <param name="ct">A cancellation token to observe while waiting for the task to complete.</param>
-    /// <returns>The updated <see cref="User"/> entity after successful login.</returns>
-    private async Task<User> LoginAsync(User entity, CancellationToken ct = default)
+    private async Task<SessionUserDto> OpenSessionAsync(User user, bool rejectBan, CancellationToken ct)
+    {
+        var mute = rejectBan
+            ? await CallerAuth.RejectBanAndLoadMuteAsync(Context, user.Id, ct)
+            : null;
+        var (loggedIn, siteRoles) = await LoginAsync(user, ct);
+        return await ToSessionAsync(loggedIn, siteRoles, mute, ct);
+    }
+
+    /// <summary>
+    /// Refreshes <see cref="User.LastConnection"/> and <see cref="User.ModificationDate"/> on the
+    /// already tracked user. The row is not read again: those two values were set in memory.
+    /// </summary>
+    /// <returns>The same user and the site role codes held after the login.</returns>
+    private async Task<(User User, List<string> SiteRoles)> LoginAsync(User entity, CancellationToken ct = default)
     {
         entity.LastConnection = DateTime.UtcNow;
         entity.ModificationDate = DateTime.UtcNow;
         await UpdateAsync(entity.Id, entity, ct);
-        await EnsureSiteRoleAsync(entity, ct);
-
-        var user = await GetAsync(entity.Id, ct);
+        var siteRoles = await EnsureSiteRoleAsync(entity, ct);
 
         // Covers Load, Touch and Signup: every session start refreshes the identity held by
         // the game microservices, which is what backfills a subscriber joining late.
-        await identityPublisher.PublishAsync(user, ct);
+        await identityPublisher.PublishAsync(entity, ct);
 
-        return user;
+        return (entity, siteRoles);
     }
 
-    private async Task AssignSignupRoleAsync(User entity, CancellationToken ct)
+    private async Task<List<string>> EnsureSiteRoleAsync(User entity, CancellationToken ct)
     {
-        var code = await ShouldBootstrapAdminAsync(entity, ct)
-            ? SiteRoleCodes.Admin
-            : SiteRoleCodes.Member;
+        var codes = await CallerAuth.LoadSiteRoleCodesAsync(Context, entity.Id, ct);
+        var bootstrapAdmin = await ShouldBootstrapAdminAsync(entity, ct);
+        if (codes.Count > 0 && !bootstrapAdmin)
+            return codes;
+
+        var code = bootstrapAdmin ? SiteRoleCodes.Admin : SiteRoleCodes.Member;
         await ReplaceSiteRoleAsync(entity.Id, code, ct);
-    }
-
-    private async Task EnsureSiteRoleAsync(User entity, CancellationToken ct)
-    {
-        var hasRole = await Context.UserSiteRoles.AnyAsync(r => r.IdUser == entity.Id, ct);
-        if (hasRole)
-        {
-            if (await ShouldBootstrapAdminAsync(entity, ct))
-                await ReplaceSiteRoleAsync(entity.Id, SiteRoleCodes.Admin, ct);
-            return;
-        }
-
-        await AssignSignupRoleAsync(entity, ct);
+        return [code];
     }
 
     private async Task<bool> ShouldBootstrapAdminAsync(User entity, CancellationToken ct)
@@ -506,9 +500,12 @@ public class UsersService(
         await Context.SaveChangesAsync(ct);
     }
 
-    private async Task<SessionUserDto> ToSessionAsync(User user, CancellationToken ct)
+    private async Task<SessionUserDto> ToSessionAsync(
+        User user,
+        IReadOnlyList<string> siteRoles,
+        Banned? mute,
+        CancellationToken ct)
     {
-        var siteRoles = await CallerAuth.LoadSiteRoleCodesAsync(Context, user.Id, ct);
         var gameRoles = await Context.UserGameRoles.AsNoTracking()
             .Where(r => r.IdUser == user.Id)
             .Select(r => new GameRoleAssignmentDto
@@ -517,8 +514,6 @@ public class UsersService(
                 Code = r.IdGameRoleNavigation.Code,
             })
             .ToListAsync(ct);
-
-        var mute = await CallerAuth.ActiveMuteAsync(Context, user.Id, ct);
 
         return new SessionUserDto
         {
